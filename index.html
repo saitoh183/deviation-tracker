@@ -76,56 +76,41 @@ button{cursor:pointer}
 .btn-group{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 
 /* ===== TABLE ===== */
-.table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius)}
-table{width:100%;border-collapse:collapse;min-width:1100px;font-size:.83rem}
+.table-wrap{overflow-x:auto;width:100%;border:1px solid var(--border);border-radius:var(--radius)}
+table{table-layout:fixed;width:max-content;min-width:100%;border-collapse:collapse;font-size:.83rem}
 thead tr{background:var(--bg2);position:sticky;top:0;z-index:10}
-th{padding:9px 10px;text-align:left;font-weight:600;color:var(--accent);font-size:.75rem;text-transform:uppercase;letter-spacing:.8px;white-space:nowrap;border-bottom:2px solid var(--border-light);cursor:pointer;user-select:none}
+th{padding:9px 8px;text-align:left;font-weight:600;color:var(--accent);font-size:.75rem;text-transform:uppercase;letter-spacing:.7px;white-space:nowrap;border-bottom:2px solid var(--border-light);cursor:pointer;user-select:none;overflow:hidden}
 th:hover{color:#fff;background:rgba(0,212,255,0.06)}
 th.sort-asc::after{content:' ▲';opacity:.8}
 th.sort-desc::after{content:' ▼';opacity:.8}
 tbody tr{border-bottom:1px solid var(--border);transition:background .15s}
 tbody tr:nth-child(even){background:var(--row-alt)}
 tbody tr:hover{background:rgba(0,212,255,0.07)}
-td{padding:6px 8px;vertical-align:middle}
-.empty-row td{text-align:center;color:var(--text-dim);padding:30px;font-style:italic}
+td{padding:5px 6px;vertical-align:middle;overflow:hidden}
+.empty-row td{text-align:center;color:var(--text-dim);padding:30px;font-style:italic;overflow:visible}
 
 /* ===== TABLE INPUTS ===== */
-td select,td input[type=text]{background:transparent;border:1px solid transparent;border-radius:4px;color:var(--text);padding:4px 6px;width:100%;min-width:80px}
+td select,td input[type=text]{background:transparent;border:1px solid transparent;border-radius:4px;color:var(--text);padding:3px 5px;width:100%;display:block;box-sizing:border-box}
 td select:focus,td input[type=text]:focus{outline:none;border-color:var(--accent);background:var(--bg2)}
 td select:hover,td input[type=text]:hover{border-color:var(--border-light)}
 td select option{background:var(--bg2)}
 
 /* ===== TRAIT CELLS ===== */
-.trait-cell{position:relative}
-.trait-cell select{font-size:.78rem}
+.trait-cell select{font-size:.78rem;color:var(--text)}
 .trait-cell select.neg-trait{color:var(--neg)}
-.trait-tooltip{display:none;position:absolute;z-index:500;min-width:220px;max-width:300px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);bottom:calc(100% + 6px);left:0;pointer-events:none}
-.trait-cell:hover .trait-tooltip{display:block}
+
+/* ===== SHARED TOOLTIP (fixed, body-level) ===== */
+#shared-tooltip{position:fixed;z-index:9999;min-width:220px;max-width:300px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);pointer-events:none;display:none}
 .tooltip-header{padding:8px 10px;font-weight:700;font-size:.82rem;border-radius:var(--radius) var(--radius) 0 0}
 .tooltip-header.pos{background:linear-gradient(90deg,#064e3b,#065f46);color:var(--green);border-bottom:1px solid #065f46}
 .tooltip-header.neg{background:linear-gradient(90deg,#7c2d12,#9a3412);color:var(--neg);border-bottom:1px solid #9a3412}
 .tooltip-body{padding:8px 10px;font-size:.78rem;color:var(--text);line-height:1.45}
 
-/* ===== STARS ===== */
-.star-picker{display:flex;gap:2px;cursor:pointer}
-.star-picker .star{font-size:1.1rem;color:var(--text-muted);transition:color .1s;user-select:none;line-height:1}
-.star-picker .star.on{color:var(--gold)}
-
-/* ===== PIPS ===== */
-.pip-picker{display:flex;gap:3px;cursor:pointer}
-.pip{width:16px;height:16px;border-radius:3px;background:var(--text-muted);opacity:.3;transition:all .15s}
-.pip.on{opacity:1}
-.pip.pip-1.on{background:var(--red)}
-.pip.pip-2.on{background:var(--orange)}
-.pip.pip-3.on{background:var(--yellow)}
-.pip.pip-4.on{background:var(--lime)}
-.pip.pip-5.on{background:var(--green)}
-
 /* ===== TOGGLE ===== */
-.toggle-wrap{display:flex;align-items:center;justify-content:center}
-.toggle{position:relative;width:36px;height:20px;cursor:pointer}
+.toggle-wrap{text-align:center;padding:3px 0}
+.toggle{position:relative;display:inline-block;width:36px;height:20px;cursor:pointer;vertical-align:middle;flex-shrink:0}
 .toggle input{opacity:0;width:0;height:0;position:absolute}
-.toggle-slider{position:absolute;inset:0;background:var(--toggle-off);border-radius:20px;transition:.2s}
+.toggle-slider{position:absolute;top:0;right:0;bottom:0;left:0;background:var(--toggle-off);border-radius:20px;transition:.2s}
 .toggle-slider::before{content:'';position:absolute;width:14px;height:14px;background:#fff;border-radius:50%;left:3px;top:3px;transition:.2s}
 .toggle input:checked~.toggle-slider{background:var(--toggle-on)}
 .toggle input:checked~.toggle-slider::before{transform:translateX(16px)}
@@ -331,6 +316,22 @@ footer{text-align:center;padding:16px;font-size:.75rem;color:var(--text-muted);b
   <!-- Table -->
   <div class="table-wrap">
     <table id="deviationTable">
+      <colgroup>
+        <col style="width:120px"><!-- 1 Character -->
+        <col style="width:155px"><!-- 2 Deviation Name -->
+        <col style="width:130px"><!-- 3 Variant -->
+        <col style="width:155px"><!-- 4 Trait 1 -->
+        <col style="width:155px"><!-- 5 Trait 2 -->
+        <col style="width:155px"><!-- 6 Trait 3 -->
+        <col style="width:155px"><!-- 7 Trait 4 -->
+        <col style="width:155px"><!-- 8 Trait 5 -->
+        <col style="width:100px"><!-- 9 Skill -->
+        <col style="width:100px"><!-- 10 Activity -->
+        <col style="width:75px"> <!-- 11 Fusion -->
+        <col style="width:75px"> <!-- 12 Locked -->
+        <col style="width:180px"><!-- 13 Notes -->
+        <col style="width:45px"> <!-- 14 Del -->
+      </colgroup>
       <thead>
         <tr>
           <th data-sort="char">Character</th>
@@ -378,9 +379,10 @@ footer{text-align:center;padding:16px;font-size:.75rem;color:var(--text-muted);b
     <div class="settings-section">
       <h3>My Characters</h3>
       <div class="char-add-row">
-        <input id="charInput" type="text" maxlength="10" placeholder="Character name…" onkeydown="if(event.key==='Enter')addChar()">
+        <input id="charInput" type="text" maxlength="10" placeholder="Character name…" onkeydown="if(event.key==='Enter')addChar()" oninput="document.getElementById('charCounter').textContent=this.value.length+'/10'">
         <button class="btn btn-primary" onclick="addChar()">Add</button>
       </div>
+      <div style="font-size:.72rem;color:var(--text-muted);margin-top:-4px;margin-bottom:6px"><span id="charCounter">0/10</span> characters</div>
       <div class="char-list" id="charList"></div>
       <p class="char-empty" id="charEmpty">No characters added yet. Add one above.</p>
     </div>
@@ -507,6 +509,12 @@ footer{text-align:center;padding:16px;font-size:.75rem;color:var(--text-muted);b
 </div>
 
 <footer>Data is saved locally in your browser. Clearing browser data will erase your tracker.</footer>
+
+<!-- SHARED TRAIT TOOLTIP (fixed, body-level, z-index 9999) -->
+<div id="shared-tooltip">
+  <div id="shared-tooltip-header" class="tooltip-header pos"></div>
+  <div id="shared-tooltip-body"   class="tooltip-body"></div>
+</div>
 
 <!-- ======================================================= -->
 <!-- SCRIPTS                                                  -->
@@ -1012,18 +1020,18 @@ function renderTable() {
     tr.innerHTML = `
       <td><select class="row-char" onchange="rowChange('${row.id}','char',this.value)">${charOpts}</select></td>
       <td><select class="row-name" onchange="rowChange('${row.id}','name',this.value)">${devOpts}</select></td>
-      <td><input type="text" value="${escHtml(row.variant)}" placeholder="Variant…" oninput="rowChange('${row.id}','variant',this.value)" style="min-width:80px"></td>
+      <td><input type="text" value="${escHtml(row.variant)}" placeholder="Variant…" oninput="rowChange('${row.id}','variant',this.value)"></td>
       <td class="trait-cell" id="tc_${row.id}_0"></td>
       <td class="trait-cell" id="tc_${row.id}_1"></td>
       <td class="trait-cell" id="tc_${row.id}_2"></td>
       <td class="trait-cell" id="tc_${row.id}_3"></td>
       <td class="trait-cell" id="tc_${row.id}_4"></td>
-      <td id="skill_${row.id}">${renderStars(row.id, row.skill)}</td>
-      <td id="act_${row.id}">${renderPips(row.id, row.activity)}</td>
+      <td>${renderSkillSelect(row.id, row.skill)}</td>
+      <td>${renderActivitySelect(row.id, row.activity)}</td>
       <td class="toggle-wrap"><label class="toggle"><input type="checkbox" ${row.fusion?'checked':''} onchange="rowChange('${row.id}','fusion',this.checked)"><span class="toggle-slider"></span></label></td>
       <td class="toggle-wrap"><label class="toggle"><input type="checkbox" ${row.locked?'checked':''} onchange="rowChange('${row.id}','locked',this.checked)"><span class="toggle-slider"></span></label></td>
-      <td><input type="text" value="${escHtml(row.notes)}" placeholder="Notes…" oninput="rowChange('${row.id}','notes',this.value)" style="min-width:100px"></td>
-      <td><button class="del-btn" onclick="deleteDeviationRow('${row.id}')">✕</button></td>
+      <td><input type="text" value="${escHtml(row.notes)}" placeholder="Notes…" oninput="rowChange('${row.id}','notes',this.value)"></td>
+      <td style="text-align:center"><button class="del-btn" onclick="deleteDeviationRow('${row.id}')">✕</button></td>
     `;
     tbody.appendChild(tr);
 
@@ -1037,35 +1045,50 @@ function renderTable() {
   });
 }
 
-function renderStars(id, val) {
-  let h = '<div class="star-picker">';
-  for (let i = 1; i <= 5; i++) h += `<span class="star${i<=val?' on':''}" onclick="rowChange('${id}','skill',${i===val?0:i})">★</span>`;
-  return h + '</div>';
+function renderSkillSelect(rowId, val) {
+  const v = val ? String(val) : '';
+  return `<select onchange="rowChange('${rowId}','skill',this.value)">
+    <option value=""${!v?' selected':''}>— Skill —</option>
+    <option value="1"${v==='1'?' selected':''}>1</option>
+    <option value="2"${v==='2'?' selected':''}>2</option>
+    <option value="3"${v==='3'?' selected':''}>3</option>
+    <option value="4"${v==='4'?' selected':''}>4</option>
+    <option value="5"${v==='5'?' selected':''}>5</option>
+  </select>`;
 }
 
-function renderPips(id, val) {
-  let h = '<div class="pip-picker">';
-  for (let i = 1; i <= 5; i++) h += `<div class="pip pip-${i}${i<=val?' on':''}" onclick="rowChange('${id}','activity',${i===val?0:i})"></div>`;
-  return h + '</div>';
+function renderActivitySelect(rowId, val) {
+  const v = val ? String(val) : '';
+  return `<select onchange="rowChange('${rowId}','activity',this.value)">
+    <option value=""${!v?' selected':''}>— Activity —</option>
+    <option value="1"${v==='1'?' selected':''}>1</option>
+    <option value="2"${v==='2'?' selected':''}>2</option>
+    <option value="3"${v==='3'?' selected':''}>3</option>
+    <option value="4"${v==='4'?' selected':''}>4</option>
+    <option value="5"${v==='5'?' selected':''}>5</option>
+  </select>`;
 }
 
 function renderTraitCell(rowId, slotIdx, devName, curTrait) {
   const cell = document.getElementById(`tc_${rowId}_${slotIdx}`);
   if (!cell) return;
-  const avail   = traitsForDeviation(devName);
+  const avail    = traitsForDeviation(devName);
   const traitDef = getAllTraits().find(t => t.name === curTrait);
   const isNeg    = traitDef?.neg || false;
 
   let opts = '<option value="">—</option>';
   avail.forEach(t => opts += `<option value="${escHtml(t.name)}"${t.name===curTrait?' selected':''}>${escHtml(t.name)}</option>`);
 
-  let tooltip = '';
-  if (curTrait && traitDef) {
-    const cls = isNeg ? 'neg' : 'pos';
-    tooltip = `<div class="trait-tooltip"><div class="tooltip-header ${cls}">${escHtml(curTrait)}</div><div class="tooltip-body">${escHtml(traitDef.effect)}</div></div>`;
-  }
+  cell.innerHTML = `<select class="${isNeg?'neg-trait':''}" onchange="traitChange('${rowId}',${slotIdx},this.value)">${opts}</select>`;
 
-  cell.innerHTML = `<select class="${isNeg?'neg-trait':''}" onchange="traitChange('${rowId}',${slotIdx},this.value)">${opts}</select>${tooltip}`;
+  // Attach tooltip via mouse events if a trait is selected
+  if (curTrait && traitDef) {
+    const sel = cell.querySelector('select');
+    sel.addEventListener('mouseenter', () => showTraitTooltip(sel, curTrait, traitDef.effect, isNeg));
+    sel.addEventListener('mouseleave', hideTraitTooltip);
+    sel.addEventListener('focus',      () => showTraitTooltip(sel, curTrait, traitDef.effect, isNeg));
+    sel.addEventListener('blur',       hideTraitTooltip);
+  }
 }
 
 function rowChange(id, field, val) {
@@ -1089,15 +1112,9 @@ function rowChange(id, field, val) {
     }
   } else if (field === 'char')     row.char     = val;
   else if (field === 'variant')    row.variant  = val;
-  else if (field === 'skill') {
-    row.skill = Number(val);
-    const c = document.getElementById('skill_' + id);
-    if (c) c.innerHTML = renderStars(id, row.skill);
-  } else if (field === 'activity') {
-    row.activity = Number(val);
-    const c = document.getElementById('act_' + id);
-    if (c) c.innerHTML = renderPips(id, row.activity);
-  } else if (field === 'fusion')   row.fusion   = val;
+  else if (field === 'skill')      row.skill    = val ? Number(val) : 0;
+  else if (field === 'activity')   row.activity = val ? Number(val) : 0;
+  else if (field === 'fusion')     row.fusion   = val;
   else if (field === 'locked')     row.locked   = val;
   else if (field === 'notes')      row.notes    = val;
   save('deviations');
@@ -1109,6 +1126,34 @@ function traitChange(rowId, slotIdx, val) {
   row.traits[slotIdx] = val;
   save('deviations');
   renderTraitCell(rowId, slotIdx, row.name, val);
+}
+
+/* ── Trait Tooltip ── */
+function showTraitTooltip(el, name, effect, isNeg) {
+  const tip    = document.getElementById('shared-tooltip');
+  const header = document.getElementById('shared-tooltip-header');
+  const body   = document.getElementById('shared-tooltip-body');
+  header.textContent = name;
+  header.className   = 'tooltip-header ' + (isNeg ? 'neg' : 'pos');
+  body.textContent   = effect;
+  tip.style.display  = 'block';
+  // Measure after making visible
+  const rect = el.getBoundingClientRect();
+  const th   = tip.offsetHeight || 100;
+  const tw   = tip.offsetWidth  || 260;
+  // Left: clamp so it doesn't overflow right edge
+  const left = Math.max(4, Math.min(rect.left, window.innerWidth - tw - 8));
+  tip.style.left = left + 'px';
+  // Vertical: prefer above, fall back to below
+  if (rect.top >= th + 10) {
+    tip.style.top    = (rect.top - th - 8) + 'px';
+  } else {
+    tip.style.top    = Math.min(rect.bottom + 8, window.innerHeight - th - 4) + 'px';
+  }
+}
+
+function hideTraitTooltip() {
+  document.getElementById('shared-tooltip').style.display = 'none';
 }
 
 /* ── Sort / Filter ── */
