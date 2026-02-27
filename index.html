@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Once Human — Deviant Tracker</title>
+<title>Once Human — Deviation Tracker</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -15,8 +15,7 @@
   --text:#e0e6f0;--text-dim:#8899b0;--text-muted:#4a5568;
   --row-alt:rgba(0,180,216,0.04);
   --border:#1e3a5f;--border-light:rgba(0,212,255,0.15);
-  --neg:#ff6b35;--neg-dim:#c44f1f;
-  --pos:#00d4ff;
+  --neg:#ff6b35;
   --green:#4ade80;--lime:#a3e635;--yellow:#facc15;--orange:#fb923c;--red:#f87171;
   --gold:#ffd700;
   --toggle-on:#00d4ff;--toggle-off:#2d3748;
@@ -40,109 +39,67 @@ button{cursor:pointer}
   border-bottom:1px solid var(--border-light);
   position:sticky;top:0;z-index:200;
 }
-.app-title{
-  font-size:1.4rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;
-  color:var(--accent);text-shadow:0 0 20px rgba(0,212,255,0.4);
-}
+.app-title{font-size:1.4rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--accent);text-shadow:0 0 20px rgba(0,212,255,0.4)}
 .app-title span{color:var(--text-dim);font-weight:300}
-.gear-btn{
-  background:none;border:1px solid var(--border-light);border-radius:var(--radius);
-  color:var(--text-dim);font-size:1.3rem;padding:6px 10px;
-  transition:all .2s;
-}
+.gear-btn{background:none;border:1px solid var(--border-light);border-radius:var(--radius);color:var(--text-dim);font-size:1.3rem;padding:6px 10px;transition:all .2s}
 .gear-btn:hover{color:var(--accent);border-color:var(--accent);background:rgba(0,212,255,0.08)}
 
 /* ===== TABS ===== */
-.tab-bar{
-  display:flex;gap:4px;padding:10px 20px 0;
-  background:var(--bg1);border-bottom:1px solid var(--border);
-}
-.tab-btn{
-  padding:9px 22px;font-weight:600;font-size:.95rem;
-  background:none;border:1px solid transparent;border-bottom:none;
-  color:var(--text-dim);border-radius:var(--radius) var(--radius) 0 0;
-  transition:all .2s;letter-spacing:.5px;
-}
+.tab-bar{display:flex;gap:4px;padding:10px 20px 0;background:var(--bg1);border-bottom:1px solid var(--border)}
+.tab-btn{padding:9px 22px;font-weight:600;font-size:.95rem;background:none;border:1px solid transparent;border-bottom:none;color:var(--text-dim);border-radius:var(--radius) var(--radius) 0 0;transition:all .2s;letter-spacing:.5px}
 .tab-btn:hover{color:var(--text);background:rgba(255,255,255,0.04)}
-.tab-btn.active{
-  color:var(--accent);background:var(--bg0);
-  border-color:var(--border-light);
-  text-shadow:0 0 12px rgba(0,212,255,0.3);
-}
+.tab-btn.active{color:var(--accent);background:var(--bg0);border-color:var(--border-light);text-shadow:0 0 12px rgba(0,212,255,0.3)}
 .tab-content{display:none;padding:16px 20px}
 .tab-content.active{display:block}
 
 /* ===== FILTER BAR ===== */
-.filter-bar{
-  background:var(--bg1);border:1px solid var(--border);border-radius:var(--radius);
-  padding:12px 14px;margin-bottom:12px;
-  display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px;
-}
+.filter-bar{background:var(--bg1);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;margin-bottom:12px;display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px}
 .filter-group{display:flex;flex-direction:column;gap:4px}
 .filter-group label{font-size:.72rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.8px}
-.filter-bar select,.filter-bar input[type=text]{
-  background:var(--bg2);border:1px solid var(--border);border-radius:4px;
-  color:var(--text);padding:5px 8px;font-size:.82rem;min-width:110px;
-}
+.filter-bar select,.filter-bar input[type=text]{background:var(--bg2);border:1px solid var(--border);border-radius:4px;color:var(--text);padding:5px 8px;font-size:.82rem;min-width:110px}
 .filter-bar select:focus,.filter-bar input:focus{outline:none;border-color:var(--accent)}
 .filter-actions{display:flex;gap:8px;align-items:flex-end;margin-left:auto;flex-wrap:wrap}
-.btn{
-  padding:6px 14px;border-radius:var(--radius);border:none;font-weight:600;
-  font-size:.82rem;letter-spacing:.5px;transition:all .2s;
-}
+.row-count{font-size:.78rem;color:var(--text-dim);align-self:center;white-space:nowrap}
+
+/* ===== BUTTONS ===== */
+.btn{padding:6px 14px;border-radius:var(--radius);border:none;font-weight:600;font-size:.82rem;letter-spacing:.5px;transition:all .2s;cursor:pointer;white-space:nowrap}
 .btn-primary{background:var(--accent-dim);color:#fff}
 .btn-primary:hover{background:var(--accent2);box-shadow:0 0 12px rgba(0,212,255,0.3)}
 .btn-secondary{background:var(--bg3);border:1px solid var(--border-light);color:var(--text-dim)}
 .btn-secondary:hover{color:var(--text);border-color:var(--accent)}
 .btn-danger{background:#7f1d1d;border:1px solid #991b1b;color:#fca5a5}
 .btn-danger:hover{background:#991b1b}
-.row-count{font-size:.78rem;color:var(--text-dim);align-self:center;white-space:nowrap}
+.btn-sm{padding:4px 10px;font-size:.76rem}
+
+/* ===== TOOLBAR ===== */
+.controls-bar{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px}
+.btn-group{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 
 /* ===== TABLE ===== */
 .table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius)}
 table{width:100%;border-collapse:collapse;min-width:1100px;font-size:.83rem}
 thead tr{background:var(--bg2);position:sticky;top:0;z-index:10}
-th{
-  padding:9px 10px;text-align:left;font-weight:600;
-  color:var(--accent);font-size:.75rem;text-transform:uppercase;letter-spacing:.8px;
-  white-space:nowrap;border-bottom:2px solid var(--border-light);
-  cursor:pointer;user-select:none;
-}
+th{padding:9px 10px;text-align:left;font-weight:600;color:var(--accent);font-size:.75rem;text-transform:uppercase;letter-spacing:.8px;white-space:nowrap;border-bottom:2px solid var(--border-light);cursor:pointer;user-select:none}
 th:hover{color:#fff;background:rgba(0,212,255,0.06)}
-th .sort-arrow{margin-left:4px;opacity:.4}
-th.sort-asc .sort-arrow::after{content:'▲';opacity:1}
-th.sort-desc .sort-arrow::after{content:'▼';opacity:1}
-th:not([data-sort]) .sort-arrow{display:none}
+th.sort-asc::after{content:' ▲';opacity:.8}
+th.sort-desc::after{content:' ▼';opacity:.8}
 tbody tr{border-bottom:1px solid var(--border);transition:background .15s}
 tbody tr:nth-child(even){background:var(--row-alt)}
 tbody tr:hover{background:rgba(0,212,255,0.07)}
 td{padding:6px 8px;vertical-align:middle}
-
-/* Empty state */
 .empty-row td{text-align:center;color:var(--text-dim);padding:30px;font-style:italic}
 
 /* ===== TABLE INPUTS ===== */
-td select,td input[type=text]{
-  background:transparent;border:1px solid transparent;border-radius:4px;
-  color:var(--text);padding:4px 6px;width:100%;min-width:80px;
-}
-td select:focus,td input[type=text]:focus{
-  outline:none;border-color:var(--accent);background:var(--bg2);
-}
+td select,td input[type=text]{background:transparent;border:1px solid transparent;border-radius:4px;color:var(--text);padding:4px 6px;width:100%;min-width:80px}
+td select:focus,td input[type=text]:focus{outline:none;border-color:var(--accent);background:var(--bg2)}
 td select:hover,td input[type=text]:hover{border-color:var(--border-light)}
 td select option{background:var(--bg2)}
 
-/* Trait cells */
+/* ===== TRAIT CELLS ===== */
 .trait-cell{position:relative}
 .trait-cell select{font-size:.78rem}
 .trait-cell select.neg-trait{color:var(--neg)}
-.trait-cell .trait-tooltip{
-  display:none;position:absolute;z-index:500;
-  min-width:220px;max-width:300px;
-  background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);
-  box-shadow:var(--shadow);bottom:calc(100% + 6px);left:0;
-  pointer-events:none;
-}
+.trait-tooltip{display:none;position:absolute;z-index:500;min-width:220px;max-width:300px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);bottom:calc(100% + 6px);left:0;pointer-events:none}
 .trait-cell:hover .trait-tooltip{display:block}
 .tooltip-header{padding:8px 10px;font-weight:700;font-size:.82rem;border-radius:var(--radius) var(--radius) 0 0}
 .tooltip-header.pos{background:linear-gradient(90deg,#064e3b,#065f46);color:var(--green);border-bottom:1px solid #065f46}
@@ -168,26 +125,14 @@ td select option{background:var(--bg2)}
 .toggle-wrap{display:flex;align-items:center;justify-content:center}
 .toggle{position:relative;width:36px;height:20px;cursor:pointer}
 .toggle input{opacity:0;width:0;height:0;position:absolute}
-.toggle-slider{
-  position:absolute;inset:0;background:var(--toggle-off);border-radius:20px;transition:.2s;
-}
-.toggle-slider::before{
-  content:'';position:absolute;width:14px;height:14px;background:#fff;border-radius:50%;
-  left:3px;top:3px;transition:.2s;
-}
+.toggle-slider{position:absolute;inset:0;background:var(--toggle-off);border-radius:20px;transition:.2s}
+.toggle-slider::before{content:'';position:absolute;width:14px;height:14px;background:#fff;border-radius:50%;left:3px;top:3px;transition:.2s}
 .toggle input:checked~.toggle-slider{background:var(--toggle-on)}
 .toggle input:checked~.toggle-slider::before{transform:translateX(16px)}
 
 /* ===== DELETE BTN ===== */
-.del-btn{
-  background:none;border:1px solid var(--border);border-radius:4px;
-  color:var(--text-muted);padding:3px 8px;font-size:.9rem;
-  transition:all .15s;
-}
+.del-btn{background:none;border:1px solid var(--border);border-radius:4px;color:var(--text-muted);padding:3px 8px;font-size:.9rem;transition:all .15s}
 .del-btn:hover{background:#7f1d1d;border-color:#ef4444;color:#fca5a5}
-
-/* ===== CONTROLS BAR ===== */
-.controls-bar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
 
 /* ===== FUSION MATERIALS ===== */
 .fm-header{margin-bottom:4px}
@@ -196,11 +141,7 @@ td select option{background:var(--bg2)}
 .fm-controls{display:flex;gap:8px;margin:12px 0}
 .fm-list{display:flex;flex-direction:column;gap:6px}
 .fm-empty{color:var(--text-dim);font-style:italic;font-size:.88rem;padding:20px 0}
-.fm-row{
-  display:flex;align-items:center;gap:8px;
-  background:var(--bg1);border:1px solid var(--border);border-radius:var(--radius);
-  padding:8px 10px;transition:background .15s;
-}
+.fm-row{display:flex;align-items:center;gap:8px;background:var(--bg1);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;transition:background .15s}
 .fm-row:hover{background:var(--bg2)}
 .drag-handle{color:var(--text-muted);cursor:grab;font-size:1rem;padding:0 4px;flex-shrink:0;user-select:none}
 .drag-handle:active{cursor:grabbing}
@@ -209,66 +150,98 @@ td select option{background:var(--bg2)}
 .fm-name{flex:2;min-width:120px}
 .fm-qty{width:70px}
 .fm-notes{flex:3;min-width:120px}
-.fm-input{
-  background:var(--bg2);border:1px solid var(--border);border-radius:4px;
-  color:var(--text);padding:6px 8px;width:100%;font-size:.85rem;
-}
+.fm-input{background:var(--bg2);border:1px solid var(--border);border-radius:4px;color:var(--text);padding:6px 8px;width:100%;font-size:.85rem}
 .fm-input:focus{outline:none;border-color:var(--accent)}
 
-/* ===== SETTINGS OVERLAY ===== */
-.overlay{
-  display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:900;
-  backdrop-filter:blur(2px);
-}
+/* ===== SETTINGS SLIDE-IN ===== */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:900;backdrop-filter:blur(2px)}
 .overlay.open{display:flex;align-items:flex-start;justify-content:flex-end}
-.settings-panel{
-  width:340px;min-height:100vh;background:var(--bg1);
-  border-left:1px solid var(--border-light);
-  padding:20px;display:flex;flex-direction:column;gap:16px;
-  animation:slideIn .22s ease;box-shadow:-8px 0 40px rgba(0,0,0,.5);
-}
+.settings-panel{width:340px;min-height:100vh;background:var(--bg1);border-left:1px solid var(--border-light);padding:20px;display:flex;flex-direction:column;gap:16px;animation:slideIn .22s ease;box-shadow:-8px 0 40px rgba(0,0,0,.5);overflow-y:auto}
 @keyframes slideIn{from{transform:translateX(100%)}to{transform:translateX(0)}}
 .settings-header{display:flex;align-items:center;justify-content:space-between}
 .settings-header h2{font-size:1rem;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:1px}
 .close-btn{background:none;border:none;color:var(--text-dim);font-size:1.4rem;line-height:1;padding:2px 6px}
 .close-btn:hover{color:var(--text)}
+.settings-section{border-top:1px solid var(--border);padding-top:14px}
 .settings-section h3{font-size:.78rem;text-transform:uppercase;letter-spacing:.8px;color:var(--text-dim);margin-bottom:10px}
 .char-add-row{display:flex;gap:6px;margin-bottom:10px}
-.char-add-row input{
-  flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:4px;
-  color:var(--text);padding:7px 10px;font-size:.85rem;
-}
+.char-add-row input{flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:4px;color:var(--text);padding:7px 10px;font-size:.85rem}
 .char-add-row input:focus{outline:none;border-color:var(--accent)}
 .char-list{display:flex;flex-direction:column;gap:4px}
-.char-item{
-  display:flex;align-items:center;justify-content:space-between;
-  background:var(--bg2);border:1px solid var(--border);border-radius:4px;
-  padding:6px 10px;font-size:.88rem;
-}
+.char-item{display:flex;align-items:center;justify-content:space-between;background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:6px 10px;font-size:.88rem}
 .char-del{background:none;border:none;color:var(--text-muted);font-size:1rem;padding:0 4px}
 .char-del:hover{color:var(--neg)}
 .char-empty{color:var(--text-dim);font-style:italic;font-size:.82rem;padding:6px 0}
 .settings-note{font-size:.75rem;color:var(--text-muted);line-height:1.5;border-top:1px solid var(--border);padding-top:10px}
+.settings-btn-list{display:flex;flex-direction:column;gap:6px}
 
-/* ===== MODAL ===== */
-.modal-overlay{
-  display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;
-  align-items:center;justify-content:center;
-}
+/* ===== MODALS (shared) ===== */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:1000;align-items:center;justify-content:center;padding:16px}
 .modal-overlay.open{display:flex}
-.modal{
-  background:var(--bg2);border:1px solid var(--border-light);border-radius:var(--radius);
-  padding:24px;max-width:380px;width:90%;box-shadow:var(--shadow);
-}
-.modal h3{font-size:1rem;font-weight:700;color:var(--text);margin-bottom:8px}
-.modal p{font-size:.88rem;color:var(--text-dim);margin-bottom:18px;line-height:1.5}
-.modal-actions{display:flex;gap:8px;justify-content:flex-end}
+.modal{background:var(--bg1);border:1px solid var(--accent);border-radius:8px;box-shadow:var(--shadow);width:100%;display:flex;flex-direction:column;max-height:90vh}
+.modal-sm{max-width:400px}
+.modal-lg{max-width:620px}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--border);flex-shrink:0}
+.modal-header h3{font-size:1rem;font-weight:700;color:var(--accent);letter-spacing:.5px}
+.modal-body{padding:16px 18px;overflow-y:auto;flex:1}
+.modal-footer{padding:12px 18px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;flex-shrink:0}
+
+/* ===== MODAL INNER TABS ===== */
+.modal-tabs{display:flex;gap:2px;padding:10px 18px 0;background:var(--bg2);flex-shrink:0}
+.modal-tab-btn{padding:7px 18px;font-weight:600;font-size:.85rem;background:none;border:1px solid transparent;border-bottom:none;color:var(--text-dim);border-radius:4px 4px 0 0;transition:all .18s;cursor:pointer}
+.modal-tab-btn:hover{color:var(--text)}
+.modal-tab-btn.active{color:var(--accent);background:var(--bg1);border-color:var(--border-light)}
+.modal-tab-pane{display:none}
+.modal-tab-pane.active{display:block}
+
+/* ===== FORM ELEMENTS IN MODALS ===== */
+.form-group{margin-bottom:12px}
+.form-group label{display:block;font-size:.78rem;text-transform:uppercase;letter-spacing:.6px;color:var(--text-dim);margin-bottom:5px;font-weight:600}
+.form-input{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:4px;color:var(--text);padding:8px 10px;font-size:.88rem}
+.form-input:focus{outline:none;border-color:var(--accent)}
+.form-textarea{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:4px;color:var(--text);padding:8px 10px;font-size:.88rem;min-height:80px;resize:vertical;line-height:1.45}
+.form-textarea:focus{outline:none;border-color:var(--accent)}
+.radio-group{display:flex;gap:16px}
+.radio-group label{display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.88rem;color:var(--text)}
+.radio-group input[type=radio]{accent-color:var(--accent)}
+
+/* ===== DEV/TRAIT LISTS IN MODALS ===== */
+.mgr-list{max-height:52vh;overflow-y:auto;border:1px solid var(--border);border-radius:4px;background:var(--bg2)}
+.mgr-section-head{padding:6px 10px;font-size:.72rem;text-transform:uppercase;letter-spacing:.8px;color:var(--text-dim);background:var(--bg3);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:2}
+.mgr-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-bottom:1px solid var(--border);font-size:.85rem}
+.mgr-item:last-child{border-bottom:none}
+.mgr-item:hover{background:rgba(0,212,255,0.04)}
+.mgr-item-name{flex:1;color:var(--text)}
+.mgr-item-name.neg-name{color:var(--neg)}
+.lock-icon{color:var(--text-muted);font-size:.9rem;cursor:help;flex-shrink:0}
+.mgr-del-btn{background:none;border:1px solid var(--border);border-radius:4px;color:var(--text-muted);padding:2px 7px;font-size:.85rem;flex-shrink:0;transition:all .15s}
+.mgr-del-btn:hover{background:#7f1d1d;border-color:#ef4444;color:#fca5a5}
+.mgr-search{width:100%;background:var(--bg2);border:1px solid var(--border);border-bottom:2px solid var(--border-light);border-radius:4px 4px 0 0;color:var(--text);padding:8px 10px;font-size:.85rem}
+.mgr-search:focus{outline:none;border-color:var(--accent)}
+.mgr-empty{padding:20px;text-align:center;color:var(--text-muted);font-style:italic;font-size:.85rem}
+
+/* ===== APPLIES-TO CHECKLIST ===== */
+.dev-checklist{max-height:200px;overflow-y:auto;border:1px solid var(--border);border-radius:4px;background:var(--bg2);padding:4px 0}
+.dev-check-item{display:flex;align-items:center;gap:8px;padding:5px 10px;font-size:.85rem;cursor:pointer}
+.dev-check-item:hover{background:rgba(0,212,255,0.06)}
+.dev-check-item input{accent-color:var(--accent);cursor:pointer}
+.dev-check-item.hidden{display:none}
+.all-devs-wrap{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:.88rem;color:var(--text)}
+.all-devs-wrap input{accent-color:var(--accent)}
+
+/* ===== FLASH MESSAGE ===== */
+.flash-msg{font-size:.82rem;padding:6px 0;min-height:24px;color:var(--green);font-weight:600;opacity:0;transition:opacity .3s}
+.flash-msg.show{opacity:1}
+.flash-msg.err{color:var(--neg)}
+
+/* ===== SEARCH IN REMOVE TAB ===== */
+.remove-search-wrap{margin-bottom:8px}
+
+/* ===== CONFIRM MODAL ===== */
+.modal p.modal-msg{font-size:.88rem;color:var(--text-dim);margin-bottom:0;line-height:1.5}
 
 /* ===== FOOTER ===== */
-footer{
-  text-align:center;padding:16px;font-size:.75rem;color:var(--text-muted);
-  border-top:1px solid var(--border);margin-top:20px;
-}
+footer{text-align:center;padding:16px;font-size:.75rem;color:var(--text-muted);border-top:1px solid var(--border);margin-top:20px}
 
 /* ===== RESPONSIVE ===== */
 @media(max-width:768px){
@@ -276,6 +249,7 @@ footer{
   .tab-content{padding:10px 12px}
   .filter-bar{flex-direction:column}
   .filter-actions{margin-left:0}
+  .controls-bar{flex-direction:column;align-items:flex-start}
 }
 </style>
 </head>
@@ -283,27 +257,30 @@ footer{
 
 <!-- HEADER -->
 <header class="app-header">
-  <div class="app-title">⚡ Once Human <span>/ Deviant Tracker</span></div>
+  <div class="app-title">⚡ Once Human <span>/ Deviation Tracker</span></div>
   <button class="gear-btn" onclick="openSettings()" title="Settings">⚙</button>
 </header>
 
-<!-- TABS -->
+<!-- MAIN TABS -->
 <nav class="tab-bar">
-  <button class="tab-btn active" onclick="switchTab('deviants',this)">⚔ Deviants</button>
+  <button class="tab-btn active" onclick="switchTab('deviations',this)">⚔ Deviations</button>
   <button class="tab-btn" onclick="switchTab('fusion',this)">🧪 Fusion Materials</button>
 </nav>
 
-<!-- TAB 1: DEVIANTS -->
-<div id="tab-deviants" class="tab-content active">
+<!-- ======================================================= -->
+<!-- TAB 1: DEVIATIONS                                        -->
+<!-- ======================================================= -->
+<div id="tab-deviations" class="tab-content active">
+
   <!-- Filter Bar -->
-  <div class="filter-bar" id="filterBar">
+  <div class="filter-bar">
     <div class="filter-group">
       <label>Character</label>
       <select id="fChar" onchange="applyFilters()"><option value="">All</option></select>
     </div>
     <div class="filter-group">
-      <label>Deviant</label>
-      <input id="fDeviant" type="text" placeholder="Search…" oninput="applyFilters()">
+      <label>Deviation</label>
+      <input id="fDeviation" type="text" placeholder="Search…" oninput="applyFilters()">
     </div>
     <div class="filter-group">
       <label>Fusion</label>
@@ -331,44 +308,55 @@ footer{
     </div>
     <div class="filter-actions">
       <button class="btn btn-secondary" onclick="clearFilters()">Clear Filters</button>
-      <span class="row-count" id="rowCount">Showing 0 of 0 deviants</span>
+      <span class="row-count" id="rowCount">Showing 0 of 0 deviations</span>
     </div>
   </div>
 
-  <!-- Controls -->
+  <!-- Toolbar -->
   <div class="controls-bar">
-    <button class="btn btn-primary" onclick="addDeviantRow()">+ Add Deviant</button>
-    <button class="btn btn-secondary" onclick="exportCSV()">Export CSV</button>
-    <button class="btn btn-danger" onclick="confirmClearAll()">Clear All Data</button>
+    <div class="btn-group">
+      <button class="btn btn-primary" onclick="addDeviationRow()">+ Add Deviation</button>
+      <button class="btn btn-secondary" onclick="openManageDeviations()">⚡ Manage Deviations</button>
+      <button class="btn btn-secondary" onclick="openManageTraits()">✨ Manage Traits</button>
+    </div>
+    <div class="btn-group">
+      <button class="btn btn-secondary" onclick="saveConfig()">💾 Save Config</button>
+      <button class="btn btn-secondary" onclick="triggerLoadConfig()">📂 Load Config</button>
+      <button class="btn btn-secondary" onclick="exportCSV()">Export CSV</button>
+      <button class="btn btn-danger" onclick="confirmClearAll()">🗑 Clear All Data</button>
+    </div>
   </div>
+  <input type="file" id="configFileInput" accept=".json" style="display:none" onchange="handleConfigLoad(event)">
 
   <!-- Table -->
   <div class="table-wrap">
-    <table id="deviantTable">
+    <table id="deviationTable">
       <thead>
         <tr>
-          <th data-sort="char">Character<span class="sort-arrow"></span></th>
-          <th data-sort="name">Deviant Name<span class="sort-arrow"></span></th>
-          <th data-sort="variant">Variant<span class="sort-arrow"></span></th>
+          <th data-sort="char">Character</th>
+          <th data-sort="name">Deviation Name</th>
+          <th data-sort="variant">Variant</th>
           <th>Trait 1</th><th>Trait 2</th><th>Trait 3</th><th>Trait 4</th><th>Trait 5</th>
-          <th data-sort="skill">Skill<span class="sort-arrow"></span></th>
-          <th data-sort="activity">Activity<span class="sort-arrow"></span></th>
-          <th data-sort="fusion">Fusion<span class="sort-arrow"></span></th>
-          <th data-sort="locked">Locked<span class="sort-arrow"></span></th>
+          <th data-sort="skill">Skill</th>
+          <th data-sort="activity">Activity</th>
+          <th data-sort="fusion">Fusion</th>
+          <th data-sort="locked">Locked</th>
           <th>Notes</th>
           <th>Del</th>
         </tr>
       </thead>
-      <tbody id="deviantBody"></tbody>
+      <tbody id="deviationBody"></tbody>
     </table>
   </div>
 </div>
 
-<!-- TAB 2: FUSION MATERIALS -->
+<!-- ======================================================= -->
+<!-- TAB 2: FUSION MATERIALS                                  -->
+<!-- ======================================================= -->
 <div id="tab-fusion" class="tab-content">
   <div class="fm-header">
     <h2>Fusion Pod Materials</h2>
-    <p>Track materials available for Fusion. Add anything useful for upgrading or fusing deviants.</p>
+    <p>Track materials available for Fusion. Add anything useful for upgrading or fusing deviations.</p>
   </div>
   <div class="fm-controls">
     <button class="btn btn-primary" onclick="addMaterial()">+ Add Material</button>
@@ -377,13 +365,16 @@ footer{
   <p class="fm-empty" id="fmEmpty" style="display:none">No materials added yet. Click Add Material to get started.</p>
 </div>
 
-<!-- SETTINGS OVERLAY -->
+<!-- ======================================================= -->
+<!-- SETTINGS SLIDE-IN                                        -->
+<!-- ======================================================= -->
 <div class="overlay" id="settingsOverlay" onclick="closeSettingsIfBg(event)">
   <div class="settings-panel">
     <div class="settings-header">
       <h2>⚙ Settings</h2>
       <button class="close-btn" onclick="closeSettings()">✕</button>
     </div>
+
     <div class="settings-section">
       <h3>My Characters</h3>
       <div class="char-add-row">
@@ -393,202 +384,179 @@ footer{
       <div class="char-list" id="charList"></div>
       <p class="char-empty" id="charEmpty">No characters added yet. Add one above.</p>
     </div>
-    <p class="settings-note">Character names are limited to 10 characters. Up to 20 characters can be added. Changes reflect immediately in the Deviants tracker.</p>
+
+    <div class="settings-section">
+      <h3>Data Management</h3>
+      <div class="settings-btn-list">
+        <button class="btn btn-secondary" onclick="closeSettings();openManageDeviations()">⚡ Manage Deviations</button>
+        <button class="btn btn-secondary" onclick="closeSettings();openManageTraits()">✨ Manage Traits</button>
+      </div>
+    </div>
+
+    <p class="settings-note">Character names max 10 characters; up to 20 characters. Changes reflect immediately in the tracker.<br><br>Custom deviations and traits are stored in your browser and can be exported via 💾 Save Config.</p>
   </div>
 </div>
 
-<!-- CONFIRM MODAL -->
-<div class="modal-overlay" id="modalOverlay">
-  <div class="modal">
-    <h3 id="modalTitle">Confirm</h3>
-    <p id="modalMsg">Are you sure?</p>
-    <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-danger" id="modalConfirmBtn">Confirm</button>
+<!-- ======================================================= -->
+<!-- MANAGE DEVIATIONS MODAL                                  -->
+<!-- ======================================================= -->
+<div class="modal-overlay" id="manageDevModal" onclick="closeModalIfBg(event,'manageDevModal')">
+  <div class="modal modal-lg" role="dialog" aria-modal="true" aria-labelledby="manageDevTitle">
+    <div class="modal-header">
+      <h3 id="manageDevTitle">⚡ Manage Deviations</h3>
+      <button class="close-btn" onclick="closeModal('manageDevModal')">✕</button>
+    </div>
+    <div class="modal-tabs">
+      <button class="modal-tab-btn active" onclick="switchModalTab('manageDevModal','addDev',this)">Add Deviation</button>
+      <button class="modal-tab-btn" onclick="switchModalTab('manageDevModal','removeDev',this)">Remove Deviation</button>
+    </div>
+    <div class="modal-body">
+      <!-- Add Deviation -->
+      <div class="modal-tab-pane active" data-pane="addDev">
+        <div class="form-group">
+          <label>Deviation Name</label>
+          <input id="newDevName" class="form-input" type="text" placeholder="e.g. Crystal Moth" onkeydown="if(event.key==='Enter')addCustomDeviation()">
+        </div>
+        <button class="btn btn-primary" onclick="addCustomDeviation()">Add to List</button>
+        <div class="flash-msg" id="devAddFlash"></div>
+      </div>
+      <!-- Remove Deviation -->
+      <div class="modal-tab-pane" data-pane="removeDev">
+        <div class="remove-search-wrap">
+          <input class="mgr-search" id="devRemoveSearch" type="text" placeholder="🔍  Search deviations…" oninput="filterDevRemoveList()">
+        </div>
+        <div class="mgr-list" id="devRemoveList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================= -->
+<!-- MANAGE TRAITS MODAL                                      -->
+<!-- ======================================================= -->
+<div class="modal-overlay" id="manageTraitModal" onclick="closeModalIfBg(event,'manageTraitModal')">
+  <div class="modal modal-lg" role="dialog" aria-modal="true" aria-labelledby="manageTraitTitle">
+    <div class="modal-header">
+      <h3 id="manageTraitTitle">✨ Manage Traits</h3>
+      <button class="close-btn" onclick="closeModal('manageTraitModal')">✕</button>
+    </div>
+    <div class="modal-tabs">
+      <button class="modal-tab-btn active" onclick="switchModalTab('manageTraitModal','addTrait',this)">Add Trait</button>
+      <button class="modal-tab-btn" onclick="switchModalTab('manageTraitModal','removeTrait',this)">Remove Trait</button>
+    </div>
+    <div class="modal-body">
+      <!-- Add Trait -->
+      <div class="modal-tab-pane active" data-pane="addTrait">
+        <div class="form-group">
+          <label>Trait Name <span style="color:var(--neg)">*</span></label>
+          <input id="newTraitName" class="form-input" type="text" placeholder="Trait name">
+        </div>
+        <div class="form-group">
+          <label>Effect Description <span style="color:var(--neg)">*</span></label>
+          <textarea id="newTraitEffect" class="form-textarea" placeholder="Describe the trait effect…"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Type</label>
+          <div class="radio-group">
+            <label><input type="radio" name="traitType" value="positive" checked> Positive</label>
+            <label><input type="radio" name="traitType" value="negative"> Negative ⚠</label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Applies To</label>
+          <div class="all-devs-wrap">
+            <input type="checkbox" id="traitAllDevs" checked onchange="toggleTraitAppliesTo()">
+            <span>All Deviations</span>
+          </div>
+          <div id="traitDevSelectWrap" style="display:none;margin-top:8px">
+            <input class="form-input" id="traitDevSearch" type="text" placeholder="Search deviations…" oninput="filterTraitDevChecklist()" style="margin-bottom:6px;border-radius:4px 4px 0 0">
+            <div class="dev-checklist" id="traitDevChecklist"></div>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="addCustomTrait()">Add Trait</button>
+        <div class="flash-msg" id="traitAddFlash"></div>
+      </div>
+      <!-- Remove Trait -->
+      <div class="modal-tab-pane" data-pane="removeTrait">
+        <div class="remove-search-wrap">
+          <input class="mgr-search" id="traitRemoveSearch" type="text" placeholder="🔍  Search traits…" oninput="filterTraitRemoveList()">
+        </div>
+        <div class="mgr-list" id="traitRemoveList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================= -->
+<!-- CONFIRM MODAL                                            -->
+<!-- ======================================================= -->
+<div class="modal-overlay" id="confirmModal" onclick="closeModalIfBg(event,'confirmModal')">
+  <div class="modal modal-sm" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+    <div class="modal-header">
+      <h3 id="confirmTitle">Confirm</h3>
+      <button class="close-btn" onclick="closeModal('confirmModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p class="modal-msg" id="confirmMsg">Are you sure?</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('confirmModal')">Cancel</button>
+      <button class="btn btn-danger" id="confirmOkBtn">Confirm</button>
     </div>
   </div>
 </div>
 
 <footer>Data is saved locally in your browser. Clearing browser data will erase your tracker.</footer>
 
+<!-- ======================================================= -->
+<!-- SCRIPTS                                                  -->
+<!-- ======================================================= -->
+<script src="config.js"></script>
 <script>
-/* ============================================================
-   DATA CONSTANTS
-   ============================================================ */
-const DEVIANTS = [
-  "Artisan's Touch","Atomic Lighter","Atomic Snail","Butterfly's Emissary",
-  "Buzzy Bee","By-The-Wind","Chefosaurus","Disco Ball","Dr. Teddy","Dreamcatcher",
-  "Electric Eel","Enchanting Void","Extradimensional Cat","Festering Gel",
-  "Fetch-A-Lot Bunny","Flame Essence","Frog the Leaper","Gingerbread House",
-  "Growshroom","Grumpy Bulb","H37","Lethal Rabbit","Logging Beaver",
-  "Lonewolf's Whisper","Masonic Pyramid","Mini Feaster","Mini Wonder","Mr. Wish",
-  "Nutcracker","Orb Lightning","Paper Doll","Party Animal","Party Monkey",
-  "Polar Jelly","Pup Buddy","Pyro","Rain Man","Rebecca","Shattered Maiden",
-  "Snow Globe","Snowsprite","Space Turner","Strange Door","The Digby Boy",
-  "Upper World Spawn","Voodoo Doll","Wish Box","Zeno-Purifier"
-];
-
-// Traits: {name, effect, deviants:[] or 'ALL', negative:bool}
-const TRAITS = [
-  // POSITIVE
-  {name:"A World of Charm",effect:"When the Deviation is dormant and regaining Mood, there is a 10% chance that other Territorial Deviations receive Mood +20.",deviants:["Electric Eel"],neg:false},
-  {name:"An Old Hand Knows the Ropes",effect:"Faster mood and deviant power consumption, and working speed +10% for territorial deviants.",deviants:["Chefosaurus","Rain Man","Growshroom","The Digby Boy","Electric Eel","Buzzy Bee"],neg:false},
-  {name:"Anti-Burnout",effect:"When the Deviation is dormant and regaining Deviant Power, there is a 20% chance that other Territorial Deviations receive Deviant Power +5.",deviants:"ALL",neg:false},
-  {name:"Beast of Burden",effect:"Syncing with it grants Max Load +8.",deviants:["Mini Wonder","Mini Feaster","Butterfly's Emissary"],neg:false},
-  {name:"Big Cup",effect:"Limit capacity during Crafting is increased by 20%.",deviants:"ALL",neg:false},
-  {name:"Brute Force",effect:"Syncing with it grants Max Load +15, Movement Speed -5%.",deviants:["Mini Feaster"],neg:false},
-  {name:"Buy 1 Get 2",effect:"When crafting resources, crafting has a 5% chance to produce 1 extra unit.",deviants:"ALL",neg:false},
-  {name:"Byproduct",effect:"When Deviation Activity Score is greater than 90%, there's a 10% chance to increase other Deviations' Deviant Power by 2 points when generating resources.",deviants:["Gingerbread House"],neg:false},
-  {name:"Cheer Up 1",effect:"Max Mood +30%, Deviant Power recovery speed -5%.",deviants:["Artisan's Touch","Buzzy Bee","Butterfly's Emissary","Disco Ball","Electric Eel","Enchanting Void","Extradimensional Cat","Frog the Leaper","Flame Essence","Fetch-A-Lot Bunny","Logging Beaver","Mini Feaster","Nutcracker","Polar Jelly","Rain Man","The Digby Boy","Upper World Spawn","Voodoo Doll"],neg:false},
-  {name:"Cheer Up 2",effect:"Max Mood +40%, Deviant Power recovery speed -5%.",deviants:["Atomic Lighter","Butterfly's Emissary","Buzzy Bee","Disco Ball","Electric Eel","Flame Essence","Frog the Leaper","Gingerbread House","Growshroom","Logging Beaver","Mini Feaster","Nutcracker","Orb Lightning","Polar Jelly","Voodoo Doll","Zeno-Purifier"],neg:false},
-  {name:"Cheer Up 3",effect:"Max Mood +50%, Deviant Power recovery speed -5%.",deviants:["Extradimensional Cat","Festering Gel","Fetch-A-Lot Bunny","Logging Beaver","Mini Feaster","Party Monkey","Polar Jelly","Snow Globe","The Digby Boy","Electric Eel","Lonewolf's Whisper","Pup Buddy","Space Turner"],neg:false},
-  {name:"City Folk",effect:"Syncing with it grants Max Load +15 when exploring Settlements.",deviants:["Mini Wonder"],neg:false},
-  {name:"Clear Lake",effect:"Deviant Power Recovery Speed +7%.",deviants:["Nutcracker"],neg:false},
-  {name:"Come As One",effect:"When Crafting Deviations produce resources, output +1 for every 1 Territory Deviation in the Territory.",deviants:["Frog the Leaper"],neg:false},
-  {name:"Collection +1",effect:"There is a 5% chance that crafting output +2, and crafting speed -20%.",deviants:["Orb Lightning"],neg:false},
-  {name:"Covert Energy 1",effect:"Max Deviant Power +15%.",deviants:["Extradimensional Cat","Fetch-A-Lot Bunny","Mini Wonder","Paper Doll"],neg:false},
-  {name:"Covert Energy 2",effect:"Max Deviant Power +20%.",deviants:["Buzzy Bee","Electric Eel","Gingerbread House","Logging Beaver","Mini Feaster"],neg:false},
-  {name:"Covert Energy 3",effect:"Max Deviant Power +25%.",deviants:["Pup Buddy"],neg:false},
-  {name:"Covert Energy 4",effect:"Max Deviant Power +30%.",deviants:["Dr. Teddy","Mr. Wish"],neg:false},
-  {name:"Covert Energy 5",effect:"Max Deviant Power +35%.",deviants:["Electric Eel"],neg:false},
-  {name:"Crack Shot",effect:"Having it fight alongside grants Weapon DMG +5%.",deviants:"ALL",neg:false},
-  {name:"Daydreaming - Moon Diamond",effect:"Appearance changed. When recovering Energy while dormant, 20% chance to restore 15 Deviant Power to other Territory Deviations.",deviants:["Extradimensional Cat"],neg:false},
-  {name:"Daydreaming - Moonlit Jewels",effect:"Appearance changed. When recovering Energy while dormant, 20% chance to restore 15 Deviant Power to other Territory Deviations.",deviants:["Extradimensional Cat"],neg:false},
-  {name:"Devoted Laborer",effect:"Mood and Deviant Power consumption +20% for working Territorial Deviations.",deviants:["Electric Eel"],neg:false},
-  {name:"Diamond Duke",effect:"When Territory Deviations are working in the Pollution Zone, there is a 5% chance to not consume Energy.",deviants:["Nutcracker"],neg:false},
-  {name:"Dream Wild",effect:"When the Deviation is dormant and regaining Deviant Power, there is a 10% chance that other Territorial Deviations receive Deviant Power +10.",deviants:["Electric Eel"],neg:false},
-  {name:"Durability",effect:"Sync with it grants Stamina Consumption -5%.",deviants:["Butterfly's Emissary","Mini Feaster"],neg:false},
-  {name:"Efficiency Above All",effect:"Crafting speed +20%, Max Storage Capacity -30%.",deviants:["Atomic Lighter","Disco Ball"],neg:false},
-  {name:"Efficiency First",effect:"The resource production interval for Crafting is reduced by 5%.",deviants:["Atomic Snail"],neg:false},
-  {name:"Eureka Moment",effect:"When generating resources, Crafting has a 1% chance of producing 10 extra units, but resource production interval +50%.",deviants:["Gingerbread House","Orb Lightning"],neg:false},
-  {name:"Feisty Vitality - Deep Purple",effect:"Appearance changed. Gains Mood Recovery Speed +30%.",deviants:["Nutcracker"],neg:false},
-  {name:"Gold Speaker - Pure Gold",effect:"Appearance changed. When exploring, chance to bring back additional ores.",deviants:["The Digby Boy"],neg:false},
-  {name:"Gilded Oracle",effect:"Territorial Deviations may bring back additional Ores.",deviants:["Electric Eel","Fetch-A-Lot Bunny"],neg:false},
-  {name:"Gilded Oracle - Pure Gold",effect:"Appearance changed. When exploring, chance to bring back additional ores.",deviants:["The Digby Boy"],neg:false},
-  {name:"Growing Pains 1",effect:"Max Deviant Power +30%, Mood recovery speed -5%.",deviants:["Artisan's Touch","Electric Eel","Enchanting Void","Extradimensional Cat","Fetch-A-Lot Bunny","Flame Essence","Grumpy Bulb","Lethal Rabbit","Mini Feaster","Paper Doll","Polar Jelly","Voodoo Doll"],neg:false},
-  {name:"Growing Pains 2",effect:"Max Deviant Power +40%, Mood recovery speed -5%.",deviants:["Butterfly's Emissary","Buzzy Bee","Chefosaurus","Electric Eel","Extradimensional Cat","Festering Gel","Flame Essence","Gingerbread House","Lonewolf's Whisper","Mini Feaster","Mr. Wish","Polar Jelly","The Digby Boy","Voodoo Doll","Zeno-Purifier"],neg:false},
-  {name:"Growing Pains 3",effect:"Max Deviant Power +50%, Mood recovery speed -5%.",deviants:["Butterfly's Emissary","Buzzy Bee","Disco Ball","Dr. Teddy","Dreamcatcher","Electric Eel","Enchanting Void","Extradimensional Cat","Gingerbread House","H37","Lonewolf's Whisper","Mini Feaster","Rain Man","Strange Door","Upper World Spawn","Zeno-Purifier"],neg:false},
-  {name:"Heartthrob",effect:"When Deviant Power decreases, 10% chance other Territorial Deviations also lose Deviant Power. When dormant and regaining Mood, 10% chance other Territorial Deviations receive Mood +5.",deviants:["Electric Eel","Extradimensional Cat","Logging Beaver","Nutcracker","Rebecca"],neg:false},
-  {name:"Heavy and Solid",effect:"Higher load grants higher DMG reduction for torso, up to +15%.",deviants:"ALL",neg:false},
-  {name:"Hydrophilic",effect:"When Territory Deviations are resting by water, Energy Recovery Speed +30%.",deviants:["Growshroom"],neg:false},
-  {name:"Imperfect Endless Motion - Elegant Purple",effect:"Appearance changed. When activated and working, 20% chance to not consume Deviant Power.",deviants:["Nutcracker"],neg:false},
-  {name:"Imperfect Endless Motion",effect:"There is a 10% chance that working does not consume Deviant Power.",deviants:["Logging Beaver"],neg:false},
-  {name:"Leftover",effect:"When Activity Score > 20%, 10% chance to increase other Deviations' Deviant Power by 1 when generating resources. Max Storage Capacity -20%.",deviants:"ALL",neg:false},
-  {name:"Lighten Your Mind",effect:"Lower Load grants higher DMG Reduction for head, up to +15%.",deviants:"ALL",neg:false},
-  {name:"Little Helper",effect:"When Crafting Deviations produce resources, 3% chance to not use up Activity Score.",deviants:["Upper World Spawn"],neg:false},
-  {name:"Living Map",effect:"Resource production interval -5% for Territorial Deviations.",deviants:["Electric Eel"],neg:false},
-  {name:"Long Distance Runner",effect:"Syncing with it grants Stamina Consumption -20%, Movement Speed -10%.",deviants:["Polar Jelly"],neg:false},
-  {name:"Medium Cup",effect:"Max Storage Capacity +10%.",deviants:["Disco Ball"],neg:false},
-  {name:"Mineral Talent",effect:"When Crafting Deviations produce resources within Oil Field radius, 20% chance to increase output by 1.",deviants:["Disco Ball"],neg:false},
-  {name:"Move More, Live Better",effect:"After this Deviation is synced, recover 1 Deviant Power every 8s while sprinting.",deviants:["Snowsprite"],neg:false},
-  {name:"One More Bottle",effect:"When generating resources, crafting has a 2% chance to produce 2 extra units.",deviants:"ALL",neg:false},
-  {name:"OnePlus",effect:"When Territory Deviations return with resources, 10% chance to bring back rare crystals. Return time increased.",deviants:["Electric Eel","Extradimensional Cat","The Digby Boy"],neg:false},
-  {name:"Optimist 1",effect:"Max Mood +15%.",deviants:["Disco Ball"],neg:false},
-  {name:"Optimist 2",effect:"Max Mood +20%.",deviants:["Electric Eel","Frog the Leaper"],neg:false},
-  {name:"Optimist 3",effect:"Max Mood +25%.",deviants:["Electric Eel","Strange Door"],neg:false},
-  {name:"Optimist 4",effect:"Max Mood +30%.",deviants:["Dr. Teddy","Electric Eel"],neg:false},
-  {name:"Optimist 5",effect:"Max Mood +35%.",deviants:["Mini Feaster","Voodoo Doll"],neg:false},
-  {name:"Optimism - Extra Large",effect:"Appearance changed. Gains Max Mood +40%.",deviants:["Growshroom"],neg:false},
-  {name:"Optimism - Good Fortune",effect:"Appearance changed. Gains Max Mood +40%.",deviants:["Extradimensional Cat"],neg:false},
-  {name:"Out of Scratch",effect:"When Crafting Deviations produce resources, 3% chance to not use up Deviant Power.",deviants:"ALL",neg:false},
-  {name:"Piece of Cake",effect:"When Crafting Deviations produce resources, 5% chance to not use up Activity Score.",deviants:["Strange Door"],neg:false},
-  {name:"Power King",effect:"Syncing with it grants Max Load +25, Movement Speed -5%.",deviants:["Polar Jelly","Zeno-Purifier"],neg:false},
-  {name:"Power Rewind 1",effect:"Deviant Power Recovery Speed +5%.",deviants:["Electric Eel","Gingerbread House","Polar Jelly"],neg:false},
-  {name:"Power Rewind 2",effect:"Deviant Power Recovery Speed +10%.",deviants:["Electric Eel","Mini Feaster","Space Turner"],neg:false},
-  {name:"Power Rewind - Purple",effect:"Appearance changed. Gains Energy Recovery Speed +15%.",deviants:["Nutcracker"],neg:false},
-  {name:"Praise the Moon - Starry Night",effect:"Appearance changed. When synced, deal 6% more damage at night. Effect halved during day.",deviants:["Butterfly's Emissary"],neg:false},
-  {name:"Praise the Sun - Spring Rose",effect:"Appearance changed. When synced, receive 20% more healing during the day. Effect halved at night.",deviants:["Festering Gel"],neg:false},
-  {name:"Psychic Kid",effect:"Having this deviant fight alongside grants Status DMG +5%.",deviants:"ALL",neg:false},
-  {name:"Pumpkin Lantern",effect:"Max Deviant Power +10%.",deviants:["Buzzy Bee"],neg:false},
-  {name:"Reserved Energy - Twisted Fairy Tale",effect:"Appearance changed. Gains Max Energy +40.",deviants:["Nutcracker"],neg:false},
-  {name:"Rewind",effect:"Deviant Power recovery speed +10%.",deviants:"ALL",neg:false},
-  {name:"Rise and Shine 1",effect:"Mood recovery speed +5%.",deviants:["Space Turner"],neg:false},
-  {name:"Rise and Shine 2",effect:"Mood recovery speed +10%.",deviants:["Space Turner"],neg:false},
-  {name:"Rise and Shine 3",effect:"Mood recovery speed +15%.",deviants:["Electric Eel"],neg:false},
-  {name:"Rise and Shine 4",effect:"Mood recovery speed +20%.",deviants:["Flame Essence"],neg:false},
-  {name:"Rise and Shine 5",effect:"Mood recovery speed +25%.",deviants:["Atomic Lighter","Electric Eel"],neg:false},
-  {name:"Run Fast",effect:"Syncing with this deviation grants Movement Speed +5%.",deviants:["Mini Wonder"],neg:false},
-  {name:"Save Energy",effect:"Stamina Consumption -10%, Movement Speed -5%.",deviants:["Polar Jelly","Voodoo Doll"],neg:false},
-  {name:"Slacking Off",effect:"Mood and Deviant Power consumption speed +5% for working Territorial Deviations.",deviants:["Electric Eel","Extradimensional Cat","Flame Essence","The Digby Boy"],neg:false},
-  {name:"Smooth Sheep Rustler",effect:"When Activity Score < 20%, consume other Deviations' Deviant Power by 5 when generating resources.",deviants:["Disco Ball","Pup Buddy","Snow Globe","Space Turner","Strange Door"],neg:false},
-  {name:"Snooze Aficionado",effect:"When Mood decreases, 10% chance other Territorial Deviations also lose Mood. When dormant and regaining Deviant Power, 10% chance other Territorial Deviations receive Deviant Power +5.",deviants:["Logging Beaver","Paper Doll","Electric Eel","The Digby Boy"],neg:false},
-  {name:"Speed Up",effect:"Resource production interval for Crafting reduced by 10%.",deviants:["Space Turner"],neg:false},
-  {name:"Stable Energy - Tin Soldier",effect:"Appearance changed. Gains Max Energy +35.",deviants:["Nutcracker"],neg:false},
-  {name:"Stable Energy",effect:"Energy Max Limit increased by 30.",deviants:["Extradimensional Cat","Pup Buddy"],neg:false},
-  {name:"Stable Vitality - Golden Era",effect:"Appearance changed. Gains Max Mood +35.",deviants:["Nutcracker"],neg:false},
-  {name:"Stable Vitality",effect:"Activity score max limit increased by 30.",deviants:["Electric Eel","Mini Feaster"],neg:false},
-  {name:"Stardust Affinity - Ocean Blue",effect:"Appearance changed. When working in Pollution Zone, 30% chance to not consume Mood.",deviants:["Nutcracker"],neg:false},
-  {name:"Stardust Affinity",effect:"When Territory Deviations are working in Pollution Zone, 20% chance to not consume Vitality.",deviants:["Electric Eel"],neg:false},
-  {name:"Stardust Empowerment",effect:"When Crafting Deviations produce resources within Pollution Zone radius, 20% chance to increase output by 1.",deviants:["Electric Eel","Extradimensional Cat","Fetch-A-Lot Bunny","Gingerbread House"],neg:false},
-  {name:"Starry Sky - Marine Star",effect:"Appearance changed. When synced, each reload gives 5% Weapon DMG or 5% Status DMG bonus at random.",deviants:["Festering Gel"],neg:false},
-  {name:"Street Rascal",effect:"Syncing with it grants Movement Speed +10% in Settlements.",deviants:["Shattered Maiden","Mini Wonder","Butterfly's Emissary"],neg:false},
-  {name:"Sweet Talk - Silver Gentleman",effect:"Appearance changed. When recovering Mood while dormant, 25% chance to restore 10 Mood to other Territory Deviations.",deviants:["Nutcracker"],neg:false},
-  {name:"Sweet Talk",effect:"When dormant and regaining Mood, 20% chance other Territorial Deviations receive Mood +5.",deviants:"ALL",neg:false},
-  {name:"The Joy of Slacking Off",effect:"10% chance that crafting consumes 0 Mood, crafting speed -20%.",deviants:["Gingerbread House","Atomic Snail"],neg:false},
-  {name:"The Last Night",effect:"Resource production interval for Crafting reduced by 15%.",deviants:"ALL",neg:false},
-  {name:"The Spirit of the Woods - Alice",effect:"Appearance changed. When exploring, 10% chance to bring back Acid.",deviants:["Fetch-A-Lot Bunny"],neg:false},
-  {name:"Toxicologist",effect:"Territorial Deviations may bring back Acid.",deviants:["Electric Eel"],neg:false},
-  {name:"Toxicologist - Dark Rebel",effect:"Appearance changed. When exploring, chance to bring back Acid.",deviants:["Fetch-A-Lot Bunny"],neg:false},
-  {name:"Toxicologist - Green Touch",effect:"When working in Pollution Zone, 25% chance to not consume Energy.",deviants:["Growshroom"],neg:false},
-  {name:"Two-Shift System",effect:"Syncing grants Max Load +16 at daytime and Movement Speed +12% at night.",deviants:["Mr. Wish","Polar Jelly"],neg:false},
-  {name:"Unhinged Production",effect:"When Activity Score < 20%, consume other Deviations' Deviant Power by 1 when generating resources to produce 2 extra units.",deviants:"ALL",neg:false},
-  {name:"Unplanned Production",effect:"10% chance that crafting consumes 0 Deviant Power, crafting speed -20%.",deviants:["Pup Buddy"],neg:false},
-  {name:"Upper Hand",effect:"Whenever Energy drops to 0, automatically consume Vitality to recover Energy.",deviants:["Mini Wonder","Mini Feaster","Electric Eel"],neg:false},
-  {name:"Vegetative Calm",effect:"Syncing grants Max Stamina +15, Movement Speed -5%.",deviants:["Festering Gel","Mini Feaster"],neg:false},
-  {name:"Voluntary Overtime",effect:"10% chance that working does not consume Mood.",deviants:["Electric Eel"],neg:false},
-  {name:"Voluntary Overtime - Prism",effect:"Appearance changed. When activated and working, 15% chance to not consume Mood.",deviants:["The Digby Boy","Electric Eel"],neg:false},
-  {name:"Wandering Witch",effect:"Max Deviant Power +10%.",deviants:["Shattered Maiden"],neg:false},
-  {name:"Water Dormancy",effect:"When Territory Deviations are resting by water, Vitality Recovery Speed +30%.",deviants:["Electric Eel"],neg:false},
-  {name:"Water Dormancy - Heavy Ginger",effect:"Appearance changed. When resting by water, gains Mood Recovery Speed +35%.",deviants:["Extradimensional Cat"],neg:false},
-  {name:"Weakspot Master - Glistening Blue",effect:"Appearance changed. When synced, hitting a Weakspot increases Secured by 1 additional point. Cooldown: 3s.",deviants:["Butterfly's Emissary"],neg:false},
-  {name:"Wellbeing",effect:"Syncing with this Deviation grants Max Stamina +10.",deviants:["Mini Feaster"],neg:false},
-  {name:"Wild Wood Spirit",effect:"When Territorial Deviations bring back resources, 5% chance to bring a deviant flower.",deviants:"ALL",neg:false},
-  {name:"Woodland Spirit - Alice",effect:"Appearance changed. When exploring, 10% chance to bring back Acid.",deviants:["Fetch-A-Lot Bunny"],neg:false},
-  {name:"Wood Yellow",effect:"Mood Recover Speed +7%.",deviants:["Nutcracker"],neg:false},
-  {name:"Workaholic - Lights and Shadows",effect:"Appearance changed. When working, gains Energy and Mood consumption interval +20%.",deviants:["Nutcracker"],neg:false},
-  // NEGATIVE
-  {name:"⚠ Baffling Behavior",effect:"When Deviant Power decreases, 10% chance other Territorial Deviations also lose Deviant Power.",deviants:["Extradimensional Cat","Growshroom","H37","Electric Eel"],neg:true},
-  {name:"⚠ Clumsy",effect:"There is a chance that crafting output -1.",deviants:["Atomic Lighter","Frog the Leaper","Party Animal","Space Turner","Strange Door"],neg:true},
-  {name:"⚠ Feeling Blue 1",effect:"Max Activity Score -5%.",deviants:["Atomic Lighter","Buzzy Bee","Logging Beaver","Polar Jelly","Strange Door","Orb Lightning","Butterfly's Emissary","Electric Eel","Enchanting Void","Extradimensional Cat","H37","Pup Buddy","The Digby Boy","Upper World Spawn","Zeno-Purifier"],neg:true},
-  {name:"⚠ Feeling Blue 2",effect:"Max Activity Score -10%.",deviants:["Atomic Lighter","Buzzy Bee","Electric Eel","Extradimensional Cat","Frog the Leaper","Gingerbread House","Logging Beaver","Lonewolf's Whisper","Mini Feaster","Orb Lightning","Polar Jelly","Space Turner","Strange Door","Zeno-Purifier"],neg:true},
-  {name:"⚠ Feeling Blue 3",effect:"Max Activity Score -15%.",deviants:"ALL",neg:true},
-  {name:"⚠ Holding the Team Back",effect:"When Mood decreases, 10% chance other Territorial Deviations also lose Mood.",deviants:["Buzzy Bee","Electric Eel","Extradimensional Cat","Nutcracker","Wish Box"],neg:true},
-  {name:"⚠ Lazy",effect:"Crafting Speed -10%.",deviants:["Space Turner","Atomic Snail"],neg:true},
-  {name:"⚠ Lazy Bones",effect:"Working speed -5% for Territorial Deviants.",deviants:["Electric Eel","Extradimensional Cat","Fetch-A-Lot Bunny","Flame Essence","Paper Doll"],neg:true},
-  {name:"⚠ No Such Thing As a Small Cup",effect:"Max Storage Capacity -10%.",deviants:["Frog the Leaper","Masonic Pyramid","Pup Buddy","Space Turner","Strange Door"],neg:true},
-  {name:"⚠ Panovision",effect:"Working speed -10% for Territorial Deviants.",deviants:["Electric Eel"],neg:true},
-  {name:"⚠ Sedentary",effect:"Syncing grants Max Load -8 when exploring Settlements.",deviants:["Mini Feaster","Polar Jelly","Pyro","Zeno-Purifier"],neg:true},
-  {name:"⚠ Slacking Off (Negative)",effect:"Mood and Deviant Power consumption speed +5% for working Territorial Deviants.",deviants:"ALL",neg:true},
-  {name:"⚠ Stay Indoors",effect:"Sync grants Stamina consumption +8% in Settlements.",deviants:["Lonewolf's Whisper","Festering Gel","Zeno-Purifier","Mini Feaster","Voodoo Doll"],neg:true},
-  {name:"⚠ Worn-Out 1",effect:"Max Deviant Power -5%.",deviants:["Artisan's Touch","Buzzy Bee","Electric Eel","Extradimensional Cat","Lonewolf's Whisper","Mini Feaster","Party Animal","Pup Buddy","Voodoo Doll","Wish Box"],neg:true},
-  {name:"⚠ Worn-Out 2",effect:"Max Deviant Power -10%.",deviants:["Buzzy Bee","By-The-Wind","Disco Ball","Electric Eel","Enchanting Void","Extradimensional Cat","Frog the Leaper","Space Turner","Growshroom","Paper Doll","Polar Jelly","Rain Man","Dreamcatcher","Zeno-Purifier"],neg:true},
-  {name:"⚠ Worn-Out 3",effect:"Max Deviant Power -15%.",deviants:"ALL",neg:true},
-];
-
-function traitsForDeviant(devName) {
-  if (!devName) return TRAITS;
-  return TRAITS.filter(t => t.deviants === 'ALL' || t.deviants.includes(devName));
-}
+'use strict';
 
 /* ============================================================
    STATE & STORAGE
    ============================================================ */
-const KEYS = {deviants:'ohdt_deviants', materials:'ohdt_materials', settings:'ohdt_settings'};
-
-let state = {
-  deviants: [],
-  materials: [],
-  settings: {characters:[]}
+const KEYS = {
+  deviations:       'ohdt_deviations',
+  materials:        'ohdt_materials',
+  settings:         'ohdt_settings',
+  customDeviations: 'ohdt_custom_deviations',
+  customTraits:     'ohdt_custom_traits',
 };
 
-let sortCol = null, sortDir = 1; // 1=asc, -1=desc
-let filters = {char:'', deviant:'', fusion:'', locked:'', skill:'', activity:''};
+let state = {
+  deviations:       [],
+  materials:        [],
+  settings:         { characters: [] },
+  customDeviations: [],
+  customTraits:     [],
+};
+
+let sortCol = null, sortDir = 1;
+let filters = { char:'', deviation:'', fusion:'', locked:'', skill:'', activity:'' };
 let dragSrcIdx = null;
+let confirmCallback = null;
+
+/* ── Migration ── */
+function migrateStorage() {
+  const old = localStorage.getItem('ohdt_deviants');
+  const cur = localStorage.getItem(KEYS.deviations);
+  if (old && !cur) {
+    localStorage.setItem(KEYS.deviations, old);
+    localStorage.removeItem('ohdt_deviants');
+  }
+}
 
 function load() {
-  try { state.deviants   = JSON.parse(localStorage.getItem(KEYS.deviants))  || []; } catch(e){ state.deviants = []; }
-  try { state.materials  = JSON.parse(localStorage.getItem(KEYS.materials)) || []; } catch(e){ state.materials = []; }
-  try { state.settings   = JSON.parse(localStorage.getItem(KEYS.settings))  || {characters:[]}; } catch(e){ state.settings = {characters:[]}; }
+  migrateStorage();
+  const parse = (key, def) => { try { return JSON.parse(localStorage.getItem(KEYS[key])) || def; } catch(e) { return def; } };
+  state.deviations       = parse('deviations',       []);
+  state.materials        = parse('materials',        []);
+  state.settings         = parse('settings',         { characters: [] });
+  state.customDeviations = parse('customDeviations', []);
+  state.customTraits     = parse('customTraits',     []);
   if (!state.settings.characters) state.settings.characters = [];
 }
 
@@ -596,8 +564,32 @@ function save(key) {
   localStorage.setItem(KEYS[key], JSON.stringify(state[key]));
 }
 
+/* ── Data Getters ── */
+function getAllDeviations() {
+  return [...new Set([...DEVIANT_LIST, ...state.customDeviations])].sort((a, b) => a.localeCompare(b));
+}
+
+function getAllTraits() {
+  const custom = (state.customTraits || []).map(t => ({
+    name: t.type === 'negative' ? '⚠ ' + t.name : t.name,
+    effect: t.effect,
+    deviants: t.deviations,
+    neg: t.type === 'negative',
+    custom: true,
+    rawName: t.name,
+    id: t.id,
+  }));
+  return [...TRAIT_DATA, ...custom];
+}
+
+function traitsForDeviation(devName) {
+  const all = getAllTraits();
+  if (!devName) return all;
+  return all.filter(t => t.deviants === 'ALL' || (Array.isArray(t.deviants) && t.deviants.includes(devName)));
+}
+
 /* ============================================================
-   TABS
+   MAIN TABS
    ============================================================ */
 function switchTab(id, btn) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -607,18 +599,103 @@ function switchTab(id, btn) {
 }
 
 /* ============================================================
+   MODAL SYSTEM
+   ============================================================ */
+function openModal(id) {
+  const overlay = document.getElementById(id);
+  overlay.classList.add('open');
+  overlay._lastFocus = document.activeElement;
+  const modal = overlay.querySelector('.modal');
+  requestAnimationFrame(() => {
+    const first = modal.querySelector('button,input,select,textarea,[tabindex]');
+    if (first) first.focus();
+    setupTrapFocus(modal, id);
+  });
+}
+
+function closeModal(id) {
+  const overlay = document.getElementById(id);
+  overlay.classList.remove('open');
+  const modal = overlay.querySelector('.modal');
+  removeTrapFocus(modal);
+  if (overlay._lastFocus) overlay._lastFocus.focus();
+}
+
+function closeModalIfBg(e, id) {
+  if (e.target === document.getElementById(id)) closeModal(id);
+}
+
+function setupTrapFocus(el, modalId) {
+  function handler(e) {
+    if (e.key === 'Escape') { closeModal(modalId); return; }
+    if (e.key !== 'Tab') return;
+    const focusable = Array.from(el.querySelectorAll(
+      'button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'
+    )).filter(n => {
+      let p = n.parentElement;
+      while (p) { if (p.style && (p.style.display === 'none' || p.style.visibility === 'hidden')) return false; p = p.parentElement; }
+      return true;
+    });
+    if (!focusable.length) return;
+    const first = focusable[0], last = focusable[focusable.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  }
+  el._trapHandler = handler;
+  el.addEventListener('keydown', handler);
+}
+
+function removeTrapFocus(el) {
+  if (el._trapHandler) el.removeEventListener('keydown', el._trapHandler);
+}
+
+function switchModalTab(modalId, tabName, btn) {
+  const overlay = document.getElementById(modalId);
+  overlay.querySelectorAll('.modal-tab-btn').forEach(b => b.classList.remove('active'));
+  overlay.querySelectorAll('.modal-tab-pane').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  overlay.querySelector(`[data-pane="${tabName}"]`).classList.add('active');
+  // Lazy-render remove lists when their tab is opened
+  if (tabName === 'removeDev')   renderDevRemoveList();
+  if (tabName === 'removeTrait') renderTraitRemoveList();
+}
+
+/* Confirm modal */
+function showConfirm(title, msg, cb) {
+  document.getElementById('confirmTitle').textContent = title;
+  document.getElementById('confirmMsg').textContent   = msg;
+  confirmCallback = cb;
+  openModal('confirmModal');
+}
+
+document.getElementById('confirmOkBtn').addEventListener('click', () => {
+  closeModal('confirmModal');
+  if (confirmCallback) { confirmCallback(); confirmCallback = null; }
+});
+
+/* Flash message */
+let flashTimers = {};
+function showFlash(elId, msg, isErr = false) {
+  const el = document.getElementById(elId);
+  clearTimeout(flashTimers[elId]);
+  el.textContent = msg;
+  el.className = 'flash-msg show' + (isErr ? ' err' : '');
+  flashTimers[elId] = setTimeout(() => { el.classList.remove('show'); }, 2500);
+}
+
+/* ============================================================
    SETTINGS
    ============================================================ */
-function openSettings() { document.getElementById('settingsOverlay').classList.add('open'); }
+function openSettings()  { document.getElementById('settingsOverlay').classList.add('open'); }
 function closeSettings() { document.getElementById('settingsOverlay').classList.remove('open'); }
 function closeSettingsIfBg(e) { if (e.target === document.getElementById('settingsOverlay')) closeSettings(); }
 
 function renderCharList() {
-  const list = document.getElementById('charList');
+  const list  = document.getElementById('charList');
   const empty = document.getElementById('charEmpty');
   const chars = state.settings.characters;
   list.innerHTML = '';
-  if (chars.length === 0) { empty.style.display = ''; return; }
+  if (!chars.length) { empty.style.display = ''; return; }
   empty.style.display = 'none';
   chars.forEach((c, i) => {
     const div = document.createElement('div');
@@ -626,7 +703,6 @@ function renderCharList() {
     div.innerHTML = `<span>${escHtml(c)}</span><button class="char-del" onclick="delChar(${i})" title="Remove">✕</button>`;
     list.appendChild(div);
   });
-  // Update all character dropdowns in rows
   updateAllCharDropdowns();
 }
 
@@ -635,8 +711,7 @@ function addChar() {
   const val = inp.value.trim().slice(0, 10);
   if (!val) return;
   const chars = state.settings.characters;
-  if (chars.includes(val)) { inp.value=''; return; }
-  if (chars.length >= 20) return;
+  if (chars.includes(val) || chars.length >= 20) { inp.value = ''; return; }
   chars.push(val);
   save('settings');
   renderCharList();
@@ -654,82 +729,285 @@ function delChar(i) {
 function updateAllCharDropdowns() {
   document.querySelectorAll('select.row-char').forEach(sel => {
     const cur = sel.value;
-    sel.innerHTML = '<option value="">—</option>' + state.settings.characters.map(c => `<option value="${escHtml(c)}"${c===cur?' selected':''}>${escHtml(c)}</option>`).join('');
+    sel.innerHTML = '<option value="">—</option>' +
+      state.settings.characters.map(c => `<option value="${escHtml(c)}"${c===cur?' selected':''}>${escHtml(c)}</option>`).join('');
   });
 }
 
 function updateFilterCharDropdown() {
   const sel = document.getElementById('fChar');
   const cur = sel.value;
-  sel.innerHTML = '<option value="">All</option>' + state.settings.characters.map(c => `<option value="${escHtml(c)}"${c===cur?' selected':''}>${escHtml(c)}</option>`).join('');
+  sel.innerHTML = '<option value="">All</option>' +
+    state.settings.characters.map(c => `<option value="${escHtml(c)}"${c===cur?' selected':''}>${escHtml(c)}</option>`).join('');
 }
 
 /* ============================================================
-   DEVIANTS TABLE
+   MANAGE DEVIATIONS
    ============================================================ */
-function newDeviant() {
-  return {id: Date.now() + Math.random(), char:'', name:'', variant:'', traits:['','','','',''], skill:0, activity:0, fusion:false, locked:false, notes:''};
+function openManageDeviations() {
+  // Reset add tab
+  document.getElementById('newDevName').value = '';
+  document.getElementById('devAddFlash').className = 'flash-msg';
+  document.getElementById('devRemoveSearch').value = '';
+  // Reset to Add tab
+  const modal = document.getElementById('manageDevModal');
+  modal.querySelectorAll('.modal-tab-btn').forEach((b,i) => b.classList.toggle('active', i===0));
+  modal.querySelectorAll('.modal-tab-pane').forEach((p,i) => p.classList.toggle('active', i===0));
+  openModal('manageDevModal');
 }
 
-function addDeviantRow() {
-  state.deviants.push(newDeviant());
-  save('deviants');
+function addCustomDeviation() {
+  const inp = document.getElementById('newDevName');
+  const val = inp.value.trim();
+  if (!val) { showFlash('devAddFlash', '⚠ Please enter a deviation name.', true); return; }
+  const all = getAllDeviations();
+  if (all.some(d => d.toLowerCase() === val.toLowerCase())) {
+    showFlash('devAddFlash', '⚠ That deviation already exists in the list.', true);
+    return;
+  }
+  state.customDeviations.push(val);
+  save('customDeviations');
+  inp.value = '';
+  showFlash('devAddFlash', '✓ Deviation added!');
+  // Refresh all deviation dropdowns
+  refreshAllDeviationDropdowns();
+}
+
+function renderDevRemoveList() {
+  const search  = (document.getElementById('devRemoveSearch').value || '').toLowerCase();
+  const list    = document.getElementById('devRemoveList');
+  const all     = getAllDeviations();
+  const visible = all.filter(d => !search || d.toLowerCase().includes(search));
+  list.innerHTML = '';
+  if (!visible.length) { list.innerHTML = '<div class="mgr-empty">No deviations found.</div>'; return; }
+  visible.forEach(name => {
+    const isBuiltIn = DEVIANT_LIST.includes(name);
+    const div = document.createElement('div');
+    div.className = 'mgr-item';
+    div.innerHTML = `<span class="mgr-item-name">${escHtml(name)}</span>` + (
+      isBuiltIn
+        ? `<span class="lock-icon" title="Built-in deviation — edit config.js to remove">🔒</span>`
+        : `<button class="mgr-del-btn" onclick="removeCustomDeviation('${escHtml(name).replace(/'/g,"\\'")}')">✕</button>`
+    );
+    list.appendChild(div);
+  });
+}
+
+function filterDevRemoveList() { renderDevRemoveList(); }
+
+function removeCustomDeviation(name) {
+  showConfirm(
+    'Remove Deviation',
+    `Remove "${name}" from the deviation list? Rows using it will keep the value but it won't appear in future dropdowns.`,
+    () => {
+      state.customDeviations = state.customDeviations.filter(d => d !== name);
+      save('customDeviations');
+      renderDevRemoveList();
+      refreshAllDeviationDropdowns();
+    }
+  );
+}
+
+function refreshAllDeviationDropdowns() {
+  // Re-render visible rows that have deviation dropdowns
   renderTable();
 }
 
-function deleteRow(id) {
-  showModal('Delete Deviant', 'Are you sure you want to delete this row?', () => {
-    state.deviants = state.deviants.filter(d => d.id !== id);
-    save('deviants');
+/* ============================================================
+   MANAGE TRAITS
+   ============================================================ */
+function openManageTraits() {
+  // Reset add tab
+  document.getElementById('newTraitName').value   = '';
+  document.getElementById('newTraitEffect').value = '';
+  document.querySelector('input[name="traitType"][value="positive"]').checked = true;
+  document.getElementById('traitAllDevs').checked = true;
+  document.getElementById('traitDevSelectWrap').style.display = 'none';
+  document.getElementById('traitAddFlash').className = 'flash-msg';
+  document.getElementById('traitRemoveSearch').value = '';
+  // Reset to Add tab
+  const modal = document.getElementById('manageTraitModal');
+  modal.querySelectorAll('.modal-tab-btn').forEach((b,i) => b.classList.toggle('active', i===0));
+  modal.querySelectorAll('.modal-tab-pane').forEach((p,i) => p.classList.toggle('active', i===0));
+  // Populate dev checklist
+  renderTraitDevChecklist('');
+  openModal('manageTraitModal');
+}
+
+function toggleTraitAppliesTo() {
+  const all  = document.getElementById('traitAllDevs').checked;
+  document.getElementById('traitDevSelectWrap').style.display = all ? 'none' : 'block';
+}
+
+function renderTraitDevChecklist(search) {
+  const cont = document.getElementById('traitDevChecklist');
+  const devs = getAllDeviations();
+  cont.innerHTML = devs.map(d => {
+    const hide = search && !d.toLowerCase().includes(search.toLowerCase());
+    return `<label class="dev-check-item${hide?' hidden':''}">
+      <input type="checkbox" name="traitDevPick" value="${escHtml(d)}">
+      ${escHtml(d)}
+    </label>`;
+  }).join('');
+}
+
+function filterTraitDevChecklist() {
+  const q = document.getElementById('traitDevSearch').value.toLowerCase();
+  document.querySelectorAll('#traitDevChecklist .dev-check-item').forEach(el => {
+    el.classList.toggle('hidden', !!q && !el.textContent.trim().toLowerCase().includes(q));
+  });
+}
+
+function addCustomTrait() {
+  const name   = document.getElementById('newTraitName').value.trim();
+  const effect = document.getElementById('newTraitEffect').value.trim();
+  const type   = document.querySelector('input[name="traitType"]:checked').value;
+  const allDevs = document.getElementById('traitAllDevs').checked;
+
+  if (!name)   { showFlash('traitAddFlash', '⚠ Trait name is required.',         true); return; }
+  if (!effect) { showFlash('traitAddFlash', '⚠ Effect description is required.', true); return; }
+
+  // Check duplicate (compare ignoring ⚠ prefix)
+  const all = getAllTraits();
+  const displayName = type === 'negative' ? '⚠ ' + name : name;
+  if (all.some(t => t.name.toLowerCase() === displayName.toLowerCase())) {
+    showFlash('traitAddFlash', '⚠ A trait with that name already exists.', true);
+    return;
+  }
+
+  let deviations = 'ALL';
+  if (!allDevs) {
+    const checked = Array.from(document.querySelectorAll('input[name="traitDevPick"]:checked')).map(el => el.value);
+    if (!checked.length) { showFlash('traitAddFlash', '⚠ Select at least one deviation, or choose "All Deviations".', true); return; }
+    deviations = checked;
+  }
+
+  state.customTraits.push({ id: Date.now() + Math.random(), name, effect, type, deviations });
+  save('customTraits');
+  document.getElementById('newTraitName').value   = '';
+  document.getElementById('newTraitEffect').value = '';
+  document.querySelector('input[name="traitType"][value="positive"]').checked = true;
+  document.getElementById('traitAllDevs').checked = true;
+  document.getElementById('traitDevSelectWrap').style.display = 'none';
+  showFlash('traitAddFlash', '✓ Trait added!');
+}
+
+function renderTraitRemoveList() {
+  const search = (document.getElementById('traitRemoveSearch').value || '').toLowerCase();
+  const list   = document.getElementById('traitRemoveList');
+  const all    = getAllTraits();
+  const pos    = all.filter(t => !t.neg && (!search || t.name.toLowerCase().includes(search)));
+  const neg    = all.filter(t =>  t.neg && (!search || t.name.toLowerCase().includes(search)));
+  list.innerHTML = '';
+
+  function makeSection(label, traits) {
+    if (!traits.length) return;
+    const head = document.createElement('div');
+    head.className = 'mgr-section-head';
+    head.textContent = label;
+    list.appendChild(head);
+    traits.forEach(t => {
+      const isBuiltIn = TRAIT_DATA.some(bt => bt.name === t.name);
+      const div = document.createElement('div');
+      div.className = 'mgr-item';
+      div.innerHTML = `<span class="mgr-item-name${t.neg?' neg-name':''}">${escHtml(t.name)}</span>` + (
+        isBuiltIn
+          ? `<span class="lock-icon" title="Built-in trait — edit config.js to remove">🔒</span>`
+          : `<button class="mgr-del-btn" onclick="removeCustomTrait(${JSON.stringify(t.rawName||t.name)},${JSON.stringify(t.id)})">✕</button>`
+      );
+      list.appendChild(div);
+    });
+  }
+
+  makeSection('Positive Traits', pos);
+  makeSection('⚠ Negative Traits', neg);
+  if (!pos.length && !neg.length) list.innerHTML = '<div class="mgr-empty">No traits found.</div>';
+}
+
+function filterTraitRemoveList() { renderTraitRemoveList(); }
+
+function removeCustomTrait(rawName, id) {
+  const displayName = state.customTraits.find(t => t.id === id)?.type === 'negative' ? '⚠ ' + rawName : rawName;
+  showConfirm(
+    'Remove Trait',
+    `Remove "${displayName}"? Rows using it will keep the value but it won't appear in future dropdowns.`,
+    () => {
+      state.customTraits = state.customTraits.filter(t => t.id !== id);
+      save('customTraits');
+      renderTraitRemoveList();
+    }
+  );
+}
+
+/* ============================================================
+   DEVIATIONS TABLE
+   ============================================================ */
+function newDeviation() {
+  return { id: Date.now() + Math.random(), char:'', name:'', variant:'', traits:['','','','',''], skill:0, activity:0, fusion:false, locked:false, notes:'' };
+}
+
+function addDeviationRow() {
+  const charFilter = document.getElementById('fChar').value;
+  const row = newDeviation();
+  if (charFilter) row.char = charFilter;
+  state.deviations.push(row);
+  save('deviations');
+  renderTable();
+}
+
+function deleteDeviationRow(id) {
+  showConfirm('Delete Deviation', 'Are you sure you want to delete this row?', () => {
+    state.deviations = state.deviations.filter(d => String(d.id) !== String(id));
+    save('deviations');
     renderTable();
   });
 }
 
 function getFilteredSorted() {
-  let rows = [...state.deviants];
-  // Filter
-  const {char, deviant, fusion, locked, skill, activity} = filters;
-  if (char)     rows = rows.filter(r => r.char === char);
-  if (deviant)  rows = rows.filter(r => r.name.toLowerCase().includes(deviant.toLowerCase()));
-  if (fusion !== '')  rows = rows.filter(r => (r.fusion?'1':'0') === fusion);
-  if (locked !== '')  rows = rows.filter(r => (r.locked?'1':'0') === locked);
-  if (skill)    rows = rows.filter(r => String(r.skill) === skill);
-  if (activity) rows = rows.filter(r => String(r.activity) === activity);
-  // Sort
+  let rows = [...state.deviations];
+  const { char, deviation, fusion, locked, skill, activity } = filters;
+  if (char)      rows = rows.filter(r => r.char === char);
+  if (deviation) rows = rows.filter(r => r.name.toLowerCase().includes(deviation.toLowerCase()));
+  if (fusion  !== '') rows = rows.filter(r => (r.fusion ?'1':'0') === fusion);
+  if (locked  !== '') rows = rows.filter(r => (r.locked ?'1':'0') === locked);
+  if (skill)     rows = rows.filter(r => String(r.skill)    === skill);
+  if (activity)  rows = rows.filter(r => String(r.activity) === activity);
   if (sortCol) {
-    const k = {char:'char',name:'name',variant:'variant',skill:'skill',activity:'activity',fusion:'fusion',locked:'locked'}[sortCol];
-    if (k) rows.sort((a,b) => {
+    const k = { char:'char', name:'name', variant:'variant', skill:'skill', activity:'activity', fusion:'fusion', locked:'locked' }[sortCol];
+    if (k) rows.sort((a, b) => {
       let av = a[k], bv = b[k];
-      if (typeof av === 'boolean') av = av?1:0;
-      if (typeof bv === 'boolean') bv = bv?1:0;
-      if (typeof av === 'number') return (av - bv) * sortDir;
-      return String(av).localeCompare(String(bv)) * sortDir;
+      if (typeof av === 'boolean') av = av ? 1 : 0;
+      if (typeof bv === 'boolean') bv = bv ? 1 : 0;
+      return (typeof av === 'number' ? av - bv : String(av).localeCompare(String(bv))) * sortDir;
     });
   }
   return rows;
 }
 
 function renderTable() {
-  const rows = getFilteredSorted();
-  const tbody = document.getElementById('deviantBody');
+  const rows  = getFilteredSorted();
+  const tbody = document.getElementById('deviationBody');
   tbody.innerHTML = '';
-  const total = state.deviants.length;
-  document.getElementById('rowCount').textContent = `Showing ${rows.length} of ${total} deviant${total===1?'':'s'}`;
+  const total = state.deviations.length;
+  const word  = total === 1 ? 'deviation' : 'deviations';
+  document.getElementById('rowCount').textContent = `Showing ${rows.length} of ${total} ${word}`;
 
   if (rows.length === 0) {
     const tr = document.createElement('tr');
     tr.className = 'empty-row';
-    tr.innerHTML = `<td colspan="14">${total===0?'No deviants added yet. Click <strong>+ Add Deviant</strong> to get started.':'No deviants match the current filters.'}</td>`;
+    tr.innerHTML = `<td colspan="14">${total === 0 ? 'No deviations added yet. Click <strong>+ Add Deviation</strong> to get started.' : 'No deviations match the current filters.'}</td>`;
     tbody.appendChild(tr);
     return;
   }
+
+  const allDevs = getAllDeviations();
 
   rows.forEach(row => {
     const tr = document.createElement('tr');
     tr.dataset.id = row.id;
 
     const charOpts = '<option value="">—</option>' + state.settings.characters.map(c => `<option value="${escHtml(c)}"${c===row.char?' selected':''}>${escHtml(c)}</option>`).join('');
-    const devOpts = '<option value="">—</option>' + DEVIANTS.map(d => `<option value="${escHtml(d)}"${d===row.name?' selected':''}>${escHtml(d)}</option>`).join('');
+    const devOpts  = '<option value="">—</option>' + allDevs.map(d => `<option value="${escHtml(d)}"${d===row.name?' selected':''}>${escHtml(d)}</option>`).join('');
 
     tr.innerHTML = `
       <td><select class="row-char" onchange="rowChange('${row.id}','char',this.value)">${charOpts}</select></td>
@@ -745,99 +1023,95 @@ function renderTable() {
       <td class="toggle-wrap"><label class="toggle"><input type="checkbox" ${row.fusion?'checked':''} onchange="rowChange('${row.id}','fusion',this.checked)"><span class="toggle-slider"></span></label></td>
       <td class="toggle-wrap"><label class="toggle"><input type="checkbox" ${row.locked?'checked':''} onchange="rowChange('${row.id}','locked',this.checked)"><span class="toggle-slider"></span></label></td>
       <td><input type="text" value="${escHtml(row.notes)}" placeholder="Notes…" oninput="rowChange('${row.id}','notes',this.value)" style="min-width:100px"></td>
-      <td><button class="del-btn" onclick="deleteRow(${row.id})">✕</button></td>
+      <td><button class="del-btn" onclick="deleteDeviationRow('${row.id}')">✕</button></td>
     `;
     tbody.appendChild(tr);
 
-    // Render trait dropdowns
     for (let i = 0; i < 5; i++) renderTraitCell(row.id, i, row.name, row.traits[i]);
   });
 
-  // Update sort arrows
+  // Sort arrows
   document.querySelectorAll('th[data-sort]').forEach(th => {
-    th.classList.remove('sort-asc','sort-desc');
-    if (th.dataset.sort === sortCol) th.classList.add(sortDir===1?'sort-asc':'sort-desc');
+    th.classList.remove('sort-asc', 'sort-desc');
+    if (th.dataset.sort === sortCol) th.classList.add(sortDir === 1 ? 'sort-asc' : 'sort-desc');
   });
 }
 
 function renderStars(id, val) {
   let h = '<div class="star-picker">';
   for (let i = 1; i <= 5; i++) h += `<span class="star${i<=val?' on':''}" onclick="rowChange('${id}','skill',${i===val?0:i})">★</span>`;
-  h += '</div>';
-  return h;
+  return h + '</div>';
 }
 
 function renderPips(id, val) {
   let h = '<div class="pip-picker">';
   for (let i = 1; i <= 5; i++) h += `<div class="pip pip-${i}${i<=val?' on':''}" onclick="rowChange('${id}','activity',${i===val?0:i})"></div>`;
-  h += '</div>';
-  return h;
+  return h + '</div>';
 }
 
 function renderTraitCell(rowId, slotIdx, devName, curTrait) {
   const cell = document.getElementById(`tc_${rowId}_${slotIdx}`);
   if (!cell) return;
-  const avail = traitsForDeviant(devName);
-  const isCur = TRAITS.find(t => t.name === curTrait);
-  const isNeg = isCur?.neg;
+  const avail   = traitsForDeviation(devName);
+  const traitDef = getAllTraits().find(t => t.name === curTrait);
+  const isNeg    = traitDef?.neg || false;
 
   let opts = '<option value="">—</option>';
-  avail.forEach(t => {
-    const sel = t.name === curTrait ? ' selected' : '';
-    opts += `<option value="${escHtml(t.name)}"${sel}>${escHtml(t.name)}</option>`;
-  });
+  avail.forEach(t => opts += `<option value="${escHtml(t.name)}"${t.name===curTrait?' selected':''}>${escHtml(t.name)}</option>`);
 
-  let tooltipHtml = '';
-  if (curTrait && isCur) {
+  let tooltip = '';
+  if (curTrait && traitDef) {
     const cls = isNeg ? 'neg' : 'pos';
-    tooltipHtml = `<div class="trait-tooltip"><div class="tooltip-header ${cls}">${escHtml(curTrait)}</div><div class="tooltip-body">${escHtml(isCur.effect)}</div></div>`;
+    tooltip = `<div class="trait-tooltip"><div class="tooltip-header ${cls}">${escHtml(curTrait)}</div><div class="tooltip-body">${escHtml(traitDef.effect)}</div></div>`;
   }
 
-  cell.innerHTML = `<select class="${isNeg?'neg-trait':''}" onchange="traitChange('${rowId}',${slotIdx},this.value)">${opts}</select>${tooltipHtml}`;
+  cell.innerHTML = `<select class="${isNeg?'neg-trait':''}" onchange="traitChange('${rowId}',${slotIdx},this.value)">${opts}</select>${tooltip}`;
 }
 
 function rowChange(id, field, val) {
-  const row = state.deviants.find(r => String(r.id) === String(id));
+  const row = state.deviations.find(r => String(r.id) === String(id));
   if (!row) return;
   if (field === 'name') {
     row.name = val;
-    // Re-render all trait cells for this row
     for (let i = 0; i < 5; i++) {
-      // Trait still valid for new deviant? Keep if yes, clear if no
-      const t = row.traits[i];
-      if (t) {
-        const traitData = TRAITS.find(tr => tr.name === t);
-        if (traitData && traitData.deviants !== 'ALL' && !traitData.deviants.includes(val)) row.traits[i] = '';
+      if (row.traits[i]) {
+        const td = TRAIT_DATA.find(t => t.name === row.traits[i]);
+        const ct = (state.customTraits || []).find(t => {
+          const dn = t.type==='negative'?'⚠ '+t.name:t.name;
+          return dn === row.traits[i];
+        });
+        const anyDef = td || (ct ? {deviants: ct.deviations} : null);
+        if (anyDef && anyDef.deviants !== 'ALL' && Array.isArray(anyDef.deviants) && !anyDef.deviants.includes(val)) {
+          row.traits[i] = '';
+        }
       }
       renderTraitCell(id, i, val, row.traits[i]);
     }
-  } else if (field === 'char') row.char = val;
-  else if (field === 'variant') row.variant = val;
+  } else if (field === 'char')     row.char     = val;
+  else if (field === 'variant')    row.variant  = val;
   else if (field === 'skill') {
     row.skill = Number(val);
-    const cell = document.getElementById('skill_' + id);
-    if (cell) cell.innerHTML = renderStars(id, row.skill);
+    const c = document.getElementById('skill_' + id);
+    if (c) c.innerHTML = renderStars(id, row.skill);
   } else if (field === 'activity') {
     row.activity = Number(val);
-    const cell = document.getElementById('act_' + id);
-    if (cell) cell.innerHTML = renderPips(id, row.activity);
-  } else if (field === 'fusion') row.fusion = val;
-  else if (field === 'locked') row.locked = val;
-  else if (field === 'notes') row.notes = val;
-  save('deviants');
+    const c = document.getElementById('act_' + id);
+    if (c) c.innerHTML = renderPips(id, row.activity);
+  } else if (field === 'fusion')   row.fusion   = val;
+  else if (field === 'locked')     row.locked   = val;
+  else if (field === 'notes')      row.notes    = val;
+  save('deviations');
 }
 
 function traitChange(rowId, slotIdx, val) {
-  const row = state.deviants.find(r => String(r.id) === String(rowId));
+  const row = state.deviations.find(r => String(r.id) === String(rowId));
   if (!row) return;
   row.traits[slotIdx] = val;
-  save('deviants');
+  save('deviations');
   renderTraitCell(rowId, slotIdx, row.name, val);
 }
 
-/* ============================================================
-   SORT & FILTER
-   ============================================================ */
+/* ── Sort / Filter ── */
 document.querySelectorAll('th[data-sort]').forEach(th => {
   th.addEventListener('click', () => {
     const col = th.dataset.sort;
@@ -848,23 +1122,19 @@ document.querySelectorAll('th[data-sort]').forEach(th => {
 });
 
 function applyFilters() {
-  filters.char     = document.getElementById('fChar').value;
-  filters.deviant  = document.getElementById('fDeviant').value;
-  filters.fusion   = document.getElementById('fFusion').value;
-  filters.locked   = document.getElementById('fLocked').value;
-  filters.skill    = document.getElementById('fSkill').value;
-  filters.activity = document.getElementById('fActivity').value;
+  filters.char      = document.getElementById('fChar').value;
+  filters.deviation = document.getElementById('fDeviation').value;
+  filters.fusion    = document.getElementById('fFusion').value;
+  filters.locked    = document.getElementById('fLocked').value;
+  filters.skill     = document.getElementById('fSkill').value;
+  filters.activity  = document.getElementById('fActivity').value;
   renderTable();
 }
 
 function clearFilters() {
-  document.getElementById('fChar').value = '';
-  document.getElementById('fDeviant').value = '';
-  document.getElementById('fFusion').value = '';
-  document.getElementById('fLocked').value = '';
-  document.getElementById('fSkill').value = '';
-  document.getElementById('fActivity').value = '';
-  filters = {char:'', deviant:'', fusion:'', locked:'', skill:'', activity:''};
+  ['fChar','fFusion','fLocked','fSkill','fActivity'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('fDeviation').value = '';
+  filters = { char:'', deviation:'', fusion:'', locked:'', skill:'', activity:'' };
   renderTable();
 }
 
@@ -872,63 +1142,91 @@ function clearFilters() {
    EXPORT CSV
    ============================================================ */
 function exportCSV() {
-  const rows = getFilteredSorted();
-  const header = ['Character','Deviant Name','Variant','Trait 1','Trait 2','Trait 3','Trait 4','Trait 5','Skill Level','Activity Level','Fusion','Locked','Notes'];
-  const lines = [header.map(csvEsc).join(',')];
-  rows.forEach(r => {
-    lines.push([
-      r.char, r.name, r.variant,
-      r.traits[0]||'', r.traits[1]||'', r.traits[2]||'', r.traits[3]||'', r.traits[4]||'',
-      r.skill, r.activity,
-      r.fusion?'Yes':'No', r.locked?'Yes':'No',
-      r.notes
-    ].map(csvEsc).join(','));
-  });
-  const blob = new Blob([lines.join('\n')], {type:'text/csv'});
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-  a.download = 'once-human-deviants.csv'; a.click();
+  const rows   = getFilteredSorted();
+  const header = ['Character','Deviation Name','Variant','Trait 1','Trait 2','Trait 3','Trait 4','Trait 5','Skill Level','Activity Level','Fusion','Locked','Notes'];
+  const lines  = [header.map(csvEsc).join(',')];
+  rows.forEach(r => lines.push([
+    r.char, r.name, r.variant,
+    r.traits[0]||'', r.traits[1]||'', r.traits[2]||'', r.traits[3]||'', r.traits[4]||'',
+    r.skill, r.activity, r.fusion?'Yes':'No', r.locked?'Yes':'No', r.notes,
+  ].map(csvEsc).join(',')));
+  const blob = new Blob([lines.join('\n')], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'once-human-deviations.csv';
+  a.click();
 }
 function csvEsc(v) { v = String(v||''); return /[",\n]/.test(v) ? `"${v.replace(/"/g,'""')}"` : v; }
 
 /* ============================================================
-   CLEAR ALL
+   CLEAR ALL DATA
    ============================================================ */
 function confirmClearAll() {
-  showModal('Clear All Data', 'This will permanently delete ALL deviant and material data. This cannot be undone. Continue?', () => {
-    state.deviants = []; state.materials = [];
-    save('deviants'); save('materials');
-    renderTable(); renderMaterials();
-  });
+  showConfirm(
+    '🗑 Clear All Data',
+    'This will permanently delete ALL deviation and material data. Custom deviations and traits are kept. This cannot be undone.',
+    () => {
+      state.deviations = []; state.materials = [];
+      save('deviations'); save('materials');
+      renderTable(); renderMaterials();
+    }
+  );
 }
 
 /* ============================================================
-   MODAL
+   SAVE / LOAD CONFIG
    ============================================================ */
-let modalCb = null;
-function showModal(title, msg, cb) {
-  document.getElementById('modalTitle').textContent = title;
-  document.getElementById('modalMsg').textContent = msg;
-  modalCb = cb;
-  document.getElementById('modalOverlay').classList.add('open');
+function saveConfig() {
+  const data = {
+    version: 1,
+    customDeviations: state.customDeviations,
+    customTraits:     state.customTraits,
+    settings:         state.settings,
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'once-human-tracker-config.json';
+  a.click();
 }
-function closeModal() {
-  modalCb = null;
-  document.getElementById('modalOverlay').classList.remove('open');
+
+function triggerLoadConfig() {
+  document.getElementById('configFileInput').click();
 }
-document.getElementById('modalConfirmBtn').onclick = () => { if(modalCb) modalCb(); closeModal(); };
-document.getElementById('modalOverlay').addEventListener('click', e => { if(e.target === document.getElementById('modalOverlay')) closeModal(); });
+
+function handleConfigLoad(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (data.customDeviations) { state.customDeviations = data.customDeviations; save('customDeviations'); }
+      if (data.customTraits)     { state.customTraits     = data.customTraits;     save('customTraits'); }
+      if (data.settings)         { state.settings         = data.settings;         save('settings'); }
+      renderCharList();
+      updateFilterCharDropdown();
+      renderTable();
+      alert('Config loaded successfully.');
+    } catch (err) {
+      alert('Invalid config file. Please load a valid JSON config.');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
 
 /* ============================================================
    FUSION MATERIALS
    ============================================================ */
 function addMaterial() {
-  state.materials.push({id: Date.now() + Math.random(), name:'', qty:0, notes:''});
+  state.materials.push({ id: Date.now() + Math.random(), name:'', qty:0, notes:'' });
   save('materials');
   renderMaterials();
 }
 
 function delMaterial(id) {
-  state.materials = state.materials.filter(m => m.id !== id);
+  state.materials = state.materials.filter(m => String(m.id) !== String(id));
   save('materials');
   renderMaterials();
 }
@@ -936,15 +1234,15 @@ function delMaterial(id) {
 function matChange(id, field, val) {
   const m = state.materials.find(m => String(m.id) === String(id));
   if (!m) return;
-  m[field] = field==='qty' ? Math.max(0, Number(val)||0) : val;
+  m[field] = field === 'qty' ? Math.max(0, Number(val) || 0) : val;
   save('materials');
 }
 
 function renderMaterials() {
-  const list = document.getElementById('fmList');
+  const list  = document.getElementById('fmList');
   const empty = document.getElementById('fmEmpty');
   list.innerHTML = '';
-  if (state.materials.length === 0) { empty.style.display = ''; return; }
+  if (!state.materials.length) { empty.style.display = ''; return; }
   empty.style.display = 'none';
   state.materials.forEach((m, idx) => {
     const div = document.createElement('div');
@@ -953,23 +1251,17 @@ function renderMaterials() {
     div.dataset.idx = idx;
     div.innerHTML = `
       <span class="drag-handle" title="Drag to reorder">⠿</span>
-      <input class="fm-input fm-name" type="text" value="${escHtml(m.name)}" placeholder="Material name…" oninput="matChange('${m.id}','name',this.value)">
-      <input class="fm-input fm-qty" type="number" min="0" value="${m.qty}" placeholder="Qty" oninput="matChange('${m.id}','qty',this.value)">
-      <input class="fm-input fm-notes" type="text" value="${escHtml(m.notes)}" placeholder="Notes…" oninput="matChange('${m.id}','notes',this.value)">
-      <button class="del-btn" onclick="delMaterial(${m.id})">✕</button>
+      <input class="fm-input fm-name"  type="text"   value="${escHtml(m.name)}"  placeholder="Material name…"  oninput="matChange('${m.id}','name',this.value)">
+      <input class="fm-input fm-qty"   type="number" value="${m.qty}"            placeholder="Qty" min="0"     oninput="matChange('${m.id}','qty',this.value)">
+      <input class="fm-input fm-notes" type="text"   value="${escHtml(m.notes)}" placeholder="Notes…"          oninput="matChange('${m.id}','notes',this.value)">
+      <button class="del-btn" onclick="delMaterial('${m.id}')">✕</button>
     `;
-    // Drag events
-    div.addEventListener('dragstart', e => {
-      dragSrcIdx = idx;
-      setTimeout(() => div.classList.add('dragging'), 0);
-      e.dataTransfer.effectAllowed = 'move';
-    });
-    div.addEventListener('dragend', () => { div.classList.remove('dragging'); document.querySelectorAll('.fm-row').forEach(r=>r.classList.remove('drag-over')); });
-    div.addEventListener('dragover', e => { e.preventDefault(); e.dataTransfer.dropEffect='move'; div.classList.add('drag-over'); });
+    div.addEventListener('dragstart', e => { dragSrcIdx = idx; setTimeout(() => div.classList.add('dragging'), 0); e.dataTransfer.effectAllowed = 'move'; });
+    div.addEventListener('dragend',   () => { div.classList.remove('dragging'); document.querySelectorAll('.fm-row').forEach(r => r.classList.remove('drag-over')); });
+    div.addEventListener('dragover',  e => { e.preventDefault(); div.classList.add('drag-over'); });
     div.addEventListener('dragleave', () => div.classList.remove('drag-over'));
     div.addEventListener('drop', e => {
-      e.preventDefault();
-      div.classList.remove('drag-over');
+      e.preventDefault(); div.classList.remove('drag-over');
       const tgtIdx = Number(div.dataset.idx);
       if (dragSrcIdx === null || dragSrcIdx === tgtIdx) return;
       const moved = state.materials.splice(dragSrcIdx, 1)[0];
@@ -981,6 +1273,18 @@ function renderMaterials() {
     list.appendChild(div);
   });
 }
+
+/* ============================================================
+   GLOBAL KEYBOARD HANDLER
+   ============================================================ */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    ['manageDevModal','manageTraitModal','confirmModal'].forEach(id => {
+      if (document.getElementById(id).classList.contains('open')) closeModal(id);
+    });
+    if (document.getElementById('settingsOverlay').classList.contains('open')) closeSettings();
+  }
+});
 
 /* ============================================================
    UTILS
