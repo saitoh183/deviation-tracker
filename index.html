@@ -425,6 +425,7 @@ footer{text-align:center;padding:16px;font-size:.75rem;color:var(--text-muted);b
     <div class="modal-tabs">
       <button class="modal-tab-btn active" onclick="switchModalTab('manageDevModal','addDev',this)">Add Deviation</button>
       <button class="modal-tab-btn" onclick="switchModalTab('manageDevModal','removeDev',this)">Remove Deviation</button>
+      <button class="modal-tab-btn" onclick="switchModalTab('manageDevModal','editDev',this)">Edit Deviation</button>
     </div>
     <div class="modal-body">
       <!-- Add Deviation -->
@@ -432,6 +433,32 @@ footer{text-align:center;padding:16px;font-size:.75rem;color:var(--text-muted);b
         <div class="form-group">
           <label>Deviation Name</label>
           <input id="newDevName" class="form-input" type="text" placeholder="e.g. Crystal Moth" onkeydown="if(event.key==='Enter')addCustomDeviation()">
+        </div>
+        <div class="form-group">
+          <label>Assign Traits <span style="color:var(--text-muted);font-size:.8em">(optional)</span></label>
+          <input class="form-input" id="addDevTraitSearch" type="text" placeholder="Search traits…" oninput="filterAddDevTraits()" style="margin-bottom:8px">
+          <div style="display:flex;gap:10px">
+            <div style="flex:1;min-width:0">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+                <span style="font-size:.72rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.7px">Positive (<span id="addDevPosCount">0</span> selected)</span>
+                <div style="display:flex;gap:3px">
+                  <button class="btn btn-sm btn-secondary" onclick="selectAllAddDevTraits('pos')">All</button>
+                  <button class="btn btn-sm btn-secondary" onclick="clearAllAddDevTraits('pos')">None</button>
+                </div>
+              </div>
+              <div class="dev-checklist" id="addDevPosTraits" style="max-height:200px"></div>
+            </div>
+            <div style="flex:1;min-width:0">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+                <span style="font-size:.72rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.7px">Negative (<span id="addDevNegCount">0</span> selected)</span>
+                <div style="display:flex;gap:3px">
+                  <button class="btn btn-sm btn-secondary" onclick="selectAllAddDevTraits('neg')">All</button>
+                  <button class="btn btn-sm btn-secondary" onclick="clearAllAddDevTraits('neg')">None</button>
+                </div>
+              </div>
+              <div class="dev-checklist" id="addDevNegTraits" style="max-height:200px"></div>
+            </div>
+          </div>
         </div>
         <button class="btn btn-primary" onclick="addCustomDeviation()">Add to List</button>
         <div class="flash-msg" id="devAddFlash"></div>
@@ -442,6 +469,46 @@ footer{text-align:center;padding:16px;font-size:.75rem;color:var(--text-muted);b
           <input class="mgr-search" id="devRemoveSearch" type="text" placeholder="🔍  Search deviations…" oninput="filterDevRemoveList()">
         </div>
         <div class="mgr-list" id="devRemoveList"></div>
+      </div>
+      <!-- Edit Deviation -->
+      <div class="modal-tab-pane" data-pane="editDev">
+        <div class="form-group">
+          <label>Select Deviation</label>
+          <select id="editDevSelect" class="form-input" onchange="loadEditDeviation()">
+            <option value="">— Select a deviation —</option>
+          </select>
+        </div>
+        <div id="editDevPanel" style="display:none">
+          <p id="editDevBuiltinNote" style="font-size:.8rem;color:var(--text-muted);margin-bottom:10px"></p>
+          <div class="form-group">
+            <label>Assigned Traits</label>
+            <input class="form-input" id="editDevTraitSearch" type="text" placeholder="Search traits…" oninput="filterEditDevTraits()" style="margin-bottom:8px">
+            <div style="display:flex;gap:10px">
+              <div style="flex:1;min-width:0">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+                  <span style="font-size:.72rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.7px">Positive (<span id="editDevPosCount">0</span> selected)</span>
+                  <div style="display:flex;gap:3px">
+                    <button class="btn btn-sm btn-secondary" onclick="selectAllEditDevTraits('pos')">All</button>
+                    <button class="btn btn-sm btn-secondary" onclick="clearAllEditDevTraits('pos')">None</button>
+                  </div>
+                </div>
+                <div class="dev-checklist" id="editDevPosTraits" style="max-height:200px"></div>
+              </div>
+              <div style="flex:1;min-width:0">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+                  <span style="font-size:.72rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.7px">Negative (<span id="editDevNegCount">0</span> selected)</span>
+                  <div style="display:flex;gap:3px">
+                    <button class="btn btn-sm btn-secondary" onclick="selectAllEditDevTraits('neg')">All</button>
+                    <button class="btn btn-sm btn-secondary" onclick="clearAllEditDevTraits('neg')">None</button>
+                  </div>
+                </div>
+                <div class="dev-checklist" id="editDevNegTraits" style="max-height:200px"></div>
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="saveEditDeviation()">Save Changes</button>
+          <div class="flash-msg" id="editDevFlash"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -541,19 +608,21 @@ footer{text-align:center;padding:16px;font-size:.75rem;color:var(--text-muted);b
    STATE & STORAGE
    ============================================================ */
 const KEYS = {
-  deviations:       'ohdt_deviations',
-  materials:        'ohdt_materials',
-  settings:         'ohdt_settings',
-  customDeviations: 'ohdt_custom_deviations',
-  customTraits:     'ohdt_custom_traits',
+  deviations:             'ohdt_deviations',
+  materials:              'ohdt_materials',
+  settings:               'ohdt_settings',
+  customDeviations:       'ohdt_custom_deviations',
+  customTraits:           'ohdt_custom_traits',
+  customTraitAssignments: 'ohdt_custom_trait_assignments',
 };
 
 let state = {
-  deviations:       [],
-  materials:        [],
-  settings:         { characters: [] },
-  customDeviations: [],
-  customTraits:     [],
+  deviations:             [],
+  materials:              [],
+  settings:               { characters: [] },
+  customDeviations:       [],
+  customTraits:           [],
+  customTraitAssignments: {},
 };
 
 let sortCol = null, sortDir = 1;
@@ -574,13 +643,15 @@ function migrateStorage() {
 function load() {
   migrateStorage();
   const parse = (key, def) => { try { return JSON.parse(localStorage.getItem(KEYS[key])) || def; } catch(e) { return def; } };
-  state.deviations       = parse('deviations',       []);
-  state.materials        = parse('materials',        []);
-  state.settings         = parse('settings',         { characters: [] });
-  state.customDeviations = parse('customDeviations', []);
-  state.customTraits     = parse('customTraits',     []);
+  state.deviations             = parse('deviations',             []);
+  state.materials              = parse('materials',              []);
+  state.settings               = parse('settings',               { characters: [] });
+  state.customDeviations       = parse('customDeviations',       []);
+  state.customTraits           = parse('customTraits',           []);
+  state.customTraitAssignments = parse('customTraitAssignments', {});
   if (!state.settings.characters) state.settings.characters = [];
   if (!state.settings.variants)   state.settings.variants   = [];
+  if (!state.customTraitAssignments) state.customTraitAssignments = {};
 }
 
 function save(key) {
@@ -608,7 +679,17 @@ function getAllTraits() {
 function traitsForDeviation(devName) {
   const all = getAllTraits();
   if (!devName) return all;
-  return all.filter(t => t.deviants === 'ALL' || (Array.isArray(t.deviants) && t.deviants.includes(devName)));
+  const assign    = (state.customTraitAssignments || {})[devName] || {};
+  const addList   = assign.add    || [];
+  const rmList    = assign.remove || [];
+  // Base: naturally applicable traits
+  let result = all.filter(t => t.deviants === 'ALL' || (Array.isArray(t.deviants) && t.deviants.includes(devName)));
+  // Add extra traits explicitly assigned
+  addList.forEach(name => { if (!result.some(t => t.name === name)) { const found = all.find(t => t.name === name); if (found) result.push(found); } });
+  // Remove explicitly removed traits
+  result = result.filter(t => !rmList.includes(t.name));
+  // Sort: positives first, then negatives
+  return result.sort((a, b) => a.neg !== b.neg ? (a.neg ? 1 : -1) : a.name.localeCompare(b.name));
 }
 
 /* ============================================================
@@ -678,9 +759,14 @@ function switchModalTab(modalId, tabName, btn) {
   overlay.querySelectorAll('.modal-tab-pane').forEach(p => p.classList.remove('active'));
   btn.classList.add('active');
   overlay.querySelector(`[data-pane="${tabName}"]`).classList.add('active');
-  // Lazy-render remove lists when their tab is opened
+  // Lazy-render/populate when specific tabs are opened
   if (tabName === 'removeDev')   renderDevRemoveList();
   if (tabName === 'removeTrait') renderTraitRemoveList();
+  if (tabName === 'editDev') {
+    populateEditDevSelect();
+    document.getElementById('editDevSelect').value = '';
+    document.getElementById('editDevPanel').style.display = 'none';
+  }
 }
 
 /* Confirm modal */
@@ -847,6 +933,13 @@ function openManageDeviations() {
   document.getElementById('newDevName').value = '';
   document.getElementById('devAddFlash').className = 'flash-msg';
   document.getElementById('devRemoveSearch').value = '';
+  document.getElementById('addDevTraitSearch').value = '';
+  renderAddDevTraitLists();
+  // Reset edit tab
+  document.getElementById('editDevSelect').value = '';
+  document.getElementById('editDevPanel').style.display = 'none';
+  document.getElementById('editDevTraitSearch').value = '';
+  populateEditDevSelect();
   // Reset to Add tab
   const modal = document.getElementById('manageDevModal');
   modal.querySelectorAll('.modal-tab-btn').forEach((b,i) => b.classList.toggle('active', i===0));
@@ -865,8 +958,21 @@ function addCustomDeviation() {
   }
   state.customDeviations.push(val);
   save('customDeviations');
+  // Save trait assignments if any traits were checked
+  const checkedTraits = getAddDevCheckedTraits();
+  let assignedCount = 0;
+  if (checkedTraits.length > 0) {
+    if (!state.customTraitAssignments) state.customTraitAssignments = {};
+    state.customTraitAssignments[val] = { add: checkedTraits, remove: [] };
+    save('customTraitAssignments');
+    assignedCount = checkedTraits.length;
+  }
   inp.value = '';
-  showFlash('devAddFlash', '✓ Deviation added!');
+  renderAddDevTraitLists();
+  const msg = assignedCount > 0
+    ? `✓ ${val} added with ${assignedCount} trait assignment${assignedCount !== 1 ? 's' : ''}!`
+    : '✓ Deviation added!';
+  showFlash('devAddFlash', msg);
   // Refresh all deviation dropdowns
   refreshAllDeviationDropdowns();
 }
@@ -909,6 +1015,172 @@ function removeCustomDeviation(name) {
 function refreshAllDeviationDropdowns() {
   // Re-render visible rows that have deviation dropdowns
   renderTable();
+}
+
+/* ============================================================
+   TRAIT ASSIGNMENT EDITOR  (Add tab & Edit Deviation tab)
+   ============================================================ */
+
+/* ── ADD TAB ── */
+function renderAddDevTraitLists() {
+  const allTraits = getAllTraits();
+  const pos = allTraits.filter(t => !t.neg);
+  const neg = allTraits.filter(t =>  t.neg);
+  const makeList = (traits, id) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.innerHTML = traits.map(t =>
+      `<label class="dev-check-item">
+        <input type="checkbox" name="addDevTrait" value="${escHtml(t.name)}" onchange="updateAddDevCounts()">
+        ${escHtml(t.name)}
+      </label>`
+    ).join('');
+  };
+  makeList(pos, 'addDevPosTraits');
+  makeList(neg, 'addDevNegTraits');
+  updateAddDevCounts();
+}
+
+function filterAddDevTraits() {
+  const q = (document.getElementById('addDevTraitSearch').value || '').toLowerCase();
+  ['addDevPosTraits','addDevNegTraits'].forEach(cid => {
+    document.querySelectorAll(`#${cid} .dev-check-item`).forEach(el => {
+      el.classList.toggle('hidden', !!q && !el.textContent.trim().toLowerCase().includes(q));
+    });
+  });
+}
+
+function updateAddDevCounts() {
+  const pos = document.querySelectorAll('#addDevPosTraits input[name="addDevTrait"]:checked').length;
+  const neg = document.querySelectorAll('#addDevNegTraits input[name="addDevTrait"]:checked').length;
+  const pe = document.getElementById('addDevPosCount'); if (pe) pe.textContent = pos;
+  const ne = document.getElementById('addDevNegCount'); if (ne) ne.textContent = neg;
+}
+
+function selectAllAddDevTraits(type) {
+  const cid = type === 'pos' ? 'addDevPosTraits' : 'addDevNegTraits';
+  document.querySelectorAll(`#${cid} .dev-check-item:not(.hidden) input`).forEach(cb => cb.checked = true);
+  updateAddDevCounts();
+}
+
+function clearAllAddDevTraits(type) {
+  const cid = type === 'pos' ? 'addDevPosTraits' : 'addDevNegTraits';
+  document.querySelectorAll(`#${cid} .dev-check-item:not(.hidden) input`).forEach(cb => cb.checked = false);
+  updateAddDevCounts();
+}
+
+function getAddDevCheckedTraits() {
+  return Array.from(document.querySelectorAll('input[name="addDevTrait"]:checked')).map(cb => cb.value);
+}
+
+/* ── EDIT TAB ── */
+function populateEditDevSelect() {
+  const sel = document.getElementById('editDevSelect');
+  if (!sel) return;
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">— Select a deviation —</option>' +
+    getAllDeviations().map(d => `<option value="${escHtml(d)}"${d===cur?' selected':''}>${escHtml(d)}</option>`).join('');
+}
+
+function loadEditDeviation() {
+  const devName = document.getElementById('editDevSelect').value;
+  const panel   = document.getElementById('editDevPanel');
+  if (!devName) { panel.style.display = 'none'; return; }
+  const note = document.getElementById('editDevBuiltinNote');
+  note.textContent = DEVIANT_LIST.includes(devName)
+    ? '🔒 Built-in deviation — changes stored as overrides, config.js is not modified.'
+    : '';
+  panel.style.display = 'block';
+  document.getElementById('editDevTraitSearch').value = '';
+  renderEditDevTraitLists(devName);
+}
+
+function renderEditDevTraitLists(devName) {
+  const currentNames = traitsForDeviation(devName).map(t => t.name);
+  const allTraits = getAllTraits();
+  const pos = allTraits.filter(t => !t.neg);
+  const neg = allTraits.filter(t =>  t.neg);
+  const makeList = (traits, id) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.innerHTML = traits.map(t =>
+      `<label class="dev-check-item">
+        <input type="checkbox" name="editDevTrait" value="${escHtml(t.name)}" ${currentNames.includes(t.name)?'checked':''} onchange="updateEditDevCounts()">
+        ${escHtml(t.name)}
+      </label>`
+    ).join('');
+  };
+  makeList(pos, 'editDevPosTraits');
+  makeList(neg, 'editDevNegTraits');
+  updateEditDevCounts();
+}
+
+function filterEditDevTraits() {
+  const q = (document.getElementById('editDevTraitSearch').value || '').toLowerCase();
+  ['editDevPosTraits','editDevNegTraits'].forEach(cid => {
+    document.querySelectorAll(`#${cid} .dev-check-item`).forEach(el => {
+      el.classList.toggle('hidden', !!q && !el.textContent.trim().toLowerCase().includes(q));
+    });
+  });
+}
+
+function updateEditDevCounts() {
+  const pos = document.querySelectorAll('#editDevPosTraits input[name="editDevTrait"]:checked').length;
+  const neg = document.querySelectorAll('#editDevNegTraits input[name="editDevTrait"]:checked').length;
+  const pe = document.getElementById('editDevPosCount'); if (pe) pe.textContent = pos;
+  const ne = document.getElementById('editDevNegCount'); if (ne) ne.textContent = neg;
+}
+
+function selectAllEditDevTraits(type) {
+  const cid = type === 'pos' ? 'editDevPosTraits' : 'editDevNegTraits';
+  document.querySelectorAll(`#${cid} .dev-check-item:not(.hidden) input`).forEach(cb => cb.checked = true);
+  updateEditDevCounts();
+}
+
+function clearAllEditDevTraits(type) {
+  const cid = type === 'pos' ? 'editDevPosTraits' : 'editDevNegTraits';
+  document.querySelectorAll(`#${cid} .dev-check-item:not(.hidden) input`).forEach(cb => cb.checked = false);
+  updateEditDevCounts();
+}
+
+function getEditDevCheckedTraits() {
+  return Array.from(document.querySelectorAll('input[name="editDevTrait"]:checked')).map(cb => cb.value);
+}
+
+function saveEditDeviation() {
+  const devName = document.getElementById('editDevSelect').value;
+  if (!devName) return;
+  // Baseline: what naturally applies without customTraitAssignments
+  const allTraits  = getAllTraits();
+  const baseline   = allTraits
+    .filter(t => t.deviants === 'ALL' || (Array.isArray(t.deviants) && t.deviants.includes(devName)))
+    .map(t => t.name);
+  const checked    = getEditDevCheckedTraits();
+  const addList    = checked.filter(n => !baseline.includes(n));
+  const removeList = baseline.filter(n => !checked.includes(n));
+  if (!state.customTraitAssignments) state.customTraitAssignments = {};
+  if (addList.length === 0 && removeList.length === 0) {
+    delete state.customTraitAssignments[devName];
+  } else {
+    state.customTraitAssignments[devName] = { add: addList, remove: removeList };
+  }
+  save('customTraitAssignments');
+  refreshTraitDropdownsForDeviation(devName);
+  const label = devName.length > 30 ? devName.slice(0, 27) + '…' : devName;
+  showFlash('editDevFlash', `✓ Trait assignments updated for ${label}`);
+}
+
+function refreshTraitDropdownsForDeviation(devName) {
+  const validNames = traitsForDeviation(devName).map(t => t.name);
+  state.deviations.forEach(row => {
+    if (row.name !== devName) return;
+    let changed = false;
+    for (let i = 0; i < 5; i++) {
+      if (row.traits[i] && !validNames.includes(row.traits[i])) { row.traits[i] = ''; changed = true; }
+    }
+    if (changed) save('deviations');
+    for (let i = 0; i < 5; i++) renderTraitCell(row.id, i, devName, row.traits[i]);
+  });
 }
 
 /* ============================================================
@@ -1336,10 +1608,11 @@ function confirmClearAll() {
    ============================================================ */
 function saveConfig() {
   const data = {
-    version: 1,
-    customDeviations: state.customDeviations,
-    customTraits:     state.customTraits,
-    settings:         state.settings,
+    version:                2,
+    customDeviations:       state.customDeviations,
+    customTraits:           state.customTraits,
+    settings:               state.settings,
+    customTraitAssignments: state.customTraitAssignments || {},
   };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
@@ -1359,9 +1632,10 @@ function handleConfigLoad(e) {
   reader.onload = ev => {
     try {
       const data = JSON.parse(ev.target.result);
-      if (data.customDeviations) { state.customDeviations = data.customDeviations; save('customDeviations'); }
-      if (data.customTraits)     { state.customTraits     = data.customTraits;     save('customTraits'); }
-      if (data.settings)         { state.settings         = data.settings;         save('settings'); }
+      if (data.customDeviations)       { state.customDeviations       = data.customDeviations;       save('customDeviations'); }
+      if (data.customTraits)           { state.customTraits           = data.customTraits;           save('customTraits'); }
+      if (data.settings)               { state.settings               = data.settings;               save('settings'); }
+      if (data.customTraitAssignments) { state.customTraitAssignments = data.customTraitAssignments; save('customTraitAssignments'); }
       renderCharList();
       updateFilterCharDropdown();
       renderVariantList();
