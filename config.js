@@ -13,7 +13,7 @@ const DEVIANT_LIST = [
   "Growshroom","Grumpy Bulb","H37","Lethal Rabbit","Logging Beaver",
   "Lonewolf's Whisper","Masonic Pyramid","Mini Feaster","Mini Wonder","Mr. Wish",
   "Nutcracker","Orb Lightning","Paper Doll","Party Animal","Party Monkey",
-  "Polar Jelly","Pup Buddy","Pyro","Rain Man","Rebecca","Shattered Maiden",
+  "Polar Jelly","Pup Buddy","Pyro Dino","Rain Man","Rebecca","Shattered Maiden",
   "Snow Globe","Snowsprite","Space Turner","Strange Door","The Digby Boy",
   "Upper World Spawn","Voodoo Doll","Wish Box","Zeno-Purifier"
 ];
@@ -148,7 +148,7 @@ const TRAIT_DATA = [
   {name:"⚠ Lazy Bones",effect:"Working speed -5% for Territorial Deviations.",deviants:["Electric Eel","Extradimensional Cat","Fetch-A-Lot Bunny","Flame Essence","Paper Doll"],neg:true},
   {name:"⚠ No Such Thing As a Small Cup",effect:"Max Storage Capacity -10%.",deviants:["Frog the Leaper","Masonic Pyramid","Pup Buddy","Space Turner","Strange Door"],neg:true},
   {name:"⚠ Panovision",effect:"Working speed -10% for Territorial Deviations.",deviants:["Electric Eel"],neg:true},
-  {name:"⚠ Sedentary",effect:"Syncing grants Max Load -8 when exploring Settlements.",deviants:["Mini Feaster","Polar Jelly","Pyro","Zeno-Purifier"],neg:true},
+  {name:"⚠ Sedentary",effect:"Syncing grants Max Load -8 when exploring Settlements.",deviants:["Mini Feaster","Polar Jelly","Pyro Dino","Zeno-Purifier"],neg:true},
   {name:"⚠ Slacking Off (Negative)",effect:"Mood and Deviant Power consumption speed +5% for working Territorial Deviations.",deviants:"ALL",neg:true},
   {name:"⚠ Stay Indoors",effect:"Sync grants Stamina consumption +8% in Settlements.",deviants:["Lonewolf's Whisper","Festering Gel","Zeno-Purifier","Mini Feaster","Voodoo Doll"],neg:true},
   {name:"⚠ Worn-Out 1",effect:"Max Deviant Power -5%.",deviants:["Artisan's Touch","Buzzy Bee","Electric Eel","Extradimensional Cat","Lonewolf's Whisper","Mini Feaster","Party Animal","Pup Buddy","Voodoo Doll","Wish Box"],neg:true},

@@ -24,9 +24,9 @@
   font-family:'Exo 2',sans-serif;
 }
 html{background:var(--bg0);color:var(--text);height:100%;overflow:hidden}
-body{height:100%;overflow:hidden;background:linear-gradient(160deg,var(--bg0) 0%,var(--bg1) 50%,var(--bg0) 100%)}
-#app{display:flex;flex-direction:column;height:100vh}
-#scroll-body{flex:1;overflow-y:auto;overflow-x:hidden;min-height:0}
+body{display:flex;flex-direction:column;height:100vh;overflow:hidden;background:linear-gradient(160deg,var(--bg0) 0%,var(--bg1) 50%,var(--bg0) 100%)}
+#app{display:flex;flex-direction:column;flex:1;min-height:0}
+#table-wrapper{flex:1 1 0;overflow-x:auto;overflow-y:auto;position:relative;min-height:0}
 input,select,button,textarea{font-family:inherit;font-size:inherit}
 button{cursor:pointer}
 ::-webkit-scrollbar{width:6px;height:6px}
@@ -34,7 +34,7 @@ button{cursor:pointer}
 ::-webkit-scrollbar-thumb{background:var(--accent-dim);border-radius:3px}
 
 /* ===== STICKY TOP WRAPPER ===== */
-#sticky-top{flex-shrink:0;z-index:100;background:var(--bg1);width:100%}
+#sticky-top{position:relative;flex-shrink:0;z-index:200;background:var(--bg1);width:100%}
 #deviations-controls{background:var(--bg0);padding:12px 20px 0}
 
 /* ===== HEADER ===== */
@@ -85,14 +85,13 @@ button{cursor:pointer}
 .btn-group{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 
 /* ===== TABLE ===== */
-.table-wrap{overflow-x:auto;width:100%;border:1px solid var(--border);border-radius:var(--radius)}
+.table-wrap{overflow:visible;width:100%;border:1px solid var(--border);border-radius:var(--radius)}
 table{table-layout:fixed;width:max-content;min-width:100%;border-collapse:collapse;font-size:.83rem}
-thead{position:sticky;top:0;z-index:99;background:var(--bg2)}
 thead tr{background:var(--bg2)}
 th{padding:9px 8px;text-align:left;font-weight:600;color:var(--accent);font-size:.75rem;text-transform:uppercase;letter-spacing:.7px;white-space:nowrap;border-bottom:2px solid var(--border-light);cursor:pointer;user-select:none;overflow:hidden}
 th:hover{color:#fff;background:rgba(0,212,255,0.06)}
-th.sort-asc::after{content:' ▲';opacity:.8}
-th.sort-desc::after{content:' ▼';opacity:.8}
+.sort-indicator{opacity:.8;margin-left:6px}
+#sticky-thead th{position:sticky;top:0;z-index:100;background:var(--bg2)}
 tbody tr{border-bottom:1px solid var(--border);transition:background .15s}
 tbody tr:nth-child(even){background:var(--row-alt)}
 tbody tr:hover{background:rgba(0,212,255,0.07)}
@@ -337,7 +336,7 @@ input,select,button,textarea{touch-action:manipulation}
 }
 </style>
 </head>
-<body>
+<body style="margin:0; padding:0; overflow:hidden; height:100vh;">
 <div id="app">
 
 <!-- ======================================================= -->
@@ -401,7 +400,7 @@ input,select,button,textarea{touch-action:manipulation}
           </select>
         </div>
         <div class="filter-actions">
-          <button class="btn btn-secondary" onclick="clearFilters()">Clear Filters</button>
+          <button class="btn btn-secondary" onclick="clearAllFilters()">Clear Filters</button>
           <span class="row-count" id="rowCount">Showing 0 of 0 deviations</span>
         </div>
       </div>
@@ -435,7 +434,7 @@ input,select,button,textarea{touch-action:manipulation}
 <!-- ======================================================= -->
 <!-- SCROLL BODY: all scrollable tab content                  -->
 <!-- ======================================================= -->
-<div id="scroll-body">
+<div id="table-wrapper">
 
 <!-- ======================================================= -->
 <!-- TAB 1: DEVIATIONS (table + cards only)                   -->
@@ -461,16 +460,20 @@ input,select,button,textarea{touch-action:manipulation}
         <col style="width:180px"><!-- 13 Notes -->
         <col style="width:45px"> <!-- 14 Del -->
       </colgroup>
-      <thead>
+      <thead id="sticky-thead">
         <tr>
-          <th data-sort="char">Character</th>
-          <th data-sort="name">Deviation Name</th>
-          <th data-sort="variant">Variant</th>
-          <th>Trait 1</th><th>Trait 2</th><th>Trait 3</th><th>Trait 4</th><th>Trait 5</th>
-          <th data-sort="skill">Skill</th>
-          <th data-sort="activity">Activity</th>
-          <th data-sort="fusion">Fusion</th>
-          <th data-sort="locked">Locked</th>
+          <th data-sort-field="char">Character<span class="sort-indicator">↕</span></th>
+          <th data-sort-field="name">Deviation Name<span class="sort-indicator">↕</span></th>
+          <th data-sort-field="variant">Variant<span class="sort-indicator">↕</span></th>
+          <th data-sort-field="trait1">Trait 1<span class="sort-indicator">↕</span></th>
+          <th data-sort-field="trait2">Trait 2<span class="sort-indicator">↕</span></th>
+          <th data-sort-field="trait3">Trait 3<span class="sort-indicator">↕</span></th>
+          <th data-sort-field="trait4">Trait 4<span class="sort-indicator">↕</span></th>
+          <th data-sort-field="trait5">Trait 5<span class="sort-indicator">↕</span></th>
+          <th data-sort-field="skill">Skill<span class="sort-indicator">↕</span></th>
+          <th data-sort-field="activity">Activity<span class="sort-indicator">↕</span></th>
+          <th data-sort-field="fusion">Fusion<span class="sort-indicator">↕</span></th>
+          <th data-sort-field="locked">Locked<span class="sort-indicator">↕</span></th>
           <th>Notes</th>
           <th>Del</th>
         </tr>
@@ -499,7 +502,7 @@ input,select,button,textarea{touch-action:manipulation}
 
 <footer>Data is saved locally in your browser. Clearing browser data will erase your tracker.</footer>
 
-</div><!-- /#scroll-body -->
+</div><!-- /#table-wrapper -->
 
 <!-- ======================================================= -->
 <!-- SETTINGS SLIDE-IN                                        -->
@@ -772,8 +775,11 @@ let state = {
 let sortCol = null, sortDir = 1;
 let filters = { char:'', deviation:'', fusion:'', locked:'', skill:'', activity:'', variant:'' };
 let dragSrcIdx = null;
-let addDeviationDefaults = { character:'', variant:'', skill:'', activity:'' };
 let confirmCallback = null;
+let defaultCharacter = '';
+let defaultVariant   = '';
+let defaultSkill     = '';
+let defaultActivity  = '';
 
 /* ── Migration ── */
 function migrateStorage() {
@@ -782,6 +788,30 @@ function migrateStorage() {
   if (old && !cur) {
     localStorage.setItem(KEYS.deviations, old);
     localStorage.removeItem('ohdt_deviants');
+  }
+}
+
+function migrateData() {
+  let custom = [];
+  try { custom = JSON.parse(localStorage.getItem('ohdt_custom_deviations') || '[]'); } catch (e) { custom = []; }
+  custom = custom.map(d => d === 'Pyro' ? 'Pyro Dino' : d);
+  localStorage.setItem('ohdt_custom_deviations', JSON.stringify(custom));
+
+  let rows = [];
+  try { rows = JSON.parse(localStorage.getItem('ohdt_deviations') || '[]'); } catch (e) { rows = []; }
+  rows = rows.map(r => {
+    if (r && r.deviationName === 'Pyro') r.deviationName = 'Pyro Dino';
+    if (r && r.name === 'Pyro') r.name = 'Pyro Dino';
+    return r;
+  });
+  localStorage.setItem('ohdt_deviations', JSON.stringify(rows));
+
+  let assignments = {};
+  try { assignments = JSON.parse(localStorage.getItem('ohdt_custom_trait_assignments') || '{}'); } catch (e) { assignments = {}; }
+  if (assignments['Pyro']) {
+    assignments['Pyro Dino'] = assignments['Pyro'];
+    delete assignments['Pyro'];
+    localStorage.setItem('ohdt_custom_trait_assignments', JSON.stringify(assignments));
   }
 }
 
@@ -1013,8 +1043,9 @@ function buildVariantOptions(curVal) {
   return opts;
 }
 
-function renderVariantSelect(rowId, val) {
-  return `<select class="row-variant" onchange="rowChange('${rowId}','variant',this.value)">${buildVariantOptions(val)}</select>`;
+function renderVariantSelect(rowId, val, dataField) {
+  const attr = dataField ? ` data-field="${dataField}"` : '';
+  return `<select${attr} class="row-variant" onchange="rowChange('${rowId}','variant',this.value)">${buildVariantOptions(val)}</select>`;
 }
 
 function updateAllVariantDropdowns() {
@@ -1509,7 +1540,7 @@ function renderCards() {
         <div class="card-top-left">
           <div class="card-field-row">
             <span class="card-field-label">Character</span>
-            <select class="row-char card-select" onchange="rowChange('${row.id}','char',this.value)">${charOpts}</select>
+            <select data-field="character" class="row-char card-select" onchange="rowChange('${row.id}','char',this.value)">${charOpts}</select>
           </div>
           <div class="card-field-row">
             <span class="card-field-label">Deviation</span>
@@ -1517,7 +1548,7 @@ function renderCards() {
           </div>
           <div class="card-field-row">
             <span class="card-field-label">Variant</span>
-            <select class="row-variant card-select card-variant-sel" onchange="rowChange('${row.id}','variant',this.value)">${buildVariantOptions(row.variant)}</select>
+            <select data-field="variant" class="row-variant card-select card-variant-sel" onchange="rowChange('${row.id}','variant',this.value)">${buildVariantOptions(row.variant)}</select>
           </div>
         </div>
         <button class="del-btn card-del" onclick="deleteDeviationRow('${row.id}')">✕</button>
@@ -1533,8 +1564,8 @@ function renderCards() {
       </div>
       <div class="card-divider"></div>
       <div class="card-stat-row">
-        <div class="card-stat"><span class="card-stat-label">Skill</span>${renderSkillSelect(row.id, row.skill)}</div>
-        <div class="card-stat"><span class="card-stat-label">Activity</span>${renderActivitySelect(row.id, row.activity)}</div>
+        <div class="card-stat"><span class="card-stat-label">Skill</span>${renderSkillSelect(row.id, row.skill, 'skill')}</div>
+        <div class="card-stat"><span class="card-stat-label">Activity</span>${renderActivitySelect(row.id, row.activity, 'activity')}</div>
         <div class="card-stat">
           <span class="card-stat-label">Fusion</span>
           <label class="toggle"><input type="checkbox" ${row.fusion?'checked':''} onchange="rowChange('${row.id}','fusion',this.checked)"><span class="toggle-slider"></span></label>
@@ -1579,13 +1610,27 @@ function newDeviation() {
 
 function addDeviationRow() {
   const row = newDeviation();
-  if (addDeviationDefaults.character) row.char     = addDeviationDefaults.character;
-  if (addDeviationDefaults.variant)   row.variant  = addDeviationDefaults.variant;
-  if (addDeviationDefaults.skill)     row.skill    = addDeviationDefaults.skill;
-  if (addDeviationDefaults.activity)  row.activity = addDeviationDefaults.activity;
   state.deviations.push(row);
   save('deviations');
   renderView();
+  const container = isMobile() ? document.getElementById('cardContainer') : document.getElementById('deviationBody');
+  const rowEl = container ? container.querySelector(`[data-id="${row.id}"]`) : null;
+  if (!rowEl) return;
+
+  setSelectValue(rowEl, 'character', defaultCharacter);
+  setSelectValue(rowEl, 'variant',   defaultVariant);
+  setSelectValue(rowEl, 'skill',     defaultSkill);
+  setSelectValue(rowEl, 'activity',  defaultActivity);
+
+  const ch = rowEl.querySelector('[data-field="character"]');
+  const vr = rowEl.querySelector('[data-field="variant"]');
+  const sk = rowEl.querySelector('[data-field="skill"]');
+  const ac = rowEl.querySelector('[data-field="activity"]');
+  if (ch) rowChange(row.id, 'char', ch.value);
+  if (vr) rowChange(row.id, 'variant', vr.value);
+  if (sk) rowChange(row.id, 'skill', sk.value);
+  if (ac) rowChange(row.id, 'activity', ac.value);
+  save('deviations');
 }
 
 function deleteDeviationRow(id) {
@@ -1608,14 +1653,34 @@ function getFilteredSorted() {
   if (variant)   rows = rows.filter(r => r.variant === variant);
   if (sortCol) {
     const k = { char:'char', name:'name', variant:'variant', skill:'skill', activity:'activity', fusion:'fusion', locked:'locked' }[sortCol];
-    if (k) rows.sort((a, b) => {
+    rows.sort((a, b) => {
+      if (sortCol.startsWith('trait')) {
+        const idx = Number(sortCol.replace('trait', '')) - 1;
+        return compareTraitValues(a.traits[idx], b.traits[idx], sortDir);
+      }
+      if (!k) return 0;
       let av = a[k], bv = b[k];
       if (typeof av === 'boolean') av = av ? 1 : 0;
       if (typeof bv === 'boolean') bv = bv ? 1 : 0;
-      return (typeof av === 'number' ? av - bv : String(av).localeCompare(String(bv))) * sortDir;
+      return (typeof av === 'number' ? av - bv : String(av).localeCompare(String(bv), undefined, { sensitivity:'base' })) * sortDir;
     });
   }
   return rows;
+}
+
+function compareTraitValues(a, b, dir) {
+  const av = String(a || '').trim();
+  const bv = String(b || '').trim();
+  const aEmpty = !av || av === '-';
+  const bEmpty = !bv || bv === '-';
+  if (aEmpty || bEmpty) {
+    if (aEmpty && bEmpty) return 0;
+    return dir === 1 ? (aEmpty ? 1 : -1) : (aEmpty ? -1 : 1);
+  }
+  const aNeg = av.startsWith('⚠') || av.startsWith('âš ');
+  const bNeg = bv.startsWith('⚠') || bv.startsWith('âš ');
+  if (aNeg !== bNeg) return dir === 1 ? (aNeg ? 1 : -1) : (aNeg ? -1 : 1);
+  return av.localeCompare(bv, undefined, { sensitivity:'base' }) * dir;
 }
 
 function renderTable() {
@@ -1644,16 +1709,16 @@ function renderTable() {
     const devOpts  = '<option value="">—</option>' + allDevs.map(d => `<option value="${escHtml(d)}"${d===row.name?' selected':''}>${escHtml(d)}</option>`).join('');
 
     tr.innerHTML = `
-      <td><select class="row-char" onchange="rowChange('${row.id}','char',this.value)">${charOpts}</select></td>
+      <td><select data-field="character" class="row-char" onchange="rowChange('${row.id}','char',this.value)">${charOpts}</select></td>
       <td><select class="row-name" onchange="rowChange('${row.id}','name',this.value)">${devOpts}</select></td>
-      <td>${renderVariantSelect(row.id, row.variant)}</td>
+      <td>${renderVariantSelect(row.id, row.variant, 'variant')}</td>
       <td class="trait-cell" id="tc_${row.id}_0"></td>
       <td class="trait-cell" id="tc_${row.id}_1"></td>
       <td class="trait-cell" id="tc_${row.id}_2"></td>
       <td class="trait-cell" id="tc_${row.id}_3"></td>
       <td class="trait-cell" id="tc_${row.id}_4"></td>
-      <td>${renderSkillSelect(row.id, row.skill)}</td>
-      <td>${renderActivitySelect(row.id, row.activity)}</td>
+      <td>${renderSkillSelect(row.id, row.skill, 'skill')}</td>
+      <td>${renderActivitySelect(row.id, row.activity, 'activity')}</td>
       <td class="toggle-wrap"><label class="toggle"><input type="checkbox" ${row.fusion?'checked':''} onchange="rowChange('${row.id}','fusion',this.checked)"><span class="toggle-slider"></span></label></td>
       <td class="toggle-wrap"><label class="toggle"><input type="checkbox" ${row.locked?'checked':''} onchange="rowChange('${row.id}','locked',this.checked)"><span class="toggle-slider"></span></label></td>
       <td><input type="text" value="${escHtml(row.notes)}" placeholder="Notes…" oninput="rowChange('${row.id}','notes',this.value)"></td>
@@ -1664,16 +1729,13 @@ function renderTable() {
     for (let i = 0; i < 5; i++) renderTraitCell(row.id, i, row.name, row.traits[i]);
   });
 
-  // Sort arrows
-  document.querySelectorAll('th[data-sort]').forEach(th => {
-    th.classList.remove('sort-asc', 'sort-desc');
-    if (th.dataset.sort === sortCol) th.classList.add(sortDir === 1 ? 'sort-asc' : 'sort-desc');
-  });
+  updateSortIndicators();
 }
 
-function renderSkillSelect(rowId, val) {
+function renderSkillSelect(rowId, val, dataField) {
   const v = val ? String(val) : '';
-  return `<select onchange="rowChange('${rowId}','skill',this.value)">
+  const attr = dataField ? ` data-field="${dataField}"` : '';
+  return `<select${attr} onchange="rowChange('${rowId}','skill',this.value)">
     <option value=""${!v?' selected':''}>—</option>
     <option value="1"${v==='1'?' selected':''}>1</option>
     <option value="2"${v==='2'?' selected':''}>2</option>
@@ -1683,9 +1745,10 @@ function renderSkillSelect(rowId, val) {
   </select>`;
 }
 
-function renderActivitySelect(rowId, val) {
+function renderActivitySelect(rowId, val, dataField) {
   const v = val ? String(val) : '';
-  return `<select onchange="rowChange('${rowId}','activity',this.value)">
+  const attr = dataField ? ` data-field="${dataField}"` : '';
+  return `<select${attr} onchange="rowChange('${rowId}','activity',this.value)">
     <option value=""${!v?' selected':''}>—</option>
     <option value="1"${v==='1'?' selected':''}>1</option>
     <option value="2"${v==='2'?' selected':''}>2</option>
@@ -1809,14 +1872,30 @@ function hideTraitTooltip() {
 document.addEventListener('click', () => hideTraitTooltip());
 
 /* ── Sort / Filter ── */
-document.querySelectorAll('th[data-sort]').forEach(th => {
+document.querySelectorAll('th[data-sort-field]').forEach(th => {
   th.addEventListener('click', () => {
-    const col = th.dataset.sort;
-    if (sortCol === col) sortDir = -sortDir;
-    else { sortCol = col; sortDir = 1; }
+    const col = th.dataset.sortField;
+    if (sortCol !== col) {
+      sortCol = col;
+      sortDir = 1;
+    } else if (sortDir === 1) {
+      sortDir = -1;
+    } else {
+      sortCol = null;
+      sortDir = 1;
+    }
     renderView();
   });
 });
+
+function updateSortIndicators() {
+  document.querySelectorAll('th[data-sort-field]').forEach(th => {
+    const indicator = th.querySelector('.sort-indicator');
+    if (!indicator) return;
+    if (th.dataset.sortField !== sortCol) indicator.textContent = '↕';
+    else indicator.textContent = sortDir === 1 ? '↑' : '↓';
+  });
+}
 
 function applyFilters() {
   filters.char      = document.getElementById('fChar').value;
@@ -1829,12 +1908,51 @@ function applyFilters() {
   renderView();
 }
 
-function clearFilters() {
+function clearAllFilters() {
+  defaultCharacter = '';
+  defaultVariant   = '';
+  defaultSkill     = '';
+  defaultActivity  = '';
   ['fChar','fFusion','fLocked','fSkill','fActivity','fVariant'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('fDeviation').value = '';
   filters = { char:'', deviation:'', fusion:'', locked:'', skill:'', activity:'', variant:'' };
-  addDeviationDefaults = { character:'', variant:'', skill:'', activity:'' };
   renderView();
+}
+
+function clearFilters() {
+  clearAllFilters();
+}
+
+function setSelectValue(row, fieldName, value) {
+  if (!value) return;
+  const sel = row.querySelector('[data-field="' + fieldName + '"]');
+  if (!sel) return;
+  for (let i = 0; i < sel.options.length; i++) {
+    if (sel.options[i].value === value) {
+      sel.selectedIndex = i;
+      break;
+    }
+  }
+}
+
+function initPersistenceListeners() {
+  const fc = document.getElementById('fChar');
+  const fv = document.getElementById('fVariant');
+  const fs = document.getElementById('fSkill');
+  const fa = document.getElementById('fActivity');
+
+  if (fc) fc.addEventListener('change', () => {
+    defaultCharacter = (fc.value && fc.value !== 'All') ? fc.value : '';
+  });
+  if (fv) fv.addEventListener('change', () => {
+    defaultVariant = (fv.value && fv.value !== 'All') ? fv.value : '';
+  });
+  if (fs) fs.addEventListener('change', () => {
+    defaultSkill = (fs.value && fs.value !== 'All') ? fs.value : '';
+  });
+  if (fa) fa.addEventListener('change', () => {
+    defaultActivity = (fa.value && fa.value !== 'All') ? fa.value : '';
+  });
 }
 
 /* ============================================================
@@ -2095,27 +2213,27 @@ function escHtml(s) {
 /* ============================================================
    INIT
    ============================================================ */
-load();
-renderCharList();
-updateFilterCharDropdown();
-renderVariantList();
-updateFilterVariantDropdown();
-renderView();
-renderMaterials();
-// Track filter selections for addDeviationRow pre-fill
-document.getElementById('fChar').addEventListener('change',     e => { addDeviationDefaults.character = e.target.value; });
-document.getElementById('fVariant').addEventListener('change',  e => { addDeviationDefaults.variant   = e.target.value; });
-document.getElementById('fSkill').addEventListener('change',    e => { addDeviationDefaults.skill      = e.target.value; });
-document.getElementById('fActivity').addEventListener('change', e => { addDeviationDefaults.activity   = e.target.value; });
-// Collapse filter bar on mobile by default
-if (isMobile()) {
-  const fbi = document.getElementById('filterBarInner');
-  const fta = document.getElementById('filterToggleArrow');
-  if (fbi) fbi.classList.add('collapsed');
-  if (fta) fta.textContent = '▸';
-}
+document.addEventListener('DOMContentLoaded', () => {
+  migrateData();
+  load();
+  renderCharList();
+  updateFilterCharDropdown();
+  renderVariantList();
+  updateFilterVariantDropdown();
+  renderView();
+  renderMaterials();
+  initPersistenceListeners();
+  // Collapse filter bar on mobile by default
+  if (isMobile()) {
+    const fbi = document.getElementById('filterBarInner');
+    const fta = document.getElementById('filterToggleArrow');
+    if (fbi) fbi.classList.add('collapsed');
+    if (fta) fta.textContent = '▸';
+  }
+});
 </script>
 
 </div><!-- /#app -->
 </body>
 </html>
+
