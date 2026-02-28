@@ -228,13 +228,98 @@ td select option{background:var(--bg2)}
 /* ===== FOOTER ===== */
 footer{text-align:center;padding:16px;font-size:.75rem;color:var(--text-muted);border-top:1px solid var(--border);margin-top:20px}
 
+/* ===== TOUCH OPTIMIZATION ===== */
+*{-webkit-tap-highlight-color:transparent}
+input,select,button,textarea{touch-action:manipulation}
+
+/* ===== CARD VIEW (shown only on mobile) ===== */
+.card-container{display:none}
+.deviation-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:10px}
+.card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px}
+.card-top-left{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.card-field-row{display:flex;flex-direction:column;gap:2px}
+.card-field-label{font-size:.65rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.7px}
+.card-select{background:transparent;border:1px solid transparent;border-radius:4px;color:var(--text);width:100%;font-size:1rem;font-weight:600;padding:3px 4px}
+.card-select:focus{border-color:var(--accent);background:var(--bg2);outline:none}
+.card-variant-sel{font-size:.85rem;font-weight:400;color:var(--text-dim)}
+.card-divider{border:none;border-top:1px solid var(--border);margin:8px 0}
+.card-section-label{font-size:.68rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px}
+.card-traits{display:flex;flex-direction:column;gap:4px;margin-bottom:4px}
+.card-trait-cell select{background:transparent;border:1px solid transparent;border-radius:4px;color:var(--text);width:100%;font-size:.85rem;padding:3px 4px}
+.card-trait-cell select:focus{border-color:var(--accent);background:var(--bg2);outline:none}
+.card-trait-cell select.neg-trait{color:var(--neg)}
+.card-stat-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:6px}
+.card-stat{display:flex;align-items:center;gap:6px}
+.card-stat-label{font-size:.7rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.4px}
+.card-stat select{background:transparent;border:1px solid transparent;border-radius:4px;color:var(--text);font-size:.85rem;padding:3px 4px}
+.card-stat select:focus{border-color:var(--accent);background:var(--bg2);outline:none}
+.card-notes input{background:transparent;border:1px solid transparent;border-radius:4px;color:var(--text);font-size:.85rem;padding:4px 6px;width:100%}
+.card-notes input:focus{border-color:var(--accent);background:var(--bg2);outline:none}
+.card-del{min-width:36px;min-height:36px;flex-shrink:0;align-self:flex-start}
+.card-empty{color:var(--text-dim);font-style:italic;font-size:.88rem;padding:20px 0;text-align:center}
+
+/* ===== DESKTOP/MOBILE VISIBILITY ===== */
+.btn-mobile-only{display:none}
+.settings-actions-section{display:none}
+.show-all-cols-btn{display:none}
+.filter-toggle-btn{display:none}
+.fm-move-btns{display:none}
+
+/* ===== TRAIT ASSIGN COUNTER ===== */
+.trait-assign-counter{font-size:.78rem;color:var(--text-dim);margin-top:8px}
+
 /* ===== RESPONSIVE ===== */
-@media(max-width:768px){
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+
+/* ─── Tablet 768–1199 ─── */
+@media(min-width:768px) and (max-width:1199px){
+  #deviationTable:not(.show-all-traits){table-layout:auto}
+  #deviationTable:not(.show-all-traits) th:nth-child(6),
+  #deviationTable:not(.show-all-traits) th:nth-child(7),
+  #deviationTable:not(.show-all-traits) th:nth-child(8),
+  #deviationTable:not(.show-all-traits) tbody td:nth-child(6),
+  #deviationTable:not(.show-all-traits) tbody td:nth-child(7),
+  #deviationTable:not(.show-all-traits) tbody td:nth-child(8){display:none}
+  .show-all-cols-btn{display:inline-flex !important}
+}
+
+/* ─── Mobile < 768 ─── */
+@media(max-width:767px){
+  input,select,textarea{font-size:16px !important}
+  button{min-height:44px}
+  .btn-sm{min-height:36px}
   .app-header{padding:10px 12px}
+  .gear-btn{min-width:44px;min-height:44px}
+  .tab-bar{padding:8px 8px 0}
+  .tab-btn{flex:1;text-align:center;padding:10px 6px;font-size:.85rem}
   .tab-content{padding:10px 12px}
-  .filter-bar{flex-direction:column}
-  .filter-actions{margin-left:0}
-  .controls-bar{flex-direction:column;align-items:flex-start}
+  .filter-toggle-btn{display:flex;width:100%;justify-content:space-between;margin-bottom:0}
+  .filter-bar{padding:10px 12px;gap:0}
+  .filter-bar-inner{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+  .filter-bar-inner.collapsed{display:none}
+  .filter-bar select,.filter-bar input[type=text]{width:100%;min-width:0}
+  .filter-actions{grid-column:1/-1;margin-left:0;justify-content:space-between;width:100%}
+  .btn-desktop-only{display:none !important}
+  .btn-mobile-only{display:inline-flex !important}
+  .table-wrap{display:none}
+  .card-container{display:block}
+  .toggle{width:48px;height:28px}
+  .toggle-slider::before{width:20px;height:20px}
+  .toggle input:checked~.toggle-slider::before{transform:translateX(20px)}
+  .fm-row{flex-wrap:wrap}
+  .fm-name{flex:1 1 100%}
+  .fm-qty{width:80px;flex:0 0 auto}
+  .fm-notes{flex:1 1 0}
+  .drag-handle{display:none}
+  .fm-move-btns{display:flex;gap:4px}
+  .overlay.open{align-items:flex-end;justify-content:flex-start}
+  .settings-panel{width:100vw;min-height:auto;max-height:90vh;border-left:none;border-top:1px solid var(--border-light);border-radius:12px 12px 0 0;animation:slideUp .22s ease}
+  .settings-actions-section{display:block}
+  .modal-overlay{padding:0;align-items:flex-end}
+  .modal,.modal-sm,.modal-lg{max-width:100% !important;border-radius:12px 12px 0 0;max-height:92vh}
+  .close-btn{min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center}
+  .trait-two-col{flex-direction:column !important}
+  .dev-checklist{max-height:none !important;overflow:visible}
 }
 </style>
 </head>
@@ -259,45 +344,48 @@ footer{text-align:center;padding:16px;font-size:.75rem;color:var(--text-muted);b
 
   <!-- Filter Bar -->
   <div class="filter-bar">
-    <div class="filter-group">
-      <label>Character</label>
-      <select id="fChar" onchange="applyFilters()"><option value="">All</option></select>
-    </div>
-    <div class="filter-group">
-      <label>Variant</label>
-      <select id="fVariant" onchange="applyFilters()"><option value="">All</option></select>
-    </div>
-    <div class="filter-group">
-      <label>Deviation</label>
-      <input id="fDeviation" type="text" placeholder="Search…" oninput="applyFilters()">
-    </div>
-    <div class="filter-group">
-      <label>Fusion</label>
-      <select id="fFusion" onchange="applyFilters()">
-        <option value="">All</option><option value="1">Yes</option><option value="0">No</option>
-      </select>
-    </div>
-    <div class="filter-group">
-      <label>Locked</label>
-      <select id="fLocked" onchange="applyFilters()">
-        <option value="">All</option><option value="1">Yes</option><option value="0">No</option>
-      </select>
-    </div>
-    <div class="filter-group">
-      <label>Skill Level</label>
-      <select id="fSkill" onchange="applyFilters()">
-        <option value="">All</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
-      </select>
-    </div>
-    <div class="filter-group">
-      <label>Activity Level</label>
-      <select id="fActivity" onchange="applyFilters()">
-        <option value="">All</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
-      </select>
-    </div>
-    <div class="filter-actions">
-      <button class="btn btn-secondary" onclick="clearFilters()">Clear Filters</button>
-      <span class="row-count" id="rowCount">Showing 0 of 0 deviations</span>
+    <button class="filter-toggle-btn btn btn-secondary" onclick="toggleFilterBar()">🔍 Filters <span id="filterToggleArrow">▾</span></button>
+    <div class="filter-bar-inner" id="filterBarInner">
+      <div class="filter-group">
+        <label>Character</label>
+        <select id="fChar" onchange="applyFilters()"><option value="">All</option></select>
+      </div>
+      <div class="filter-group">
+        <label>Variant</label>
+        <select id="fVariant" onchange="applyFilters()"><option value="">All</option></select>
+      </div>
+      <div class="filter-group">
+        <label>Deviation</label>
+        <input id="fDeviation" type="text" placeholder="Search…" oninput="applyFilters()">
+      </div>
+      <div class="filter-group">
+        <label>Fusion</label>
+        <select id="fFusion" onchange="applyFilters()">
+          <option value="">All</option><option value="1">Yes</option><option value="0">No</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Locked</label>
+        <select id="fLocked" onchange="applyFilters()">
+          <option value="">All</option><option value="1">Yes</option><option value="0">No</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Skill Level</label>
+        <select id="fSkill" onchange="applyFilters()">
+          <option value="">All</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Activity Level</label>
+        <select id="fActivity" onchange="applyFilters()">
+          <option value="">All</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
+        </select>
+      </div>
+      <div class="filter-actions">
+        <button class="btn btn-secondary" onclick="clearFilters()">Clear Filters</button>
+        <span class="row-count" id="rowCount">Showing 0 of 0 deviations</span>
+      </div>
     </div>
   </div>
 
@@ -305,10 +393,12 @@ footer{text-align:center;padding:16px;font-size:.75rem;color:var(--text-muted);b
   <div class="controls-bar">
     <div class="btn-group">
       <button class="btn btn-primary" onclick="addDeviationRow()">+ Add Deviation</button>
-      <button class="btn btn-secondary" onclick="openManageDeviations()">⚡ Manage Deviations</button>
-      <button class="btn btn-secondary" onclick="openManageTraits()">✨ Manage Traits</button>
+      <button class="btn btn-secondary btn-desktop-only" onclick="openManageDeviations()">⚡ Manage Deviations</button>
+      <button class="btn btn-secondary btn-desktop-only" onclick="openManageTraits()">✨ Manage Traits</button>
+      <button class="btn btn-secondary btn-mobile-only" onclick="openSettings()">⚙ More</button>
     </div>
-    <div class="btn-group">
+    <div class="btn-group btn-desktop-only">
+      <button class="btn btn-secondary show-all-cols-btn" onclick="toggleExtraCols()">Show All Columns</button>
       <button class="btn btn-secondary" onclick="saveConfig()">💾 Save Config</button>
       <button class="btn btn-secondary" onclick="triggerLoadConfig()">📂 Load Config</button>
       <button class="btn btn-secondary" onclick="exportCSV()">Export CSV</button>
@@ -353,6 +443,8 @@ footer{text-align:center;padding:16px;font-size:.75rem;color:var(--text-muted);b
       <tbody id="deviationBody"></tbody>
     </table>
   </div>
+  <!-- Card view (mobile only) -->
+  <div class="card-container" id="cardContainer"></div>
 </div>
 
 <!-- ======================================================= -->
@@ -378,6 +470,18 @@ footer{text-align:center;padding:16px;font-size:.75rem;color:var(--text-muted);b
     <div class="settings-header">
       <h2>⚙ Settings</h2>
       <button class="close-btn" onclick="closeSettings()">✕</button>
+    </div>
+
+    <div class="settings-section settings-actions-section">
+      <h3>Actions</h3>
+      <div class="settings-btn-list">
+        <button class="btn btn-secondary" style="min-height:44px" onclick="closeSettings();openManageDeviations()">⚡ Manage Deviations</button>
+        <button class="btn btn-secondary" style="min-height:44px" onclick="closeSettings();openManageTraits()">✨ Manage Traits</button>
+        <button class="btn btn-secondary" style="min-height:44px" onclick="closeSettings();saveConfig()">💾 Save Config</button>
+        <button class="btn btn-secondary" style="min-height:44px" onclick="closeSettings();triggerLoadConfig()">📂 Load Config</button>
+        <button class="btn btn-secondary" style="min-height:44px" onclick="closeSettings();exportCSV()">Export CSV</button>
+        <button class="btn btn-danger" style="min-height:44px" onclick="closeSettings();confirmClearAll()">🗑 Clear All Data</button>
+      </div>
     </div>
 
     <div class="settings-section">
@@ -437,7 +541,7 @@ footer{text-align:center;padding:16px;font-size:.75rem;color:var(--text-muted);b
         <div class="form-group">
           <label>Assign Traits <span style="color:var(--text-muted);font-size:.8em">(optional)</span></label>
           <input class="form-input" id="addDevTraitSearch" type="text" placeholder="Search traits…" oninput="filterAddDevTraits()" style="margin-bottom:8px">
-          <div style="display:flex;gap:10px">
+          <div class="trait-two-col" style="display:flex;gap:10px">
             <div style="flex:1;min-width:0">
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
                 <span style="font-size:.72rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.7px">Positive (<span id="addDevPosCount">0</span> selected)</span>
@@ -460,6 +564,7 @@ footer{text-align:center;padding:16px;font-size:.75rem;color:var(--text-muted);b
             </div>
           </div>
         </div>
+        <p class="trait-assign-counter" id="addDevTotalCount">Selected: 0 traits assigned</p>
         <button class="btn btn-primary" onclick="addCustomDeviation()">Add to List</button>
         <div class="flash-msg" id="devAddFlash"></div>
       </div>
@@ -483,7 +588,7 @@ footer{text-align:center;padding:16px;font-size:.75rem;color:var(--text-muted);b
           <div class="form-group">
             <label>Assigned Traits</label>
             <input class="form-input" id="editDevTraitSearch" type="text" placeholder="Search traits…" oninput="filterEditDevTraits()" style="margin-bottom:8px">
-            <div style="display:flex;gap:10px">
+            <div class="trait-two-col" style="display:flex;gap:10px">
               <div style="flex:1;min-width:0">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
                   <span style="font-size:.72rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.7px">Positive (<span id="editDevPosCount">0</span> selected)</span>
@@ -871,8 +976,8 @@ function renderVariantSelect(rowId, val) {
 
 function updateAllVariantDropdowns() {
   document.querySelectorAll('select.row-variant').forEach(sel => {
-    const tr    = sel.closest('tr');
-    const rowId = tr ? tr.dataset.id : null;
+    const container = sel.closest('[data-id]');
+    const rowId = container ? container.dataset.id : null;
     const row   = rowId ? state.deviations.find(r => String(r.id) === String(rowId)) : null;
     const cur   = row ? row.variant : '';
     sel.innerHTML = buildVariantOptions(cur);
@@ -1013,8 +1118,7 @@ function removeCustomDeviation(name) {
 }
 
 function refreshAllDeviationDropdowns() {
-  // Re-render visible rows that have deviation dropdowns
-  renderTable();
+  renderView();
 }
 
 /* ============================================================
@@ -1055,6 +1159,8 @@ function updateAddDevCounts() {
   const neg = document.querySelectorAll('#addDevNegTraits input[name="addDevTrait"]:checked').length;
   const pe = document.getElementById('addDevPosCount'); if (pe) pe.textContent = pos;
   const ne = document.getElementById('addDevNegCount'); if (ne) ne.textContent = neg;
+  const tc = document.getElementById('addDevTotalCount');
+  if (tc) { const n = pos + neg; tc.textContent = `Selected: ${n} trait${n !== 1 ? 's' : ''} assigned`; }
 }
 
 function selectAllAddDevTraits(type) {
@@ -1179,7 +1285,10 @@ function refreshTraitDropdownsForDeviation(devName) {
       if (row.traits[i] && !validNames.includes(row.traits[i])) { row.traits[i] = ''; changed = true; }
     }
     if (changed) save('deviations');
-    for (let i = 0; i < 5; i++) renderTraitCell(row.id, i, devName, row.traits[i]);
+    for (let i = 0; i < 5; i++) {
+      renderTraitCell(row.id, i, devName, row.traits[i]);
+      renderCardTraitCell(row.id, i, devName, row.traits[i]);
+    }
   });
 }
 
@@ -1310,6 +1419,115 @@ function removeCustomTrait(rawName, id) {
 }
 
 /* ============================================================
+   RESPONSIVE VIEW CONTROLLER
+   ============================================================ */
+const isMobile = () => window.matchMedia('(max-width:767px)').matches;
+
+function renderView() {
+  if (isMobile()) {
+    renderCards();
+    document.getElementById('deviationBody').innerHTML = '';
+  } else {
+    renderTable();
+    document.getElementById('cardContainer').innerHTML = '';
+  }
+}
+
+let _resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(_resizeTimer);
+  _resizeTimer = setTimeout(renderView, 150);
+});
+
+function renderCards() {
+  const rows  = getFilteredSorted();
+  const cont  = document.getElementById('cardContainer');
+  const total = state.deviations.length;
+  const word  = total === 1 ? 'deviation' : 'deviations';
+  document.getElementById('rowCount').textContent = `Showing ${rows.length} of ${total} ${word}`;
+  cont.innerHTML = '';
+  if (rows.length === 0) {
+    cont.innerHTML = `<p class="card-empty">${total === 0
+      ? 'No deviations added yet. Tap <strong>+ Add Deviation</strong> to get started.'
+      : 'No deviations match the current filters.'}</p>`;
+    return;
+  }
+  const allDevs = getAllDeviations();
+  rows.forEach(row => {
+    const card = document.createElement('div');
+    card.className = 'deviation-card';
+    card.dataset.id = row.id;
+    const charOpts = '<option value="">—</option>' +
+      state.settings.characters.map(c => `<option value="${escHtml(c)}"${c===row.char?' selected':''}>${escHtml(c)}</option>`).join('');
+    const devOpts = '<option value="">—</option>' +
+      allDevs.map(d => `<option value="${escHtml(d)}"${d===row.name?' selected':''}>${escHtml(d)}</option>`).join('');
+    card.innerHTML = `
+      <div class="card-top">
+        <div class="card-top-left">
+          <div class="card-field-row">
+            <span class="card-field-label">Character</span>
+            <select class="row-char card-select" onchange="rowChange('${row.id}','char',this.value)">${charOpts}</select>
+          </div>
+          <div class="card-field-row">
+            <span class="card-field-label">Deviation</span>
+            <select class="row-name card-select" onchange="rowChange('${row.id}','name',this.value)">${devOpts}</select>
+          </div>
+          <div class="card-field-row">
+            <span class="card-field-label">Variant</span>
+            <select class="row-variant card-select card-variant-sel" onchange="rowChange('${row.id}','variant',this.value)">${buildVariantOptions(row.variant)}</select>
+          </div>
+        </div>
+        <button class="del-btn card-del" onclick="deleteDeviationRow('${row.id}')">✕</button>
+      </div>
+      <div class="card-divider"></div>
+      <div class="card-section-label">Traits</div>
+      <div class="card-traits">
+        <div class="card-trait-cell" id="cc_${row.id}_0"></div>
+        <div class="card-trait-cell" id="cc_${row.id}_1"></div>
+        <div class="card-trait-cell" id="cc_${row.id}_2"></div>
+        <div class="card-trait-cell" id="cc_${row.id}_3"></div>
+        <div class="card-trait-cell" id="cc_${row.id}_4"></div>
+      </div>
+      <div class="card-divider"></div>
+      <div class="card-stat-row">
+        <div class="card-stat"><span class="card-stat-label">Skill</span>${renderSkillSelect(row.id, row.skill)}</div>
+        <div class="card-stat"><span class="card-stat-label">Activity</span>${renderActivitySelect(row.id, row.activity)}</div>
+        <div class="card-stat">
+          <span class="card-stat-label">Fusion</span>
+          <label class="toggle"><input type="checkbox" ${row.fusion?'checked':''} onchange="rowChange('${row.id}','fusion',this.checked)"><span class="toggle-slider"></span></label>
+        </div>
+        <div class="card-stat">
+          <span class="card-stat-label">Locked</span>
+          <label class="toggle"><input type="checkbox" ${row.locked?'checked':''} onchange="rowChange('${row.id}','locked',this.checked)"><span class="toggle-slider"></span></label>
+        </div>
+      </div>
+      <div class="card-notes">
+        <input type="text" value="${escHtml(row.notes)}" placeholder="Notes…" oninput="rowChange('${row.id}','notes',this.value)">
+      </div>`;
+    cont.appendChild(card);
+    for (let i = 0; i < 5; i++) renderCardTraitCell(row.id, i, row.name, row.traits[i]);
+  });
+}
+
+function renderCardTraitCell(rowId, slotIdx, devName, curTrait) {
+  const cell = document.getElementById(`cc_${rowId}_${slotIdx}`);
+  if (!cell) return;
+  const avail    = traitsForDeviation(devName);
+  const traitDef = getAllTraits().find(t => t.name === curTrait);
+  const isNeg    = traitDef?.neg || false;
+  let opts = '<option value="">—</option>';
+  avail.forEach(t => opts += `<option value="${escHtml(t.name)}"${t.name===curTrait?' selected':''}>${escHtml(t.name)}</option>`);
+  cell.innerHTML = `<select class="${isNeg?'neg-trait':''}" onchange="traitChange('${rowId}',${slotIdx},this.value)">${opts}</select>`;
+  if (curTrait && traitDef) {
+    const sel = cell.querySelector('select');
+    sel.addEventListener('mouseenter', () => showTraitTooltip(sel, curTrait, traitDef.effect, isNeg));
+    sel.addEventListener('mouseleave', hideTraitTooltip);
+    sel.addEventListener('focus',      () => showTraitTooltip(sel, curTrait, traitDef.effect, isNeg));
+    sel.addEventListener('blur',       hideTraitTooltip);
+  }
+}
+
+/* ============================================================
    DEVIATIONS TABLE
    ============================================================ */
 function newDeviation() {
@@ -1322,14 +1540,14 @@ function addDeviationRow() {
   if (charFilter) row.char = charFilter;
   state.deviations.push(row);
   save('deviations');
-  renderTable();
+  renderView();
 }
 
 function deleteDeviationRow(id) {
   showConfirm('Delete Deviation', 'Are you sure you want to delete this row?', () => {
     state.deviations = state.deviations.filter(d => String(d.id) !== String(id));
     save('deviations');
-    renderTable();
+    renderView();
   });
 }
 
@@ -1472,6 +1690,7 @@ function rowChange(id, field, val) {
         }
       }
       renderTraitCell(id, i, val, row.traits[i]);
+      renderCardTraitCell(id, i, val, row.traits[i]);
     }
   } else if (field === 'char')     row.char     = val;
   else if (field === 'variant') {
@@ -1510,6 +1729,7 @@ function traitChange(rowId, slotIdx, val) {
   row.traits[slotIdx] = val;
   save('deviations');
   renderTraitCell(rowId, slotIdx, row.name, val);
+  renderCardTraitCell(rowId, slotIdx, row.name, val);
 }
 
 /* ── Trait Tooltip ── */
@@ -1540,13 +1760,16 @@ function hideTraitTooltip() {
   document.getElementById('shared-tooltip').style.display = 'none';
 }
 
+/* ── Dismiss tooltip on any click outside ── */
+document.addEventListener('click', () => hideTraitTooltip());
+
 /* ── Sort / Filter ── */
 document.querySelectorAll('th[data-sort]').forEach(th => {
   th.addEventListener('click', () => {
     const col = th.dataset.sort;
     if (sortCol === col) sortDir = -sortDir;
     else { sortCol = col; sortDir = 1; }
-    renderTable();
+    renderView();
   });
 });
 
@@ -1558,14 +1781,14 @@ function applyFilters() {
   filters.skill     = document.getElementById('fSkill').value;
   filters.activity  = document.getElementById('fActivity').value;
   filters.variant   = document.getElementById('fVariant').value;
-  renderTable();
+  renderView();
 }
 
 function clearFilters() {
   ['fChar','fFusion','fLocked','fSkill','fActivity','fVariant'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('fDeviation').value = '';
   filters = { char:'', deviation:'', fusion:'', locked:'', skill:'', activity:'', variant:'' };
-  renderTable();
+  renderView();
 }
 
 /* ============================================================
@@ -1598,7 +1821,7 @@ function confirmClearAll() {
     () => {
       state.deviations = []; state.materials = [];
       save('deviations'); save('materials');
-      renderTable(); renderMaterials();
+      renderView(); renderMaterials();
     }
   );
 }
@@ -1640,7 +1863,7 @@ function handleConfigLoad(e) {
       updateFilterCharDropdown();
       renderVariantList();
       updateFilterVariantDropdown();
-      renderTable();
+      renderView();
       alert('Config loaded successfully.');
     } catch (err) {
       alert('Invalid config file. Please load a valid JSON config.');
@@ -1651,8 +1874,36 @@ function handleConfigLoad(e) {
 }
 
 /* ============================================================
+   FILTER BAR & COLUMN TOGGLE
+   ============================================================ */
+function toggleFilterBar() {
+  const inner = document.getElementById('filterBarInner');
+  const arrow = document.getElementById('filterToggleArrow');
+  const collapsed = inner.classList.toggle('collapsed');
+  if (arrow) arrow.textContent = collapsed ? '▸' : '▾';
+}
+
+function toggleExtraCols() {
+  const tbl = document.getElementById('deviationTable');
+  const btn = document.querySelector('.show-all-cols-btn');
+  const showing = tbl.classList.toggle('show-all-traits');
+  if (btn) btn.textContent = showing ? 'Hide Columns' : 'Show All Columns';
+}
+
+/* ============================================================
    FUSION MATERIALS
    ============================================================ */
+function moveMaterial(id, dir) {
+  const idx = state.materials.findIndex(m => String(m.id) === String(id));
+  if (idx === -1) return;
+  const newIdx = idx + dir;
+  if (newIdx < 0 || newIdx >= state.materials.length) return;
+  const [item] = state.materials.splice(idx, 1);
+  state.materials.splice(newIdx, 0, item);
+  save('materials');
+  renderMaterials();
+}
+
 function addMaterial() {
   state.materials.push({ id: Date.now() + Math.random(), name:'', qty:0, notes:'' });
   save('materials');
@@ -1685,6 +1936,10 @@ function renderMaterials() {
     div.dataset.idx = idx;
     div.innerHTML = `
       <span class="drag-handle" title="Drag to reorder">⠿</span>
+      <div class="fm-move-btns">
+        <button class="btn btn-sm btn-secondary" onclick="moveMaterial('${m.id}',-1)" title="Move up">↑</button>
+        <button class="btn btn-sm btn-secondary" onclick="moveMaterial('${m.id}',1)" title="Move down">↓</button>
+      </div>
       <input class="fm-input fm-name"  type="text"   value="${escHtml(m.name)}"  placeholder="Material name…"  oninput="matChange('${m.id}','name',this.value)">
       <input class="fm-input fm-qty"   type="number" value="${m.qty}"            placeholder="Qty" min="0"     oninput="matChange('${m.id}','qty',this.value)">
       <input class="fm-input fm-notes" type="text"   value="${escHtml(m.notes)}" placeholder="Notes…"          oninput="matChange('${m.id}','notes',this.value)">
@@ -1735,8 +1990,15 @@ renderCharList();
 updateFilterCharDropdown();
 renderVariantList();
 updateFilterVariantDropdown();
-renderTable();
+renderView();
 renderMaterials();
+// Collapse filter bar on mobile by default
+if (isMobile()) {
+  const fbi = document.getElementById('filterBarInner');
+  const fta = document.getElementById('filterToggleArrow');
+  if (fbi) fbi.classList.add('collapsed');
+  if (fta) fta.textContent = '▸';
+}
 </script>
 </body>
 </html>
