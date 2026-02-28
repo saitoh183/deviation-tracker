@@ -539,11 +539,15 @@ input,select,button,textarea{touch-action:manipulation}
       <p class="char-empty" id="charEmpty">No characters added yet. Add one above.</p>
     </div>
 
-    <div class="settings-section">
+        <div class="settings-section">
       <h3>Variants</h3>
       <div class="char-add-row">
         <input id="variantInput" type="text" maxlength="30" placeholder="Variant name…" onkeydown="if(event.key==='Enter')addVariant()">
         <button class="btn btn-primary" onclick="addVariant()">Add</button>
+      </div>
+      <div class="form-group" style="margin-bottom:8px">
+        <label style="font-size:.72rem;color:var(--text-dim)">Description <span style="color:var(--neg)">*</span></label>
+        <textarea id="variantDescInput" class="form-textarea" placeholder="Variant description…" style="min-height:70px"></textarea>
       </div>
       <div class="char-list" id="variantList"></div>
       <p class="char-empty" id="variantEmpty">No variants added yet. Add one above.</p>
@@ -713,7 +717,23 @@ input,select,button,textarea{touch-action:manipulation}
         <div class="remove-search-wrap">
           <input class="mgr-search" id="traitRemoveSearch" type="text" placeholder="🔍  Search traits…" oninput="filterTraitRemoveList()">
         </div>
+        
         <div class="mgr-list" id="traitRemoveList"></div>
+        <div id="traitEditPanel" style="display:none;margin-top:10px;border:1px solid var(--border);border-radius:6px;padding:10px;background:var(--bg2)">
+          <div class="form-group">
+            <label>Edit Trait Name</label>
+            <input id="editTraitName" class="form-input" type="text" placeholder="Trait name">
+          </div>
+          <div class="form-group">
+            <label>Edit Effect Description</label>
+            <textarea id="editTraitEffect" class="form-textarea" placeholder="Describe the trait effect…"></textarea>
+          </div>
+          <div style="display:flex;gap:8px;justify-content:flex-end">
+            <button class="btn btn-secondary" onclick="cancelEditTrait()">Cancel</button>
+            <button class="btn btn-primary" onclick="saveEditTrait()">Save</button>
+          </div>
+          <div class="flash-msg" id="traitEditFlash"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -758,6 +778,7 @@ const KEYS = {
   deviations:             'ohdt_deviations',
   materials:              'ohdt_materials',
   settings:               'ohdt_settings',
+  addDefaults:            'ohdt_add_defaults',
   customDeviations:       'ohdt_custom_deviations',
   customTraits:           'ohdt_custom_traits',
   customTraitAssignments: 'ohdt_custom_trait_assignments',
@@ -777,9 +798,13 @@ let filters = { char:'', deviation:'', fusion:'', locked:'', skill:'', activity:
 let dragSrcIdx = null;
 let confirmCallback = null;
 let defaultCharacter = '';
+let defaultDeviationName = '';
 let defaultVariant   = '';
 let defaultSkill     = '';
 let defaultActivity  = '';
+let defaultFusion    = false;
+let variantEditIndex = -1;
+let editingTraitId   = null;
 
 /* ── Migration ── */
 function migrateStorage() {
@@ -827,6 +852,58 @@ function load() {
   if (!state.settings.characters) state.settings.characters = [];
   if (!state.settings.variants)   state.settings.variants   = [];
   if (!state.customTraitAssignments) state.customTraitAssignments = {};
+  normalizeVariantSettings();
+}
+
+function loadAddDefaults() {
+  let saved = {};
+  try { saved = JSON.parse(localStorage.getItem(KEYS.addDefaults) || '{}'); } catch (e) { saved = {}; }
+  defaultCharacter     = typeof saved.character === 'string' ? saved.character : '';
+  defaultDeviationName = typeof saved.name === 'string' ? saved.name : '';
+  defaultVariant       = typeof saved.variant === 'string' ? saved.variant : '';
+  defaultSkill         = saved.skill === '' || typeof saved.skill === 'string' ? saved.skill || '' : '';
+  defaultActivity      = saved.activity === '' || typeof saved.activity === 'string' ? saved.activity || '' : '';
+  defaultFusion        = !!saved.fusion;
+}
+
+function saveAddDefaults() {
+  localStorage.setItem(KEYS.addDefaults, JSON.stringify({
+    character: defaultCharacter || '',
+    name: defaultDeviationName || '',
+    variant: defaultVariant || '',
+    skill: defaultSkill || '',
+    activity: defaultActivity || '',
+    fusion: !!defaultFusion,
+  }));
+}
+
+function normalizeVariantSettings() {
+  const src = Array.isArray(state.settings.variants) ? state.settings.variants : [];
+  const out = [];
+  const seen = new Set();
+  src.forEach(v => {
+    let entry = null;
+    if (typeof v === 'string') {
+      const name = v.trim().slice(0, 30);
+      if (!name) return;
+      // Legacy variants had no descriptions; use the name as fallback tooltip text.
+      entry = { name, description: name };
+    } else if (v && typeof v === 'object') {
+      const name = String(v.name || '').trim().slice(0, 30);
+      if (!name) return;
+      const description = String(v.description || '').trim().slice(0, 300) || name;
+      entry = { name, description };
+    }
+    if (!entry) return;
+    const key = entry.name.toLowerCase();
+    if (seen.has(key)) return;
+    seen.add(key);
+    out.push(entry);
+  });
+  const before = JSON.stringify(src);
+  const after = JSON.stringify(out);
+  state.settings.variants = out;
+  if (before !== after) save('settings');
 }
 
 function save(key) {
@@ -1032,7 +1109,21 @@ function updateFilterCharDropdown() {
    VARIANTS
    ============================================================ */
 function getAllVariants() {
-  return [...(state.settings.variants || [])].sort((a, b) => a.localeCompare(b));
+  return getVariantEntries().map(v => v.name).sort((a, b) => a.localeCompare(b));
+}
+
+function getVariantEntries() {
+  const vars = state.settings.variants || [];
+  return vars
+    .map(v => (typeof v === 'string' ? { name: v, description: v } : v))
+    .filter(v => v && typeof v.name === 'string' && v.name.trim())
+    .map(v => ({ name: String(v.name).trim(), description: String(v.description || v.name).trim() || String(v.name).trim() }));
+}
+
+function getVariantEntryByName(name) {
+  if (!name) return null;
+  const q = String(name).toLowerCase();
+  return getVariantEntries().find(v => v.name.toLowerCase() === q) || null;
 }
 
 function buildVariantOptions(curVal) {
@@ -1070,38 +1161,98 @@ function renderVariantList() {
   const list  = document.getElementById('variantList');
   const empty = document.getElementById('variantEmpty');
   if (!list) return;
-  const variants = state.settings.variants || [];
+  const variants = getVariantEntries();
   list.innerHTML = '';
   if (!variants.length) { empty.style.display = ''; return; }
   empty.style.display = 'none';
   variants.forEach((v, i) => {
     const div = document.createElement('div');
     div.className = 'char-item';
-    div.innerHTML = `<span>${escHtml(v)}</span><button class="char-del" onclick="delVariant(${i})" title="Remove">✕</button>`;
+    if (variantEditIndex === i) {
+      div.style.display = 'block';
+      div.innerHTML = `
+        <input id="editVariantName" class="form-input" type="text" maxlength="30" value="${escHtml(v.name)}" style="margin-bottom:6px">
+        <textarea id="editVariantDesc" class="form-textarea" placeholder="Variant description…" style="min-height:64px">${escHtml(v.description)}</textarea>
+        <div style="display:flex;gap:6px;justify-content:flex-end;margin-top:6px">
+          <button class="btn btn-secondary btn-sm" onclick="cancelEditVariant()">Cancel</button>
+          <button class="btn btn-primary btn-sm" onclick="saveEditVariant(${i})">Save</button>
+        </div>
+      `;
+    } else {
+      div.innerHTML = `
+        <span title="${escHtml(v.description)}">${escHtml(v.name)}</span>
+        <div style="display:flex;align-items:center;gap:6px">
+          <button class="char-del" onclick="startEditVariant(${i})" title="Edit">✎</button>
+          <button class="char-del" onclick="delVariant(${i})" title="Remove">✕</button>
+        </div>
+      `;
+    }
     list.appendChild(div);
   });
 }
 
 function addVariant() {
   const inp = document.getElementById('variantInput');
+  const descInp = document.getElementById('variantDescInput');
   const val = inp.value.trim().slice(0, 30);
-  if (!val) return;
-  const variants = state.settings.variants || (state.settings.variants = []);
-  if (variants.some(v => v.toLowerCase() === val.toLowerCase())) { inp.value = ''; return; }
-  variants.push(val);
+  const desc = (descInp ? descInp.value : '').trim().slice(0, 300);
+  if (!val || !desc) return;
+  const variants = getVariantEntries();
+  if (variants.some(v => v.name.toLowerCase() === val.toLowerCase())) { inp.value = ''; return; }
+  variants.push({ name: val, description: desc });
+  state.settings.variants = variants;
   save('settings');
   renderVariantList();
   updateAllVariantDropdowns();
   updateFilterVariantDropdown();
   inp.value = '';
+  if (descInp) descInp.value = '';
 }
 
 function delVariant(i) {
-  state.settings.variants.splice(i, 1);
+  const variants = getVariantEntries();
+  variants.splice(i, 1);
+  state.settings.variants = variants;
   save('settings');
   renderVariantList();
   updateAllVariantDropdowns();
   updateFilterVariantDropdown();
+}
+
+function startEditVariant(i) {
+  variantEditIndex = i;
+  renderVariantList();
+}
+
+function cancelEditVariant() {
+  variantEditIndex = -1;
+  renderVariantList();
+}
+
+function saveEditVariant(i) {
+  const variants = getVariantEntries();
+  const oldEntry = variants[i];
+  if (!oldEntry) return;
+  const nameInp = document.getElementById('editVariantName');
+  const descInp = document.getElementById('editVariantDesc');
+  const newName = (nameInp ? nameInp.value : '').trim().slice(0, 30);
+  const newDesc = (descInp ? descInp.value : '').trim().slice(0, 300);
+  if (!newName || !newDesc) return;
+  if (variants.some((v, idx) => idx !== i && v.name.toLowerCase() === newName.toLowerCase())) return;
+  variants[i] = { name: newName, description: newDesc };
+  state.settings.variants = variants;
+  if (oldEntry.name !== newName) {
+    state.deviations.forEach(r => { if (r.variant === oldEntry.name) r.variant = newName; });
+    if (defaultVariant === oldEntry.name) defaultVariant = newName;
+    save('deviations');
+    saveAddDefaults();
+  }
+  save('settings');
+  variantEditIndex = -1;
+  renderVariantList();
+  updateAllVariantDropdowns();
+  updateFilterVariantDropdown();
+  renderView();
 }
 
 /* ============================================================
@@ -1378,6 +1529,9 @@ function openManageTraits() {
   document.getElementById('traitDevSelectWrap').style.display = 'none';
   document.getElementById('traitAddFlash').className = 'flash-msg';
   document.getElementById('traitRemoveSearch').value = '';
+  const ep = document.getElementById('traitEditPanel');
+  if (ep) ep.style.display = 'none';
+  editingTraitId = null;
   // Reset to Add tab
   const modal = document.getElementById('manageTraitModal');
   modal.querySelectorAll('.modal-tab-btn').forEach((b,i) => b.classList.toggle('active', i===0));
@@ -1466,7 +1620,7 @@ function renderTraitRemoveList() {
       div.innerHTML = `<span class="mgr-item-name${t.neg?' neg-name':''}">${escHtml(t.name)}</span>` + (
         isBuiltIn
           ? `<span class="lock-icon" title="Built-in trait — edit config.js to remove">🔒</span>`
-          : `<button class="mgr-del-btn" onclick="removeCustomTrait(${JSON.stringify(t.rawName||t.name)},${JSON.stringify(t.id)})">✕</button>`
+          : `<div style="display:flex;gap:6px"><button class="mgr-del-btn" onclick="startEditTrait(${JSON.stringify(t.id)})">✎</button><button class="mgr-del-btn" onclick="removeCustomTrait(${JSON.stringify(t.rawName||t.name)},${JSON.stringify(t.id)})">✕</button></div>`
       );
       list.appendChild(div);
     });
@@ -1490,6 +1644,61 @@ function removeCustomTrait(rawName, id) {
       renderTraitRemoveList();
     }
   );
+}
+function startEditTrait(id) {
+  const trait = (state.customTraits || []).find(t => String(t.id) === String(id));
+  if (!trait) return;
+  editingTraitId = trait.id;
+  const panel = document.getElementById('traitEditPanel');
+  if (!panel) return;
+  panel.style.display = 'block';
+  document.getElementById('editTraitName').value = trait.name || '';
+  document.getElementById('editTraitEffect').value = trait.effect || '';
+}
+
+function cancelEditTrait() {
+  editingTraitId = null;
+  const panel = document.getElementById('traitEditPanel');
+  if (panel) panel.style.display = 'none';
+}
+
+function saveEditTrait() {
+  if (!editingTraitId) return;
+  const idx = (state.customTraits || []).findIndex(t => String(t.id) === String(editingTraitId));
+  if (idx < 0) return;
+  const oldTrait = state.customTraits[idx];
+  const newName = (document.getElementById('editTraitName').value || '').trim();
+  const newEffect = (document.getElementById('editTraitEffect').value || '').trim();
+  if (!newName || !newEffect) {
+    showFlash('traitEditFlash', '⚠ Name and description are required.', true);
+    return;
+  }
+  const oldDisplay = oldTrait.type === 'negative' ? '⚠ ' + oldTrait.name : oldTrait.name;
+  const newDisplay = oldTrait.type === 'negative' ? '⚠ ' + newName : newName;
+  const hasDup = getAllTraits().some(t => t.name.toLowerCase() === newDisplay.toLowerCase() && t.name !== oldDisplay);
+  if (hasDup) {
+    showFlash('traitEditFlash', '⚠ A trait with that name already exists.', true);
+    return;
+  }
+  state.customTraits[idx].name = newName;
+  state.customTraits[idx].effect = newEffect;
+  state.deviations.forEach(r => {
+    for (let i = 0; i < 5; i++) {
+      if (r.traits[i] === oldDisplay) r.traits[i] = newDisplay;
+    }
+  });
+  Object.values(state.customTraitAssignments || {}).forEach(assign => {
+    if (!assign) return;
+    if (Array.isArray(assign.add)) assign.add = [...new Set(assign.add.map(n => n === oldDisplay ? newDisplay : n))];
+    if (Array.isArray(assign.remove)) assign.remove = [...new Set(assign.remove.map(n => n === oldDisplay ? newDisplay : n))];
+  });
+  save('customTraits');
+  save('deviations');
+  save('customTraitAssignments');
+  showFlash('traitEditFlash', '✓ Trait updated.');
+  cancelEditTrait();
+  renderTraitRemoveList();
+  renderView();
 }
 
 /* ============================================================
@@ -1544,7 +1753,7 @@ function renderCards() {
           </div>
           <div class="card-field-row">
             <span class="card-field-label">Deviation</span>
-            <select class="row-name card-select" onchange="rowChange('${row.id}','name',this.value)">${devOpts}</select>
+            <select data-field="name" class="row-name card-select" onchange="rowChange('${row.id}','name',this.value)">${devOpts}</select>
           </div>
           <div class="card-field-row">
             <span class="card-field-label">Variant</span>
@@ -1568,7 +1777,7 @@ function renderCards() {
         <div class="card-stat"><span class="card-stat-label">Activity</span>${renderActivitySelect(row.id, row.activity, 'activity')}</div>
         <div class="card-stat">
           <span class="card-stat-label">Fusion</span>
-          <label class="toggle"><input type="checkbox" ${row.fusion?'checked':''} onchange="rowChange('${row.id}','fusion',this.checked)"><span class="toggle-slider"></span></label>
+          <label class="toggle"><input data-field="fusion" type="checkbox" ${row.fusion?'checked':''} onchange="rowChange('${row.id}','fusion',this.checked)"><span class="toggle-slider"></span></label>
         </div>
         <div class="card-stat">
           <span class="card-stat-label">Locked</span>
@@ -1580,6 +1789,8 @@ function renderCards() {
       </div>`;
     cont.appendChild(card);
     for (let i = 0; i < 5; i++) renderCardTraitCell(row.id, i, row.name, row.traits[i]);
+    const vsel = card.querySelector('select.row-variant');
+    if (vsel) attachVariantTooltip(vsel);
   });
 }
 
@@ -1618,18 +1829,24 @@ function addDeviationRow() {
   if (!rowEl) return;
 
   setSelectValue(rowEl, 'character', defaultCharacter);
+  setSelectValue(rowEl, 'name',      defaultDeviationName);
   setSelectValue(rowEl, 'variant',   defaultVariant);
   setSelectValue(rowEl, 'skill',     defaultSkill);
   setSelectValue(rowEl, 'activity',  defaultActivity);
+  setCheckboxValue(rowEl, 'fusion',  defaultFusion);
 
   const ch = rowEl.querySelector('[data-field="character"]');
+  const nm = rowEl.querySelector('[data-field="name"]');
   const vr = rowEl.querySelector('[data-field="variant"]');
   const sk = rowEl.querySelector('[data-field="skill"]');
   const ac = rowEl.querySelector('[data-field="activity"]');
+  const fu = rowEl.querySelector('[data-field="fusion"]');
   if (ch) rowChange(row.id, 'char', ch.value);
+  if (nm) rowChange(row.id, 'name', nm.value);
   if (vr) rowChange(row.id, 'variant', vr.value);
   if (sk) rowChange(row.id, 'skill', sk.value);
   if (ac) rowChange(row.id, 'activity', ac.value);
+  if (fu) rowChange(row.id, 'fusion', fu.checked);
   save('deviations');
 }
 
@@ -1710,7 +1927,7 @@ function renderTable() {
 
     tr.innerHTML = `
       <td><select data-field="character" class="row-char" onchange="rowChange('${row.id}','char',this.value)">${charOpts}</select></td>
-      <td><select class="row-name" onchange="rowChange('${row.id}','name',this.value)">${devOpts}</select></td>
+      <td><select data-field="name" class="row-name" onchange="rowChange('${row.id}','name',this.value)">${devOpts}</select></td>
       <td>${renderVariantSelect(row.id, row.variant, 'variant')}</td>
       <td class="trait-cell" id="tc_${row.id}_0"></td>
       <td class="trait-cell" id="tc_${row.id}_1"></td>
@@ -1719,7 +1936,7 @@ function renderTable() {
       <td class="trait-cell" id="tc_${row.id}_4"></td>
       <td>${renderSkillSelect(row.id, row.skill, 'skill')}</td>
       <td>${renderActivitySelect(row.id, row.activity, 'activity')}</td>
-      <td class="toggle-wrap"><label class="toggle"><input type="checkbox" ${row.fusion?'checked':''} onchange="rowChange('${row.id}','fusion',this.checked)"><span class="toggle-slider"></span></label></td>
+      <td class="toggle-wrap"><label class="toggle"><input data-field="fusion" type="checkbox" ${row.fusion?'checked':''} onchange="rowChange('${row.id}','fusion',this.checked)"><span class="toggle-slider"></span></label></td>
       <td class="toggle-wrap"><label class="toggle"><input type="checkbox" ${row.locked?'checked':''} onchange="rowChange('${row.id}','locked',this.checked)"><span class="toggle-slider"></span></label></td>
       <td><input type="text" value="${escHtml(row.notes)}" placeholder="Notes…" oninput="rowChange('${row.id}','notes',this.value)"></td>
       <td style="text-align:center"><button class="del-btn" onclick="deleteDeviationRow('${row.id}')">✕</button></td>
@@ -1727,6 +1944,8 @@ function renderTable() {
     tbody.appendChild(tr);
 
     for (let i = 0; i < 5; i++) renderTraitCell(row.id, i, row.name, row.traits[i]);
+    const vsel = tr.querySelector('select.row-variant');
+    if (vsel) attachVariantTooltip(vsel);
   });
 
   updateSortIndicators();
@@ -1805,15 +2024,23 @@ function rowChange(id, field, val) {
     if (val === '__add__') {
       const nv = window.prompt('Enter new variant name:');
       if (nv && nv.trim()) {
-        const trimmed = nv.trim().slice(0, 30);
-        const variants = state.settings.variants || (state.settings.variants = []);
-        if (!variants.some(v => v.toLowerCase() === trimmed.toLowerCase())) {
-          variants.push(trimmed);
+        const nameTrimmed = nv.trim().slice(0, 30);
+        const nd = window.prompt('Enter variant description:');
+        if (!nd || !nd.trim()) {
+          updateAllVariantDropdowns();
+          return;
+        }
+        const descTrimmed = nd.trim().slice(0, 300);
+        const variants = getVariantEntries();
+        const exists = variants.some(v => v.name.toLowerCase() === nameTrimmed.toLowerCase());
+        if (!exists) {
+          variants.push({ name: nameTrimmed, description: descTrimmed });
+          state.settings.variants = variants;
           save('settings');
           renderVariantList();
           updateFilterVariantDropdown();
         }
-        row.variant = trimmed;
+        row.variant = nameTrimmed;
         updateAllVariantDropdowns();
       } else {
         updateAllVariantDropdowns();
@@ -1828,6 +2055,15 @@ function rowChange(id, field, val) {
   else if (field === 'fusion')     row.fusion   = val;
   else if (field === 'locked')     row.locked   = val;
   else if (field === 'notes')      row.notes    = val;
+
+  if (field === 'char')     defaultCharacter = row.char || '';
+  if (field === 'name')     defaultDeviationName = row.name || '';
+  if (field === 'variant')  defaultVariant = row.variant || '';
+  if (field === 'skill')    defaultSkill = row.skill ? String(row.skill) : '';
+  if (field === 'activity') defaultActivity = row.activity ? String(row.activity) : '';
+  if (field === 'fusion')   defaultFusion = !!row.fusion;
+  if (['char','name','variant','skill','activity','fusion'].includes(field)) saveAddDefaults();
+
   save('deviations');
 }
 
@@ -1838,6 +2074,19 @@ function traitChange(rowId, slotIdx, val) {
   save('deviations');
   renderTraitCell(rowId, slotIdx, row.name, val);
   renderCardTraitCell(rowId, slotIdx, row.name, val);
+}
+function attachVariantTooltip(sel) {
+  const show = () => {
+    const name = sel.value;
+    const variant = getVariantEntryByName(name);
+    if (!variant || !variant.description || name === "__add__") return;
+    showTraitTooltip(sel, variant.name, variant.description, false);
+  };
+  sel.addEventListener("mouseenter", show);
+  sel.addEventListener("focus", show);
+  sel.addEventListener("change", show);
+  sel.addEventListener("mouseleave", hideTraitTooltip);
+  sel.addEventListener("blur", hideTraitTooltip);
 }
 
 /* ── Trait Tooltip ── */
@@ -1909,10 +2158,6 @@ function applyFilters() {
 }
 
 function clearAllFilters() {
-  defaultCharacter = '';
-  defaultVariant   = '';
-  defaultSkill     = '';
-  defaultActivity  = '';
   ['fChar','fFusion','fLocked','fSkill','fActivity','fVariant'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('fDeviation').value = '';
   filters = { char:'', deviation:'', fusion:'', locked:'', skill:'', activity:'', variant:'' };
@@ -1935,6 +2180,12 @@ function setSelectValue(row, fieldName, value) {
   }
 }
 
+function setCheckboxValue(row, fieldName, value) {
+  const cb = row.querySelector('[data-field="' + fieldName + '"]');
+  if (!cb) return;
+  cb.checked = !!value;
+}
+
 function initPersistenceListeners() {
   const fc = document.getElementById('fChar');
   const fv = document.getElementById('fVariant');
@@ -1943,15 +2194,19 @@ function initPersistenceListeners() {
 
   if (fc) fc.addEventListener('change', () => {
     defaultCharacter = (fc.value && fc.value !== 'All') ? fc.value : '';
+    saveAddDefaults();
   });
   if (fv) fv.addEventListener('change', () => {
     defaultVariant = (fv.value && fv.value !== 'All') ? fv.value : '';
+    saveAddDefaults();
   });
   if (fs) fs.addEventListener('change', () => {
     defaultSkill = (fs.value && fs.value !== 'All') ? fs.value : '';
+    saveAddDefaults();
   });
   if (fa) fa.addEventListener('change', () => {
     defaultActivity = (fa.value && fa.value !== 'All') ? fa.value : '';
+    saveAddDefaults();
   });
 }
 
@@ -2216,6 +2471,7 @@ function escHtml(s) {
 document.addEventListener('DOMContentLoaded', () => {
   migrateData();
   load();
+  loadAddDefaults();
   renderCharList();
   updateFilterCharDropdown();
   renderVariantList();
