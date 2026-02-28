@@ -270,6 +270,7 @@ input,select,button,textarea{touch-action:manipulation}
 /* ===== DESKTOP/MOBILE VISIBILITY ===== */
 .btn-mobile-only{display:none}
 .settings-actions-section{display:none}
+.settings-data-section{display:none}
 .show-all-cols-btn{display:none}
 .filter-toggle-btn{display:none}
 .fm-move-btns{display:none}
@@ -327,6 +328,7 @@ input,select,button,textarea{touch-action:manipulation}
   .overlay.open{align-items:flex-end;justify-content:flex-start}
   .settings-panel{width:100vw;min-height:auto;max-height:90vh;border-left:none;border-top:1px solid var(--border-light);border-radius:12px 12px 0 0;animation:slideUp .22s ease}
   .settings-actions-section{display:block}
+  .settings-data-section{display:block}
   .modal-overlay{padding:0;align-items:flex-end}
   .modal,.modal-sm,.modal-lg{max-width:100% !important;border-radius:12px 12px 0 0;max-height:92vh}
   .close-btn{min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center}
@@ -412,6 +414,7 @@ input,select,button,textarea{touch-action:manipulation}
         <button class="btn btn-primary" onclick="addDeviationRow()">+ Add Deviation</button>
         <button class="btn btn-secondary btn-desktop-only" onclick="openManageDeviations()">⚡ Manage Deviations</button>
         <button class="btn btn-secondary btn-desktop-only" onclick="openManageTraits()">✨ Manage Traits</button>
+        <button class="btn btn-secondary btn-desktop-only" onclick="openManageVariants()">🧬 Manage Variants</button>
         <button class="btn btn-secondary btn-mobile-only" onclick="openSettings()">⚙ More</button>
       </div>
       <div class="btn-group btn-desktop-only">
@@ -519,8 +522,6 @@ input,select,button,textarea{touch-action:manipulation}
       <div class="settings-btn-list">
         <button class="btn btn-secondary" style="min-height:44px" onclick="closeSettings();saveList()">💾 Save List</button>
         <button class="btn btn-secondary" style="min-height:44px" onclick="closeSettings();triggerLoadList()">📂 Load List</button>
-        <button class="btn btn-secondary" style="min-height:44px" onclick="closeSettings();openManageDeviations()">⚡ Manage Deviations</button>
-        <button class="btn btn-secondary" style="min-height:44px" onclick="closeSettings();openManageTraits()">✨ Manage Traits</button>
         <button class="btn btn-secondary" style="min-height:44px" onclick="closeSettings();saveConfig()">💾 Save Config</button>
         <button class="btn btn-secondary" style="min-height:44px" onclick="closeSettings();triggerLoadConfig()">📂 Load Config</button>
         <button class="btn btn-secondary" style="min-height:44px" onclick="closeSettings();exportCSV()">Export CSV</button>
@@ -539,25 +540,12 @@ input,select,button,textarea{touch-action:manipulation}
       <p class="char-empty" id="charEmpty">No characters added yet. Add one above.</p>
     </div>
 
-        <div class="settings-section">
-      <h3>Variants</h3>
-      <div class="char-add-row">
-        <input id="variantInput" type="text" maxlength="30" placeholder="Variant name…" onkeydown="if(event.key==='Enter')addVariant()">
-        <button class="btn btn-primary" onclick="addVariant()">Add</button>
-      </div>
-      <div class="form-group" style="margin-bottom:8px">
-        <label style="font-size:.72rem;color:var(--text-dim)">Description <span style="color:var(--neg)">*</span></label>
-        <textarea id="variantDescInput" class="form-textarea" placeholder="Variant description…" style="min-height:70px"></textarea>
-      </div>
-      <div class="char-list" id="variantList"></div>
-      <p class="char-empty" id="variantEmpty">No variants added yet. Add one above.</p>
-    </div>
-
-    <div class="settings-section">
+    <div class="settings-section settings-data-section">
       <h3>Data Management</h3>
       <div class="settings-btn-list">
         <button class="btn btn-secondary" onclick="closeSettings();openManageDeviations()">⚡ Manage Deviations</button>
         <button class="btn btn-secondary" onclick="closeSettings();openManageTraits()">✨ Manage Traits</button>
+        <button class="btn btn-secondary" onclick="closeSettings();openManageVariants()">🧬 Manage Variants</button>
       </div>
     </div>
 
@@ -735,6 +723,33 @@ input,select,button,textarea{touch-action:manipulation}
           <div class="flash-msg" id="traitEditFlash"></div>
         </div>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================= -->
+<!-- MANAGE VARIANTS MODAL                                    -->
+<!-- ======================================================= -->
+<div class="modal-overlay" id="manageVariantModal" onclick="closeModalIfBg(event,'manageVariantModal')">
+  <div class="modal modal-lg" role="dialog" aria-modal="true" aria-labelledby="manageVariantTitle">
+    <div class="modal-header">
+      <h3 id="manageVariantTitle">🧬 Manage Variants</h3>
+      <button class="close-btn" onclick="closeModal('manageVariantModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Variant Name <span style="color:var(--neg)">*</span></label>
+        <div class="char-add-row" style="margin-bottom:0">
+          <input id="variantInput" class="form-input" type="text" maxlength="30" placeholder="Variant name…" onkeydown="if(event.key==='Enter')addVariant()">
+          <button class="btn btn-primary" onclick="addVariant()">Add</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Description <span style="color:var(--neg)">*</span></label>
+        <textarea id="variantDescInput" class="form-textarea" placeholder="Variant description…" style="min-height:70px"></textarea>
+      </div>
+      <div class="mgr-list" id="variantList"></div>
+      <p class="char-empty" id="variantEmpty">No variants added yet. Add one above.</p>
     </div>
   </div>
 </div>
@@ -1253,6 +1268,16 @@ function saveEditVariant(i) {
   updateAllVariantDropdowns();
   updateFilterVariantDropdown();
   renderView();
+}
+
+function openManageVariants() {
+  const ni = document.getElementById('variantInput');
+  const di = document.getElementById('variantDescInput');
+  if (ni) ni.value = '';
+  if (di) di.value = '';
+  variantEditIndex = -1;
+  renderVariantList();
+  openModal('manageVariantModal');
 }
 
 /* ============================================================
@@ -2451,7 +2476,7 @@ function renderMaterials() {
    ============================================================ */
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
-    ['manageDevModal','manageTraitModal','confirmModal'].forEach(id => {
+    ['manageDevModal','manageTraitModal','manageVariantModal','confirmModal'].forEach(id => {
       if (document.getElementById(id).classList.contains('open')) closeModal(id);
     });
     if (document.getElementById('settingsOverlay').classList.contains('open')) closeSettings();
