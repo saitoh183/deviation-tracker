@@ -23,8 +23,10 @@
   --radius:6px;
   font-family:'Exo 2',sans-serif;
 }
-html{background:var(--bg0);color:var(--text);min-height:100vh}
-body{min-height:100vh;background:linear-gradient(160deg,var(--bg0) 0%,var(--bg1) 50%,var(--bg0) 100%)}
+html{background:var(--bg0);color:var(--text);height:100%;overflow:hidden}
+body{height:100%;overflow:hidden;background:linear-gradient(160deg,var(--bg0) 0%,var(--bg1) 50%,var(--bg0) 100%)}
+#app{display:flex;flex-direction:column;height:100vh}
+#scroll-body{flex:1;overflow-y:auto;overflow-x:hidden;min-height:0}
 input,select,button,textarea{font-family:inherit;font-size:inherit}
 button{cursor:pointer}
 ::-webkit-scrollbar{width:6px;height:6px}
@@ -32,9 +34,8 @@ button{cursor:pointer}
 ::-webkit-scrollbar-thumb{background:var(--accent-dim);border-radius:3px}
 
 /* ===== STICKY TOP WRAPPER ===== */
-#sticky-top{position:sticky;top:0;z-index:100;background:var(--bg0);width:100%}
-#deviations-controls{background:var(--bg0);padding:12px 20px 12px}
-#deviations-controls .controls-bar{margin-bottom:0}
+#sticky-top{flex-shrink:0;z-index:100;background:var(--bg1);width:100%}
+#deviations-controls{background:var(--bg0);padding:12px 20px 0}
 
 /* ===== HEADER ===== */
 .app-header{
@@ -86,7 +87,8 @@ button{cursor:pointer}
 /* ===== TABLE ===== */
 .table-wrap{overflow-x:auto;width:100%;border:1px solid var(--border);border-radius:var(--radius)}
 table{table-layout:fixed;width:max-content;min-width:100%;border-collapse:collapse;font-size:.83rem}
-thead tr{background:var(--bg2);position:sticky;top:0;z-index:10}
+thead{position:sticky;top:0;z-index:99;background:var(--bg2)}
+thead tr{background:var(--bg2)}
 th{padding:9px 8px;text-align:left;font-weight:600;color:var(--accent);font-size:.75rem;text-transform:uppercase;letter-spacing:.7px;white-space:nowrap;border-bottom:2px solid var(--border-light);cursor:pointer;user-select:none;overflow:hidden}
 th:hover{color:#fff;background:rgba(0,212,255,0.06)}
 th.sort-asc::after{content:' ▲';opacity:.8}
@@ -140,9 +142,9 @@ td select option{background:var(--bg2)}
 .drag-handle:active{cursor:grabbing}
 .fm-row.drag-over{border-color:var(--accent);background:rgba(0,212,255,0.08)}
 .fm-row.dragging{opacity:.4}
-.fm-name{flex:2;min-width:120px}
-.fm-qty{width:70px}
-.fm-notes{flex:3;min-width:120px}
+.fm-name{width:220px;min-width:220px;flex:0 0 220px}
+.fm-qty{width:70px;min-width:70px;flex:0 0 70px;text-align:center}
+.fm-notes{flex:1;min-width:0}
 .fm-input{background:var(--bg2);border:1px solid var(--border);border-radius:4px;color:var(--text);padding:6px 8px;width:100%;font-size:.85rem}
 .fm-input:focus{outline:none;border-color:var(--accent)}
 
@@ -316,12 +318,13 @@ input,select,button,textarea{touch-action:manipulation}
   .toggle{width:48px;height:28px}
   .toggle-slider::before{width:20px;height:20px}
   .toggle input:checked~.toggle-slider::before{transform:translateX(20px)}
-  .fm-row{flex-wrap:wrap}
-  .fm-name{flex:1 1 100%}
-  .fm-qty{width:80px;flex:0 0 auto}
-  .fm-notes{flex:1 1 0}
+  .fm-row{flex-wrap:wrap;gap:6px}
+  .fm-move-btns{display:flex;gap:4px;order:1;flex:0 0 auto}
+  .fm-name{flex:1 1 auto;min-width:0;width:auto;order:2}
+  .fm-del{order:3;flex:0 0 auto}
+  .fm-qty{width:70px;flex:0 0 70px;order:4}
+  .fm-notes{flex:1 1 0;min-width:0;order:5}
   .drag-handle{display:none}
-  .fm-move-btns{display:flex;gap:4px}
   .overlay.open{align-items:flex-end;justify-content:flex-start}
   .settings-panel{width:100vw;min-height:auto;max-height:90vh;border-left:none;border-top:1px solid var(--border-light);border-radius:12px 12px 0 0;animation:slideUp .22s ease}
   .settings-actions-section{display:block}
@@ -330,11 +333,12 @@ input,select,button,textarea{touch-action:manipulation}
   .close-btn{min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center}
   .trait-two-col{flex-direction:column !important}
   .dev-checklist{max-height:none !important;overflow:visible}
-  #deviations-controls{padding:8px 12px 8px}
+  #deviations-controls{padding:8px 12px 0}
 }
 </style>
 </head>
 <body>
+<div id="app">
 
 <!-- ======================================================= -->
 <!-- STICKY TOP: header + tabs + deviations filter/toolbar    -->
@@ -413,6 +417,8 @@ input,select,button,textarea{touch-action:manipulation}
       </div>
       <div class="btn-group btn-desktop-only">
         <button class="btn btn-secondary show-all-cols-btn" onclick="toggleExtraCols()">Show All Columns</button>
+        <button class="btn btn-secondary" onclick="saveList()">💾 Save List</button>
+        <button class="btn btn-secondary" onclick="triggerLoadList()">📂 Load List</button>
         <button class="btn btn-secondary" onclick="saveConfig()">💾 Save Config</button>
         <button class="btn btn-secondary" onclick="triggerLoadConfig()">📂 Load Config</button>
         <button class="btn btn-secondary" onclick="exportCSV()">Export CSV</button>
@@ -420,10 +426,16 @@ input,select,button,textarea{touch-action:manipulation}
       </div>
     </div>
     <input type="file" id="configFileInput" accept=".json" style="display:none" onchange="handleConfigLoad(event)">
+    <input type="file" id="listFileInput"   accept=".json" style="display:none" onchange="handleListLoad(event)">
 
   </div><!-- /#deviations-controls -->
 
 </div><!-- /#sticky-top -->
+
+<!-- ======================================================= -->
+<!-- SCROLL BODY: all scrollable tab content                  -->
+<!-- ======================================================= -->
+<div id="scroll-body">
 
 <!-- ======================================================= -->
 <!-- TAB 1: DEVIATIONS (table + cards only)                   -->
@@ -485,6 +497,10 @@ input,select,button,textarea{touch-action:manipulation}
   <p class="fm-empty" id="fmEmpty" style="display:none">No materials added yet. Click Add Material to get started.</p>
 </div>
 
+<footer>Data is saved locally in your browser. Clearing browser data will erase your tracker.</footer>
+
+</div><!-- /#scroll-body -->
+
 <!-- ======================================================= -->
 <!-- SETTINGS SLIDE-IN                                        -->
 <!-- ======================================================= -->
@@ -498,6 +514,8 @@ input,select,button,textarea{touch-action:manipulation}
     <div class="settings-section settings-actions-section">
       <h3>Actions</h3>
       <div class="settings-btn-list">
+        <button class="btn btn-secondary" style="min-height:44px" onclick="closeSettings();saveList()">💾 Save List</button>
+        <button class="btn btn-secondary" style="min-height:44px" onclick="closeSettings();triggerLoadList()">📂 Load List</button>
         <button class="btn btn-secondary" style="min-height:44px" onclick="closeSettings();openManageDeviations()">⚡ Manage Deviations</button>
         <button class="btn btn-secondary" style="min-height:44px" onclick="closeSettings();openManageTraits()">✨ Manage Traits</button>
         <button class="btn btn-secondary" style="min-height:44px" onclick="closeSettings();saveConfig()">💾 Save Config</button>
@@ -717,8 +735,6 @@ input,select,button,textarea{touch-action:manipulation}
   </div>
 </div>
 
-<footer>Data is saved locally in your browser. Clearing browser data will erase your tracker.</footer>
-
 <!-- SHARED TRAIT TOOLTIP (fixed, body-level, z-index 9999) -->
 <div id="shared-tooltip">
   <div id="shared-tooltip-header" class="tooltip-header pos"></div>
@@ -756,6 +772,7 @@ let state = {
 let sortCol = null, sortDir = 1;
 let filters = { char:'', deviation:'', fusion:'', locked:'', skill:'', activity:'', variant:'' };
 let dragSrcIdx = null;
+let addDeviationDefaults = { character:'', variant:'', skill:'', activity:'' };
 let confirmCallback = null;
 
 /* ── Migration ── */
@@ -831,13 +848,6 @@ function switchTab(id, btn) {
   // Show/hide deviations-specific filter+toolbar in sticky top
   const dc = document.getElementById('deviations-controls');
   if (dc) dc.style.display = id === 'deviations' ? '' : 'none';
-  updateStickyTop();
-}
-
-function updateStickyTop() {
-  const st    = document.getElementById('sticky-top');
-  const thead = document.querySelector('#deviationTable thead');
-  if (st && thead) thead.style.top = st.offsetHeight + 'px';
 }
 
 /* ============================================================
@@ -1469,7 +1479,7 @@ function renderView() {
 let _resizeTimer;
 window.addEventListener('resize', () => {
   clearTimeout(_resizeTimer);
-  _resizeTimer = setTimeout(() => { renderView(); updateStickyTop(); }, 150);
+  _resizeTimer = setTimeout(() => { renderView(); }, 150);
 });
 
 function renderCards() {
@@ -1568,23 +1578,11 @@ function newDeviation() {
 }
 
 function addDeviationRow() {
-  // Capture all filter values at click time
-  const fChar     = document.getElementById('fChar').value;
-  const fVariant  = document.getElementById('fVariant').value;
-  const fDevText  = document.getElementById('fDeviation').value.trim();
-  const fSkill    = document.getElementById('fSkill').value;
-  const fActivity = document.getElementById('fActivity').value;
-
   const row = newDeviation();
-  if (fChar)     row.char     = fChar;
-  if (fVariant)  row.variant  = fVariant;
-  if (fSkill)    row.skill    = fSkill;
-  if (fActivity) row.activity = fActivity;
-  // Deviation: only pre-fill on exact case-insensitive match (not partial search text)
-  if (fDevText) {
-    const exact = getAllDeviations().find(d => d.toLowerCase() === fDevText.toLowerCase());
-    if (exact) row.name = exact;
-  }
+  if (addDeviationDefaults.character) row.char     = addDeviationDefaults.character;
+  if (addDeviationDefaults.variant)   row.variant  = addDeviationDefaults.variant;
+  if (addDeviationDefaults.skill)     row.skill    = addDeviationDefaults.skill;
+  if (addDeviationDefaults.activity)  row.activity = addDeviationDefaults.activity;
   state.deviations.push(row);
   save('deviations');
   renderView();
@@ -1676,7 +1674,7 @@ function renderTable() {
 function renderSkillSelect(rowId, val) {
   const v = val ? String(val) : '';
   return `<select onchange="rowChange('${rowId}','skill',this.value)">
-    <option value=""${!v?' selected':''}>— Skill —</option>
+    <option value=""${!v?' selected':''}>—</option>
     <option value="1"${v==='1'?' selected':''}>1</option>
     <option value="2"${v==='2'?' selected':''}>2</option>
     <option value="3"${v==='3'?' selected':''}>3</option>
@@ -1688,7 +1686,7 @@ function renderSkillSelect(rowId, val) {
 function renderActivitySelect(rowId, val) {
   const v = val ? String(val) : '';
   return `<select onchange="rowChange('${rowId}','activity',this.value)">
-    <option value=""${!v?' selected':''}>— Activity —</option>
+    <option value=""${!v?' selected':''}>—</option>
     <option value="1"${v==='1'?' selected':''}>1</option>
     <option value="2"${v==='2'?' selected':''}>2</option>
     <option value="3"${v==='3'?' selected':''}>3</option>
@@ -1835,6 +1833,7 @@ function clearFilters() {
   ['fChar','fFusion','fLocked','fSkill','fActivity','fVariant'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('fDeviation').value = '';
   filters = { char:'', deviation:'', fusion:'', locked:'', skill:'', activity:'', variant:'' };
+  addDeviationDefaults = { character:'', variant:'', skill:'', activity:'' };
   renderView();
 }
 
@@ -1921,6 +1920,70 @@ function handleConfigLoad(e) {
 }
 
 /* ============================================================
+   SAVE / LOAD LIST (full data backup)
+   ============================================================ */
+function saveList() {
+  const data = {
+    version:                2,
+    exported:               new Date().toISOString(),
+    deviations:             state.deviations,
+    materials:              state.materials,
+    settings:               state.settings,
+    custom_deviations:      state.customDeviations,
+    custom_traits:          state.customTraits,
+    custom_trait_assignments: state.customTraitAssignments || {},
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'deviant-tracker-backup.json';
+  a.click();
+  // Flash button text
+  const btns = document.querySelectorAll('[onclick*="saveList"]');
+  btns.forEach(btn => {
+    const orig = btn.textContent;
+    btn.textContent = '✓ List saved!';
+    setTimeout(() => { btn.textContent = orig; }, 2000);
+  });
+}
+
+function triggerLoadList() {
+  document.getElementById('listFileInput').click();
+}
+
+function handleListLoad(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (!data.version || !Array.isArray(data.deviations)) {
+        alert('Invalid backup file — no data was changed');
+        return;
+      }
+      if (!confirm('This will replace all current data with the backup. Continue?')) return;
+      if (data.deviations             !== undefined) { state.deviations             = data.deviations;             save('deviations'); }
+      if (data.materials              !== undefined) { state.materials              = data.materials;              save('materials'); }
+      if (data.settings               !== undefined) { state.settings               = data.settings;               save('settings'); }
+      if (data.custom_deviations      !== undefined) { state.customDeviations       = data.custom_deviations;      save('customDeviations'); }
+      if (data.custom_traits          !== undefined) { state.customTraits           = data.custom_traits;          save('customTraits'); }
+      if (data.custom_trait_assignments !== undefined) { state.customTraitAssignments = data.custom_trait_assignments; save('customTraitAssignments'); }
+      renderCharList();
+      updateFilterCharDropdown();
+      renderVariantList();
+      updateFilterVariantDropdown();
+      renderView();
+      renderMaterials();
+    } catch (err) {
+      alert('Invalid backup file — no data was changed');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
+/* ============================================================
    FILTER BAR & COLUMN TOGGLE
    ============================================================ */
 function toggleFilterBar() {
@@ -1990,7 +2053,7 @@ function renderMaterials() {
       <input class="fm-input fm-name"  type="text"   value="${escHtml(m.name)}"  placeholder="Material name…"  oninput="matChange('${m.id}','name',this.value)">
       <input class="fm-input fm-qty"   type="number" value="${m.qty}"            placeholder="Qty" min="0"     oninput="matChange('${m.id}','qty',this.value)">
       <input class="fm-input fm-notes" type="text"   value="${escHtml(m.notes)}" placeholder="Notes…"          oninput="matChange('${m.id}','notes',this.value)">
-      <button class="del-btn" onclick="delMaterial('${m.id}')">✕</button>
+      <button class="del-btn fm-del" onclick="delMaterial('${m.id}')">✕</button>
     `;
     div.addEventListener('dragstart', e => { dragSrcIdx = idx; setTimeout(() => div.classList.add('dragging'), 0); e.dataTransfer.effectAllowed = 'move'; });
     div.addEventListener('dragend',   () => { div.classList.remove('dragging'); document.querySelectorAll('.fm-row').forEach(r => r.classList.remove('drag-over')); });
@@ -2039,7 +2102,11 @@ renderVariantList();
 updateFilterVariantDropdown();
 renderView();
 renderMaterials();
-updateStickyTop();
+// Track filter selections for addDeviationRow pre-fill
+document.getElementById('fChar').addEventListener('change',     e => { addDeviationDefaults.character = e.target.value; });
+document.getElementById('fVariant').addEventListener('change',  e => { addDeviationDefaults.variant   = e.target.value; });
+document.getElementById('fSkill').addEventListener('change',    e => { addDeviationDefaults.skill      = e.target.value; });
+document.getElementById('fActivity').addEventListener('change', e => { addDeviationDefaults.activity   = e.target.value; });
 // Collapse filter bar on mobile by default
 if (isMobile()) {
   const fbi = document.getElementById('filterBarInner');
@@ -2048,5 +2115,7 @@ if (isMobile()) {
   if (fta) fta.textContent = '▸';
 }
 </script>
+
+</div><!-- /#app -->
 </body>
 </html>
