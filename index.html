@@ -54,7 +54,10 @@ button{cursor:pointer}
 
 /* ===== FILTER BAR ===== */
 .filter-bar{background:var(--bg1);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;margin-bottom:12px;display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px}
-.filter-group{display:flex;flex-direction:column;gap:4px}
+.filter-group{display:flex;flex-direction:column;gap:4px;min-width:120px;flex:1}
+/* Character (1st) and Deviation (3rd) groups slightly wider */
+#filterBarInner .filter-group:nth-child(1),
+#filterBarInner .filter-group:nth-child(3){min-width:150px}
 .filter-group label{font-size:.72rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.8px}
 .filter-bar select,.filter-bar input[type=text]{background:var(--bg2);border:1px solid var(--border);border-radius:4px;color:var(--text);padding:5px 8px;font-size:.82rem;min-width:110px}
 .filter-bar select:focus,.filter-bar input:focus{outline:none;border-color:var(--accent)}
@@ -264,6 +267,8 @@ input,select,button,textarea{touch-action:manipulation}
 .show-all-cols-btn{display:none}
 .filter-toggle-btn{display:none}
 .fm-move-btns{display:none}
+/* Make the collapsible wrapper invisible to the flex layout on desktop */
+.filter-bar-inner{display:contents}
 
 /* ===== TRAIT ASSIGN COUNTER ===== */
 .trait-assign-counter{font-size:.78rem;color:var(--text-dim);margin-top:8px}
