@@ -262,8 +262,6 @@ input,select,button,textarea{touch-action:manipulation}
 .card-stat-label{font-size:.7rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.4px}
 .card-stat select{background:transparent;border:1px solid transparent;border-radius:4px;color:var(--text);font-size:.85rem;padding:3px 4px}
 .card-stat select:focus{border-color:var(--accent);background:var(--bg2);outline:none}
-.card-notes input{background:transparent;border:1px solid transparent;border-radius:4px;color:var(--text);font-size:.85rem;padding:4px 6px;width:100%}
-.card-notes input:focus{border-color:var(--accent);background:var(--bg2);outline:none}
 .card-del{min-width:36px;min-height:36px;flex-shrink:0;align-self:flex-start}
 .card-empty{color:var(--text-dim);font-style:italic;font-size:.88rem;padding:20px 0;text-align:center}
 
@@ -449,7 +447,7 @@ input,select,button,textarea{touch-action:manipulation}
     <table id="deviationTable">
       <colgroup>
         <col style="width:120px"><!-- 1 Character -->
-        <col style="width:190px"><!-- 2 Deviation Name -->
+        <col style="width:200px"><!-- 2 Deviation Name -->
         <col style="width:170px"><!-- 3 Variant -->
         <col style="width:155px"><!-- 4 Trait 1 -->
         <col style="width:155px"><!-- 5 Trait 2 -->
@@ -461,8 +459,7 @@ input,select,button,textarea{touch-action:manipulation}
         <col style="width:70px"> <!-- 11 ELand -->
         <col style="width:70px"> <!-- 12 Fusion -->
         <col style="width:70px"> <!-- 13 Locked -->
-        <col style="width:180px"><!-- 14 Notes -->
-        <col style="width:45px"> <!-- 15 Del -->
+        <col style="width:45px"> <!-- 14 Del -->
       </colgroup>
       <thead id="sticky-thead">
         <tr>
@@ -479,7 +476,6 @@ input,select,button,textarea{touch-action:manipulation}
           <th data-sort-field="eland">ELand<span class="sort-indicator">↕</span></th>
           <th data-sort-field="fusion">Fusion<span class="sort-indicator">↕</span></th>
           <th data-sort-field="locked">Locked<span class="sort-indicator">↕</span></th>
-          <th>Notes</th>
           <th>Del</th>
         </tr>
       </thead>
@@ -1832,9 +1828,6 @@ function renderCards() {
           <span class="card-stat-label">Locked</span>
           <label class="toggle"><input type="checkbox" ${row.locked?'checked':''} onchange="rowChange('${row.id}','locked',this.checked)"><span class="toggle-slider"></span></label>
         </div>
-      </div>
-      <div class="card-notes">
-        <input type="text" value="${escHtml(row.notes)}" placeholder="Notes…" oninput="rowChange('${row.id}','notes',this.value)">
       </div>`;
     cont.appendChild(card);
     for (let i = 0; i < 5; i++) renderCardTraitCell(row.id, i, row.name, row.traits[i]);
@@ -1865,7 +1858,7 @@ function renderCardTraitCell(rowId, slotIdx, devName, curTrait) {
    DEVIATIONS TABLE
    ============================================================ */
 function newDeviation() {
-  return { id: Date.now() + Math.random(), char:'', name:'', variant:'', traits:['','','','',''], skill:0, activity:0, eland:false, fusion:false, locked:false, notes:'' };
+  return { id: Date.now() + Math.random(), char:'', name:'', variant:'', traits:['','','','',''], skill:0, activity:0, eland:false, fusion:false, locked:false };
 }
 
 function addDeviationRow() {
@@ -1963,7 +1956,7 @@ function renderTable() {
   if (rows.length === 0) {
     const tr = document.createElement('tr');
     tr.className = 'empty-row';
-    tr.innerHTML = `<td colspan="15">${total === 0 ? 'No deviations added yet. Click <strong>+ Add Deviation</strong> to get started.' : 'No deviations match the current filters.'}</td>`;
+    tr.innerHTML = `<td colspan="14">${total === 0 ? 'No deviations added yet. Click <strong>+ Add Deviation</strong> to get started.' : 'No deviations match the current filters.'}</td>`;
     tbody.appendChild(tr);
     return;
   }
@@ -1991,7 +1984,6 @@ function renderTable() {
       <td class="toggle-wrap"><label class="toggle"><input data-field="eland" type="checkbox" ${row.eland?'checked':''} onchange="rowChange('${row.id}','eland',this.checked)"><span class="toggle-slider"></span></label></td>
       <td class="toggle-wrap"><label class="toggle"><input data-field="fusion" type="checkbox" ${row.fusion?'checked':''} onchange="rowChange('${row.id}','fusion',this.checked)"><span class="toggle-slider"></span></label></td>
       <td class="toggle-wrap"><label class="toggle"><input type="checkbox" ${row.locked?'checked':''} onchange="rowChange('${row.id}','locked',this.checked)"><span class="toggle-slider"></span></label></td>
-      <td><input type="text" value="${escHtml(row.notes)}" placeholder="Notes…" oninput="rowChange('${row.id}','notes',this.value)"></td>
       <td style="text-align:center"><button class="del-btn" onclick="deleteDeviationRow('${row.id}')">✕</button></td>
     `;
     tbody.appendChild(tr);
@@ -2108,7 +2100,6 @@ function rowChange(id, field, val) {
   else if (field === 'eland')      row.eland    = val;
   else if (field === 'fusion')     row.fusion   = val;
   else if (field === 'locked')     row.locked   = val;
-  else if (field === 'notes')      row.notes    = val;
 
   if (field === 'char')     defaultCharacter = row.char || '';
   if (field === 'name')     defaultDeviationName = row.name || '';
@@ -2270,12 +2261,12 @@ function initPersistenceListeners() {
    ============================================================ */
 function exportCSV() {
   const rows   = getFilteredSorted();
-  const header = ['Character','Deviation Name','Variant','Trait 1','Trait 2','Trait 3','Trait 4','Trait 5','Skill Level','Activity Level','ELand','Fusion','Locked','Notes'];
+  const header = ['Character','Deviation Name','Variant','Trait 1','Trait 2','Trait 3','Trait 4','Trait 5','Skill Level','Activity Level','ELand','Fusion','Locked'];
   const lines  = [header.map(csvEsc).join(',')];
   rows.forEach(r => lines.push([
     r.char, r.name, r.variant,
     r.traits[0]||'', r.traits[1]||'', r.traits[2]||'', r.traits[3]||'', r.traits[4]||'',
-    r.skill, r.activity, r.eland?'Yes':'No', r.fusion?'Yes':'No', r.locked?'Yes':'No', r.notes,
+    r.skill, r.activity, r.eland?'Yes':'No', r.fusion?'Yes':'No', r.locked?'Yes':'No',
   ].map(csvEsc).join(',')));
   const blob = new Blob([lines.join('\n')], { type: 'text/csv' });
   const a = document.createElement('a');
