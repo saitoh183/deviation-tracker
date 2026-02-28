@@ -264,6 +264,10 @@ footer{text-align:center;padding:16px;font-size:.75rem;color:var(--text-muted);b
       <select id="fChar" onchange="applyFilters()"><option value="">All</option></select>
     </div>
     <div class="filter-group">
+      <label>Variant</label>
+      <select id="fVariant" onchange="applyFilters()"><option value="">All</option></select>
+    </div>
+    <div class="filter-group">
       <label>Deviation</label>
       <input id="fDeviation" type="text" placeholder="Search…" oninput="applyFilters()">
     </div>
@@ -385,6 +389,16 @@ footer{text-align:center;padding:16px;font-size:.75rem;color:var(--text-muted);b
       <div style="font-size:.72rem;color:var(--text-muted);margin-top:-4px;margin-bottom:6px"><span id="charCounter">0/10</span> characters</div>
       <div class="char-list" id="charList"></div>
       <p class="char-empty" id="charEmpty">No characters added yet. Add one above.</p>
+    </div>
+
+    <div class="settings-section">
+      <h3>Variants</h3>
+      <div class="char-add-row">
+        <input id="variantInput" type="text" maxlength="30" placeholder="Variant name…" onkeydown="if(event.key==='Enter')addVariant()">
+        <button class="btn btn-primary" onclick="addVariant()">Add</button>
+      </div>
+      <div class="char-list" id="variantList"></div>
+      <p class="char-empty" id="variantEmpty">No variants added yet. Add one above.</p>
     </div>
 
     <div class="settings-section">
@@ -543,7 +557,7 @@ let state = {
 };
 
 let sortCol = null, sortDir = 1;
-let filters = { char:'', deviation:'', fusion:'', locked:'', skill:'', activity:'' };
+let filters = { char:'', deviation:'', fusion:'', locked:'', skill:'', activity:'', variant:'' };
 let dragSrcIdx = null;
 let confirmCallback = null;
 
@@ -566,6 +580,7 @@ function load() {
   state.customDeviations = parse('customDeviations', []);
   state.customTraits     = parse('customTraits',     []);
   if (!state.settings.characters) state.settings.characters = [];
+  if (!state.settings.variants)   state.settings.variants   = [];
 }
 
 function save(key) {
@@ -747,6 +762,81 @@ function updateFilterCharDropdown() {
   const cur = sel.value;
   sel.innerHTML = '<option value="">All</option>' +
     state.settings.characters.map(c => `<option value="${escHtml(c)}"${c===cur?' selected':''}>${escHtml(c)}</option>`).join('');
+}
+
+/* ============================================================
+   VARIANTS
+   ============================================================ */
+function getAllVariants() {
+  return [...(state.settings.variants || [])].sort((a, b) => a.localeCompare(b));
+}
+
+function buildVariantOptions(curVal) {
+  const variants = getAllVariants();
+  let opts = `<option value=""${!curVal?' selected':''}>—</option>`;
+  variants.forEach(v => opts += `<option value="${escHtml(v)}"${v===curVal?' selected':''}>${escHtml(v)}</option>`);
+  opts += `<option value="__add__">➕ Add new variant...</option>`;
+  return opts;
+}
+
+function renderVariantSelect(rowId, val) {
+  return `<select class="row-variant" onchange="rowChange('${rowId}','variant',this.value)">${buildVariantOptions(val)}</select>`;
+}
+
+function updateAllVariantDropdowns() {
+  document.querySelectorAll('select.row-variant').forEach(sel => {
+    const tr    = sel.closest('tr');
+    const rowId = tr ? tr.dataset.id : null;
+    const row   = rowId ? state.deviations.find(r => String(r.id) === String(rowId)) : null;
+    const cur   = row ? row.variant : '';
+    sel.innerHTML = buildVariantOptions(cur);
+  });
+}
+
+function updateFilterVariantDropdown() {
+  const sel = document.getElementById('fVariant');
+  if (!sel) return;
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">All</option>' +
+    getAllVariants().map(v => `<option value="${escHtml(v)}"${v===cur?' selected':''}>${escHtml(v)}</option>`).join('');
+}
+
+function renderVariantList() {
+  const list  = document.getElementById('variantList');
+  const empty = document.getElementById('variantEmpty');
+  if (!list) return;
+  const variants = state.settings.variants || [];
+  list.innerHTML = '';
+  if (!variants.length) { empty.style.display = ''; return; }
+  empty.style.display = 'none';
+  variants.forEach((v, i) => {
+    const div = document.createElement('div');
+    div.className = 'char-item';
+    div.innerHTML = `<span>${escHtml(v)}</span><button class="char-del" onclick="delVariant(${i})" title="Remove">✕</button>`;
+    list.appendChild(div);
+  });
+}
+
+function addVariant() {
+  const inp = document.getElementById('variantInput');
+  const val = inp.value.trim().slice(0, 30);
+  if (!val) return;
+  const variants = state.settings.variants || (state.settings.variants = []);
+  if (variants.some(v => v.toLowerCase() === val.toLowerCase())) { inp.value = ''; return; }
+  variants.push(val);
+  save('settings');
+  renderVariantList();
+  updateAllVariantDropdowns();
+  updateFilterVariantDropdown();
+  inp.value = '';
+}
+
+function delVariant(i) {
+  state.settings.variants.splice(i, 1);
+  save('settings');
+  renderVariantList();
+  updateAllVariantDropdowns();
+  updateFilterVariantDropdown();
 }
 
 /* ============================================================
@@ -973,13 +1063,14 @@ function deleteDeviationRow(id) {
 
 function getFilteredSorted() {
   let rows = [...state.deviations];
-  const { char, deviation, fusion, locked, skill, activity } = filters;
+  const { char, deviation, fusion, locked, skill, activity, variant } = filters;
   if (char)      rows = rows.filter(r => r.char === char);
   if (deviation) rows = rows.filter(r => r.name.toLowerCase().includes(deviation.toLowerCase()));
   if (fusion  !== '') rows = rows.filter(r => (r.fusion ?'1':'0') === fusion);
   if (locked  !== '') rows = rows.filter(r => (r.locked ?'1':'0') === locked);
   if (skill)     rows = rows.filter(r => String(r.skill)    === skill);
   if (activity)  rows = rows.filter(r => String(r.activity) === activity);
+  if (variant)   rows = rows.filter(r => r.variant === variant);
   if (sortCol) {
     const k = { char:'char', name:'name', variant:'variant', skill:'skill', activity:'activity', fusion:'fusion', locked:'locked' }[sortCol];
     if (k) rows.sort((a, b) => {
@@ -1020,7 +1111,7 @@ function renderTable() {
     tr.innerHTML = `
       <td><select class="row-char" onchange="rowChange('${row.id}','char',this.value)">${charOpts}</select></td>
       <td><select class="row-name" onchange="rowChange('${row.id}','name',this.value)">${devOpts}</select></td>
-      <td><input type="text" value="${escHtml(row.variant)}" placeholder="Variant…" oninput="rowChange('${row.id}','variant',this.value)"></td>
+      <td>${renderVariantSelect(row.id, row.variant)}</td>
       <td class="trait-cell" id="tc_${row.id}_0"></td>
       <td class="trait-cell" id="tc_${row.id}_1"></td>
       <td class="trait-cell" id="tc_${row.id}_2"></td>
@@ -1111,7 +1202,28 @@ function rowChange(id, field, val) {
       renderTraitCell(id, i, val, row.traits[i]);
     }
   } else if (field === 'char')     row.char     = val;
-  else if (field === 'variant')    row.variant  = val;
+  else if (field === 'variant') {
+    if (val === '__add__') {
+      const nv = window.prompt('Enter new variant name:');
+      if (nv && nv.trim()) {
+        const trimmed = nv.trim().slice(0, 30);
+        const variants = state.settings.variants || (state.settings.variants = []);
+        if (!variants.some(v => v.toLowerCase() === trimmed.toLowerCase())) {
+          variants.push(trimmed);
+          save('settings');
+          renderVariantList();
+          updateFilterVariantDropdown();
+        }
+        row.variant = trimmed;
+        updateAllVariantDropdowns();
+      } else {
+        updateAllVariantDropdowns();
+        return;
+      }
+    } else {
+      row.variant = val;
+    }
+  }
   else if (field === 'skill')      row.skill    = val ? Number(val) : 0;
   else if (field === 'activity')   row.activity = val ? Number(val) : 0;
   else if (field === 'fusion')     row.fusion   = val;
@@ -1173,13 +1285,14 @@ function applyFilters() {
   filters.locked    = document.getElementById('fLocked').value;
   filters.skill     = document.getElementById('fSkill').value;
   filters.activity  = document.getElementById('fActivity').value;
+  filters.variant   = document.getElementById('fVariant').value;
   renderTable();
 }
 
 function clearFilters() {
-  ['fChar','fFusion','fLocked','fSkill','fActivity'].forEach(id => document.getElementById(id).value = '');
+  ['fChar','fFusion','fLocked','fSkill','fActivity','fVariant'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('fDeviation').value = '';
-  filters = { char:'', deviation:'', fusion:'', locked:'', skill:'', activity:'' };
+  filters = { char:'', deviation:'', fusion:'', locked:'', skill:'', activity:'', variant:'' };
   renderTable();
 }
 
@@ -1251,6 +1364,8 @@ function handleConfigLoad(e) {
       if (data.settings)         { state.settings         = data.settings;         save('settings'); }
       renderCharList();
       updateFilterCharDropdown();
+      renderVariantList();
+      updateFilterVariantDropdown();
       renderTable();
       alert('Config loaded successfully.');
     } catch (err) {
@@ -1344,6 +1459,8 @@ function escHtml(s) {
 load();
 renderCharList();
 updateFilterCharDropdown();
+renderVariantList();
+updateFilterVariantDropdown();
 renderTable();
 renderMaterials();
 </script>
