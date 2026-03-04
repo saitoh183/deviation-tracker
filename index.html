@@ -107,6 +107,12 @@ td select option{background:var(--bg2)}
 /* ===== TRAIT CELLS ===== */
 .trait-cell select{font-size:.78rem;color:var(--text)}
 .trait-cell select.neg-trait{color:var(--neg)}
+.score-select{font-weight:700;text-align:center;min-width:44px}
+.score-select.skill-1,.score-select.activity-1{color:#fecaca;background:rgba(220,38,38,.22);border-color:rgba(248,113,113,.45)}
+.score-select.skill-2,.score-select.activity-2{color:#e5e7eb;background:rgba(75,85,99,.45);border-color:rgba(156,163,175,.35)}
+.score-select.skill-3,.score-select.activity-3{color:#e9d5ff;background:rgba(109,40,217,.28);border-color:rgba(167,139,250,.45)}
+.score-select.skill-4,.score-select.activity-4{color:#ffedd5;background:rgba(194,65,12,.30);border-color:rgba(251,146,60,.5)}
+.score-select.skill-5,.score-select.activity-5{color:#fef9c3;background:rgba(202,138,4,.35);border-color:rgba(250,204,21,.55)}
 
 /* ===== SHARED TOOLTIP (fixed, body-level) ===== */
 #shared-tooltip{position:fixed;z-index:9999;min-width:220px;max-width:300px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);pointer-events:none;display:none}
@@ -1439,7 +1445,7 @@ function renderDevRemoveList() {
     const div = document.createElement('div');
     div.className = 'mgr-item';
     div.innerHTML = `<span class="mgr-item-name">${escHtml(name)}</span>` + (
-      isBuiltIn
+      locked
         ? `<span class="lock-icon" title="Built-in deviation — edit config.js to remove">🔒</span>`
         : `<button class="mgr-del-btn" onclick="removeCustomDeviation('${escHtml(name).replace(/'/g,"\\'")}')">✕</button>`
     );
@@ -1748,7 +1754,7 @@ function renderTraitRemoveList() {
       const div = document.createElement('div');
       div.className = 'mgr-item';
       div.innerHTML = `<span class="mgr-item-name${t.neg?' neg-name':''}">${escHtml(t.name)}</span>` + (
-        isBuiltIn
+        locked
           ? `<span class="lock-icon" title="Built-in trait — edit config.js to remove">🔒</span>`
           : `<div style="display:flex;gap:6px"><button class="mgr-del-btn" onclick="startEditTrait(${JSON.stringify(t.id)})">✎</button><button class="mgr-del-btn" onclick="removeCustomTrait(${JSON.stringify(t.rawName||t.name)},${JSON.stringify(t.id)})">✕</button></div>`
       );
@@ -2109,7 +2115,8 @@ function renderTable() {
 function renderSkillSelect(rowId, val, dataField) {
   const v = val ? String(val) : '';
   const attr = dataField ? ` data-field="${dataField}"` : '';
-  return `<select${attr} onchange="rowChange('${rowId}','skill',this.value)">
+  const cls = `score-select${v ? ` skill-${v}` : ''}`;
+  return `<select${attr} class="${cls}" onchange="onScoreChange('${rowId}','skill',this)">
     <option value=""${!v?' selected':''}>—</option>
     <option value="1"${v==='1'?' selected':''}>1</option>
     <option value="2"${v==='2'?' selected':''}>2</option>
@@ -2122,7 +2129,8 @@ function renderSkillSelect(rowId, val, dataField) {
 function renderActivitySelect(rowId, val, dataField) {
   const v = val ? String(val) : '';
   const attr = dataField ? ` data-field="${dataField}"` : '';
-  return `<select${attr} onchange="rowChange('${rowId}','activity',this.value)">
+  const cls = `score-select${v ? ` activity-${v}` : ''}`;
+  return `<select${attr} class="${cls}" onchange="onScoreChange('${rowId}','activity',this)">
     <option value=""${!v?' selected':''}>—</option>
     <option value="1"${v==='1'?' selected':''}>1</option>
     <option value="2"${v==='2'?' selected':''}>2</option>
@@ -2221,6 +2229,13 @@ function rowChange(id, field, val) {
   if (['char','name','variant','skill','activity','eland','fusion'].includes(field)) saveAddDefaults();
 
   save('deviations');
+}
+
+function onScoreChange(id, field, sel) {
+  if (!sel) return;
+  for (let i = 1; i <= 5; i++) sel.classList.remove(`${field}-${i}`);
+  if (sel.value >= '1' && sel.value <= '5') sel.classList.add(`${field}-${sel.value}`);
+  rowChange(id, field, sel.value);
 }
 
 function traitChange(rowId, slotIdx, val) {
