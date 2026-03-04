@@ -1,0 +1,322 @@
+{
+  "version": 2,
+  "customDeviations": [
+    "Harveseed",
+    "Hydronaut Fish",
+    "ZapCam",
+    "Invincible Sun",
+    "Zapamander",
+    "Gazocchio",
+    "Whalepup",
+    "Soul Summoner",
+    "Director Fox",
+    "Cattiva",
+    "Ice Pot"
+  ],
+  "customTraits": [
+    {
+      "id": 1772260189945.5022,
+      "name": "Productivity First",
+      "effect": "The resource production interval for Crafting is reduced by 5%",
+      "type": "positive",
+      "deviations": [
+        "Masonic Pyramid"
+      ]
+    },
+    {
+      "id": 1772319445726.368,
+      "name": "Snooze Aficionado",
+      "effect": "When its Mood decreases there is a 10% chance that other Territorial Deviations also loses Mood. When the other Deviation is dormant and regaining Deviant Power, there is a 10% chance that the other Territorial Deviations receive Deviant Power +5",
+      "type": "negative",
+      "deviations": [
+        "Wish Box"
+      ]
+    }
+  ],
+  "settings": {
+    "characters": [
+      "Darkpixx",
+      "OGDarkpixx"
+    ],
+    "variants": [
+      {
+        "name": "Dream Zone",
+        "description": "Dream Zone"
+      },
+      {
+        "name": "Radiant Variant",
+        "description": "The appearance of the Deviation has changed.  It gains Mood Recovery Speed +20%"
+      },
+      {
+        "name": "Marine Star",
+        "description": "The appearance of the Deviation has changed.  When synced, each reload gives you either a 5% Weapon DMG bonus or 5% Status DMG bonus at random."
+      },
+      {
+        "name": "Milk Sugar",
+        "description": "The appearance of the Deviation has changed. It gains Max Mood +35"
+      },
+      {
+        "name": "Bursting Magma",
+        "description": "The appearance of the Deviation has changed. It gains Max Energy +40%"
+      },
+      {
+        "name": "Aquarius",
+        "description": "The appearance of the Deviation has changed.  It gains Mood Recovery Speed +30%"
+      },
+      {
+        "name": "Christmas",
+        "description": "While a Territorial Deviation is working, its energy and Mood  consumption interval +5%"
+      },
+      {
+        "name": "Christmas Spirit",
+        "description": "The appearance of the Deviation has changed. Max Deviant Power +10%, Deviant Power recovery speed +5%"
+      },
+      {
+        "name": "Childlike Whimsy",
+        "description": "The appearance of the Deviation has changed.  It gains Mood Recovery Speed +30%"
+      },
+      {
+        "name": "Fool's Memory",
+        "description": "The appearance of the Deviation has changed. It gains Energy REcovery Speed +10%"
+      },
+      {
+        "name": "Lunar Oracle",
+        "description": "The appearance of the Deviation has changed. Syncing abilities grants Status DMG +5%, which X 1.5 when Sanity is below 30%"
+      },
+      {
+        "name": "Glistening Blue",
+        "description": "The appearance of the Deviation has changed. When synced, hitting a Weakspot increases Deviant Power by 1 additional point. Cooldown: 3s"
+      },
+      {
+        "name": "StarFall Inversion",
+        "description": "Deviation appearance change. Syncing abilities grants +5% Frost Elemental DMG. The effect increases by 50% while airborne."
+      }
+    ],
+    "hiddenDefaultDeviations": [],
+    "hiddenDefaultTraits": []
+  },
+  "customTraitAssignments": {
+    "Wish Box": {
+      "add": [
+        "An Old Hand Knows the Ropes",
+        "Cheer Up 1",
+        "Cheer Up 2",
+        "Cheer Up 3",
+        "Growing Pains 1",
+        "Growing Pains 2",
+        "Growing Pains 3",
+        "OnePlus",
+        "⚠ Baffling Behavior",
+        "⚠ Feeling Blue 1",
+        "⚠ Feeling Blue 2",
+        "⚠ Lazy Bones",
+        "⚠ Worn-Out 2"
+      ],
+      "remove": []
+    },
+    "Pup Buddy": {
+      "add": [
+        "⚠ Worn-Out 2"
+      ],
+      "remove": []
+    },
+    "Festering Gel": {
+      "add": [
+        "Cheer Up 1",
+        "Cheer Up 2",
+        "Growing Pains 1",
+        "Growing Pains 3",
+        "⚠ Worn-Out 1"
+      ],
+      "remove": []
+    },
+    "Logging Beaver": {
+      "add": [
+        "Growing Pains 1",
+        "OnePlus",
+        "⚠ Worn-Out 1"
+      ],
+      "remove": []
+    },
+    "Masonic Pyramid": {
+      "add": [
+        "Growing Pains 1",
+        "Growing Pains 2",
+        "Growing Pains 3"
+      ],
+      "remove": []
+    },
+    "Zeno-Purifier": {
+      "add": [
+        "Cheer Up 1",
+        "Cheer Up 3",
+        "Rise and Shine 4",
+        "Vegetative Calm",
+        "⚠ Worn-Out 1"
+      ],
+      "remove": []
+    },
+    "Pyro Dino": {
+      "add": [
+        "Growing Pains 1",
+        "Growing Pains 2",
+        "Growing Pains 3",
+        "Power King",
+        "⚠ Stay Indoors",
+        "⚠ Worn-Out 1",
+        "⚠ Worn-Out 2"
+      ],
+      "remove": []
+    },
+    "Atomic Snail": {
+      "add": [
+        "⚠ Worn-Out 1",
+        "⚠ Worn-Out 2"
+      ],
+      "remove": []
+    },
+    "Party Monkey": {
+      "add": [
+        "Cheer Up 1",
+        "Cheer Up 2"
+      ],
+      "remove": []
+    },
+    "Orb Lightning": {
+      "add": [
+        "Cheer Up 1",
+        "Cheer Up 3",
+        "Growing Pains 1",
+        "Growing Pains 2",
+        "Growing Pains 3",
+        "⚠ No Such Thing As a Small Cup"
+      ],
+      "remove": []
+    },
+    "ZapCam": {
+      "add": [
+        "Cheer Up 1",
+        "Cheer Up 2",
+        "Cheer Up 3",
+        "Growing Pains 1",
+        "Growing Pains 2",
+        "Growing Pains 3"
+      ],
+      "remove": []
+    },
+    "Zapamander": {
+      "add": [
+        "⚠ Worn-Out 2"
+      ],
+      "remove": []
+    },
+    "Gazocchio": {
+      "add": [
+        "Cheer Up 2"
+      ],
+      "remove": []
+    },
+    "Whalepup": {
+      "add": [
+        "Cheer Up 1",
+        "Cheer Up 2",
+        "Cheer Up 3"
+      ],
+      "remove": [
+        "Anti-Burnout",
+        "Big Cup",
+        "Buy 1 Get 2",
+        "Crack Shot",
+        "Heavy and Solid",
+        "Leftover",
+        "Lighten Your Mind",
+        "One More Bottle",
+        "Out of Scratch",
+        "Psychic Kid",
+        "Rewind",
+        "Sweet Talk",
+        "The Last Night",
+        "Unhinged Production",
+        "Wild Wood Spirit"
+      ]
+    },
+    "Director Fox": {
+      "add": [
+        "Growing Pains 1",
+        "Growing Pains 2",
+        "Growing Pains 3",
+        "⚠ Baffling Behavior"
+      ],
+      "remove": []
+    },
+    "Cattiva": {
+      "add": [
+        "Growing Pains 1",
+        "Growing Pains 2",
+        "Growing Pains 3",
+        "Heartthrob",
+        "Voluntary Overtime",
+        "⚠ Baffling Behavior",
+        "⚠ Holding the Team Back",
+        "⚠ Worn-Out 1",
+        "⚠ Worn-Out 2",
+        "⚠ Worn-Out 3"
+      ],
+      "remove": []
+    },
+    "Snowsprite": {
+      "add": [
+        "Growing Pains 1",
+        "Growing Pains 2",
+        "Growing Pains 3"
+      ],
+      "remove": []
+    },
+    "Ice Pot": {
+      "add": [
+        "Growing Pains 1",
+        "Growing Pains 2",
+        "Growing Pains 3"
+      ],
+      "remove": []
+    },
+    "Polar Jelly": {
+      "add": [
+        "Vegetative Calm"
+      ],
+      "remove": []
+    },
+    "Butterfly's Emissary": {
+      "add": [
+        "⚠ Feeling Blue 2",
+        "⚠ Worn-Out 1",
+        "⚠ Worn-Out 2"
+      ],
+      "remove": []
+    },
+    "Frog the Leaper": {
+      "add": [
+        "Cheer Up 3",
+        "Growing Pains 1",
+        "Growing Pains 2",
+        "Growing Pains 3",
+        "Medium Cup",
+        "⚠ Feeling Blue 1",
+        "⚠ Lazy",
+        "⚠ Worn-Out 1"
+      ],
+      "remove": []
+    },
+    "Harveseed": {
+      "add": [
+        "Medium Cup",
+        "⚠ Feeling Blue 1",
+        "⚠ Feeling Blue 2",
+        "⚠ Lazy",
+        "⚠ Worn-Out 1",
+        "⚠ Worn-Out 2"
+      ],
+      "remove": []
+    }
+  }
+}
