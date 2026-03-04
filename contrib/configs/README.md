@@ -15,11 +15,11 @@ This will download a JSON file containing your current configuration.
 ## 2. Rename the file
 
 Rename the downloaded file using this format:
-<name>-config.json
+(name)-config.json
 
 Examples:
-mylatest-config.json
-player123-config.json
+- mylatest-config.json
+- player123-config.json
 
 ---
 
