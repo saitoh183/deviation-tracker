@@ -942,6 +942,12 @@ function save(key) {
 }
 
 /* ── Data Getters ── */
+function isOfficialDeployment() {
+  const host = window.location && window.location.hostname ? window.location.hostname : '';
+  const path = window.location && window.location.pathname ? window.location.pathname : '';
+  return host === 'saitoh183.github.io' && path.startsWith('/deviation-tracker/');
+}
+
 function getAllDeviations() {
   return [...new Set([...DEVIANT_LIST, ...state.customDeviations])].sort((a, b) => a.localeCompare(b));
 }
@@ -1356,11 +1362,12 @@ function renderDevRemoveList() {
   list.innerHTML = '';
   if (!visible.length) { list.innerHTML = '<div class="mgr-empty">No deviations found.</div>'; return; }
   visible.forEach(name => {
-    const isBuiltIn = DEVIANT_LIST.includes(name);
+    const isDefaultItem = DEVIANT_LIST.includes(name);
+    const locked = isOfficialDeployment() && isDefaultItem;
     const div = document.createElement('div');
     div.className = 'mgr-item';
     div.innerHTML = `<span class="mgr-item-name">${escHtml(name)}</span>` + (
-      isBuiltIn
+      locked
         ? `<span class="lock-icon" title="Built-in deviation — edit config.js to remove">🔒</span>`
         : `<button class="mgr-del-btn" onclick="removeCustomDeviation('${escHtml(name).replace(/'/g,"\\'")}')">✕</button>`
     );
@@ -1371,6 +1378,9 @@ function renderDevRemoveList() {
 function filterDevRemoveList() { renderDevRemoveList(); }
 
 function removeCustomDeviation(name) {
+  const isDefaultItem = DEVIANT_LIST.includes(name);
+  const locked = isOfficialDeployment() && isDefaultItem;
+  if (locked) return;
   showConfirm(
     'Remove Deviation',
     `Remove "${name}" from the deviation list? Rows using it will keep the value but it won't appear in future dropdowns.`,
@@ -1655,11 +1665,12 @@ function renderTraitRemoveList() {
     head.textContent = label;
     list.appendChild(head);
     traits.forEach(t => {
-      const isBuiltIn = TRAIT_DATA.some(bt => bt.name === t.name);
+      const isDefaultItem = TRAIT_DATA.some(bt => bt.name === t.name);
+      const locked = isOfficialDeployment() && isDefaultItem;
       const div = document.createElement('div');
       div.className = 'mgr-item';
       div.innerHTML = `<span class="mgr-item-name${t.neg?' neg-name':''}">${escHtml(t.name)}</span>` + (
-        isBuiltIn
+        locked
           ? `<span class="lock-icon" title="Built-in trait — edit config.js to remove">🔒</span>`
           : `<div style="display:flex;gap:6px"><button class="mgr-del-btn" onclick="startEditTrait(${JSON.stringify(t.id)})">✎</button><button class="mgr-del-btn" onclick="removeCustomTrait(${JSON.stringify(t.rawName||t.name)},${JSON.stringify(t.id)})">✕</button></div>`
       );
@@ -2542,4 +2553,3 @@ document.addEventListener('DOMContentLoaded', () => {
 </div><!-- /#app -->
 </body>
 </html>
-
