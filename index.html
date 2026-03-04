@@ -70,6 +70,14 @@ button{cursor:pointer}
 .row-count{font-size:.78rem;color:var(--text-dim);align-self:center;white-space:nowrap}
 #fSkill,#fActivity{max-width:80px}
 
+/* ===== LEVEL COLORS (Skill / Activity) ===== */
+select.level-select{font-weight:700}
+select.level-select.level-1{background:#dc2626;color:#fff;text-shadow:0 1px 1px rgba(0,0,0,.45)}
+select.level-select.level-2{background:#6b7280;color:#fff;text-shadow:0 1px 1px rgba(0,0,0,.45)}
+select.level-select.level-3{background:#7c3aed;color:#fff;text-shadow:0 1px 1px rgba(0,0,0,.45)}
+select.level-select.level-4{background:#f97316;color:#111827}
+select.level-select.level-5{background:#facc15;color:#111827}
+
 /* ===== BUTTONS ===== */
 .btn{padding:6px 14px;border-radius:var(--radius);border:none;font-weight:600;font-size:.82rem;letter-spacing:.5px;transition:all .2s;cursor:pointer;white-space:nowrap}
 .btn-primary{background:var(--accent-dim);color:#fff}
@@ -382,6 +390,12 @@ input,select,button,textarea{touch-action:manipulation}
           </select>
         </div>
         <div class="filter-group">
+          <label>ELand</label>
+          <select id="fEland" onchange="applyFilters()">
+            <option value="">All</option><option value="1">Yes</option><option value="0">No</option>
+          </select>
+        </div>
+        <div class="filter-group">
           <label>Locked</label>
           <select id="fLocked" onchange="applyFilters()">
             <option value="">All</option><option value="1">Yes</option><option value="0">No</option>
@@ -523,6 +537,7 @@ input,select,button,textarea{touch-action:manipulation}
         <button class="btn btn-secondary" style="min-height:44px" onclick="closeSettings();saveConfig()">💾 Save Config</button>
         <button class="btn btn-secondary" style="min-height:44px" onclick="closeSettings();triggerLoadConfig()">📂 Load Config</button>
         <button class="btn btn-secondary" style="min-height:44px" onclick="closeSettings();exportCSV()">Export CSV</button>
+        <button class="btn btn-primary" style="min-height:44px" onclick="closeSettings();openContributeConfig()">Contribute Config (PR)</button>
         <button class="btn btn-danger" style="min-height:44px" onclick="closeSettings();confirmClearAll()">🗑 Clear All Data</button>
       </div>
     </div>
@@ -664,7 +679,7 @@ input,select,button,textarea{touch-action:manipulation}
     </div>
     <div class="modal-tabs">
       <button class="modal-tab-btn active" onclick="switchModalTab('manageTraitModal','addTrait',this)">Add Trait</button>
-      <button class="modal-tab-btn" onclick="switchModalTab('manageTraitModal','removeTrait',this)">Remove Trait</button>
+      <button class="modal-tab-btn" onclick="switchModalTab('manageTraitModal','removeTrait',this)">Remove/Edit Traits</button>
     </div>
     <div class="modal-body">
       <!-- Add Trait -->
@@ -681,7 +696,7 @@ input,select,button,textarea{touch-action:manipulation}
           <label>Type</label>
           <div class="radio-group">
             <label><input type="radio" name="traitType" value="positive" checked> Positive</label>
-            <label><input type="radio" name="traitType" value="negative"> Negative ⚠</label>
+            <label><input type="radio" name="traitType" value="negative"> Negative</label>
           </div>
         </div>
         <div class="form-group">
@@ -720,6 +735,25 @@ input,select,button,textarea{touch-action:manipulation}
           </div>
           <div class="flash-msg" id="traitEditFlash"></div>
         </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================= -->
+<!-- CONTRIBUTE CONFIG MODAL                                 -->
+<!-- ======================================================= -->
+<div class="modal-overlay" id="contributeConfigModal" onclick="closeModalIfBg(event,'contributeConfigModal')">
+  <div class="modal modal-sm" role="dialog" aria-modal="true" aria-labelledby="contributeConfigTitle">
+    <div class="modal-header">
+      <h3 id="contributeConfigTitle">Contribute Config (PR)</h3>
+      <button class="close-btn" onclick="closeModal('contributeConfigModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p class="modal-msg">Propose new Deviations, Traits, or Variants by editing the config on GitHub and submitting a PR to the dev branch.</p>
+      <div class="settings-btn-list" style="margin-top:12px">
+        <a class="btn btn-primary" href="https://github.com/saitoh183/deviation-tracker/edit/dev/config.js" target="_blank" rel="noopener">Edit Config on GitHub</a>
+        <a class="btn btn-secondary" href="https://github.com/saitoh183/deviation-tracker/blob/dev/CONTRIBUTING.md" target="_blank" rel="noopener">Contribution Help</a>
       </div>
     </div>
   </div>
@@ -807,7 +841,7 @@ let state = {
 };
 
 let sortCol = null, sortDir = 1;
-let filters = { char:'', deviation:'', fusion:'', locked:'', skill:'', activity:'', variant:'' };
+let filters = { char:'', deviation:'', fusion:'', eland:'', locked:'', skill:'', activity:'', variant:'' };
 let dragSrcIdx = null;
 let confirmCallback = null;
 let defaultCharacter = '';
@@ -866,6 +900,58 @@ function normalizeDeviationRows(rows) {
   return { rows: normalized, changed };
 }
 
+function normalizeTraitAlias(name) {
+  const raw = String(name || '').trim();
+  const withoutPrefix = raw.replace(/^⚠\s+/, '').replace(/^âš\s+/, '');
+  if (withoutPrefix.toLowerCase() === 'slacking off (negative)') return '⚠ Slacking Off';
+  return raw;
+}
+
+function normalizeDeviationTraitAliases(rows) {
+  if (!Array.isArray(rows)) return { rows: [], changed: false };
+  let changed = false;
+  const out = rows.map(r => {
+    if (!r || !Array.isArray(r.traits)) return r;
+    const next = { ...r, traits: [...r.traits] };
+    for (let i = 0; i < next.traits.length; i++) {
+      const mapped = normalizeTraitAlias(next.traits[i]);
+      if (mapped !== next.traits[i]) {
+        next.traits[i] = mapped;
+        changed = true;
+      }
+    }
+    return next;
+  });
+  return { rows: out, changed };
+}
+
+function normalizeTraitAssignmentAliases(assignments) {
+  if (!assignments || typeof assignments !== 'object') return { assignments: assignments || {}, changed: false };
+  let changed = false;
+  const out = {};
+  Object.keys(assignments).forEach(k => {
+    const src = assignments[k] || {};
+    const next = { ...src };
+    if (Array.isArray(src.add)) {
+      next.add = src.add.map(n => normalizeTraitAlias(n));
+      if (JSON.stringify(next.add) !== JSON.stringify(src.add)) changed = true;
+    }
+    if (Array.isArray(src.remove)) {
+      next.remove = src.remove.map(n => normalizeTraitAlias(n));
+      if (JSON.stringify(next.remove) !== JSON.stringify(src.remove)) changed = true;
+    }
+    out[k] = next;
+  });
+  return { assignments: out, changed };
+}
+
+function traitDisplayName(name) {
+  return String(name || '')
+    .replace(/^⚠\s+/, '')
+    .replace(/^âš\s+/, '')
+    .replace(/^Slacking Off \(Negative\)$/i, 'Slacking Off');
+}
+
 function load() {
   migrateStorage();
   const parse = (key, def) => { try { return JSON.parse(localStorage.getItem(KEYS[key])) || def; } catch(e) { return def; } };
@@ -879,8 +965,12 @@ function load() {
   if (!state.settings.variants)   state.settings.variants   = [];
   if (!state.customTraitAssignments) state.customTraitAssignments = {};
   const normalized = normalizeDeviationRows(state.deviations);
-  state.deviations = normalized.rows;
-  if (normalized.changed) save('deviations');
+  const aliased = normalizeDeviationTraitAliases(normalized.rows);
+  const assignmentAliases = normalizeTraitAssignmentAliases(state.customTraitAssignments);
+  state.deviations = aliased.rows;
+  state.customTraitAssignments = assignmentAliases.assignments;
+  if (normalized.changed || aliased.changed) save('deviations');
+  if (assignmentAliases.changed) save('customTraitAssignments');
   normalizeVariantSettings();
 }
 
@@ -1402,7 +1492,7 @@ function renderAddDevTraitLists() {
     el.innerHTML = traits.map(t =>
       `<label class="dev-check-item">
         <input type="checkbox" name="addDevTrait" value="${escHtml(t.name)}" onchange="updateAddDevCounts()">
-        ${escHtml(t.name)}
+        ${escHtml(traitDisplayName(t.name))}
       </label>`
     ).join('');
   };
@@ -1478,7 +1568,7 @@ function renderEditDevTraitLists(devName) {
     el.innerHTML = traits.map(t =>
       `<label class="dev-check-item">
         <input type="checkbox" name="editDevTrait" value="${escHtml(t.name)}" ${currentNames.includes(t.name)?'checked':''} onchange="updateEditDevCounts()">
-        ${escHtml(t.name)}
+        ${escHtml(traitDisplayName(t.name))}
       </label>`
     ).join('');
   };
@@ -1644,8 +1734,8 @@ function renderTraitRemoveList() {
   const search = (document.getElementById('traitRemoveSearch').value || '').toLowerCase();
   const list   = document.getElementById('traitRemoveList');
   const all    = getAllTraits();
-  const pos    = all.filter(t => !t.neg && (!search || t.name.toLowerCase().includes(search)));
-  const neg    = all.filter(t =>  t.neg && (!search || t.name.toLowerCase().includes(search)));
+  const pos    = all.filter(t => !t.neg && (!search || traitDisplayName(t.name).toLowerCase().includes(search) || t.name.toLowerCase().includes(search)));
+  const neg    = all.filter(t =>  t.neg && (!search || traitDisplayName(t.name).toLowerCase().includes(search) || t.name.toLowerCase().includes(search)));
   list.innerHTML = '';
 
   function makeSection(label, traits) {
@@ -1658,7 +1748,7 @@ function renderTraitRemoveList() {
       const isBuiltIn = TRAIT_DATA.some(bt => bt.name === t.name);
       const div = document.createElement('div');
       div.className = 'mgr-item';
-      div.innerHTML = `<span class="mgr-item-name${t.neg?' neg-name':''}">${escHtml(t.name)}</span>` + (
+      div.innerHTML = `<span class="mgr-item-name${t.neg?' neg-name':''}">${escHtml(traitDisplayName(t.name))}</span>` + (
         isBuiltIn
           ? `<span class="lock-icon" title="Built-in trait — edit config.js to remove">🔒</span>`
           : `<div style="display:flex;gap:6px"><button class="mgr-del-btn" onclick="startEditTrait(${JSON.stringify(t.id)})">✎</button><button class="mgr-del-btn" onclick="removeCustomTrait(${JSON.stringify(t.rawName||t.name)},${JSON.stringify(t.id)})">✕</button></div>`
@@ -1668,14 +1758,14 @@ function renderTraitRemoveList() {
   }
 
   makeSection('Positive Traits', pos);
-  makeSection('⚠ Negative Traits', neg);
+  makeSection('Negative Traits', neg);
   if (!pos.length && !neg.length) list.innerHTML = '<div class="mgr-empty">No traits found.</div>';
 }
 
 function filterTraitRemoveList() { renderTraitRemoveList(); }
 
 function removeCustomTrait(rawName, id) {
-  const displayName = state.customTraits.find(t => t.id === id)?.type === 'negative' ? '⚠ ' + rawName : rawName;
+  const displayName = state.customTraits.find(t => t.id === id)?.type === 'negative' ? traitDisplayName('⚠ ' + rawName) : rawName;
   showConfirm(
     'Remove Trait',
     `Remove "${displayName}"? Rows using it will keep the value but it won't appear in future dropdowns.`,
@@ -1843,7 +1933,7 @@ function renderCardTraitCell(rowId, slotIdx, devName, curTrait) {
   const traitDef = getAllTraits().find(t => t.name === curTrait);
   const isNeg    = traitDef?.neg || false;
   let opts = '<option value="">—</option>';
-  avail.forEach(t => opts += `<option value="${escHtml(t.name)}"${t.name===curTrait?' selected':''}>${escHtml(t.name)}</option>`);
+  avail.forEach(t => opts += `<option value="${escHtml(t.name)}"${t.name===curTrait?' selected':''}>${escHtml(traitDisplayName(t.name))}</option>`);
   cell.innerHTML = `<select class="${isNeg?'neg-trait':''}" onchange="traitChange('${rowId}',${slotIdx},this.value)">${opts}</select>`;
   if (curTrait && traitDef) {
     const sel = cell.querySelector('select');
@@ -1905,10 +1995,11 @@ function deleteDeviationRow(id) {
 
 function getFilteredSorted() {
   let rows = [...state.deviations];
-  const { char, deviation, fusion, locked, skill, activity, variant } = filters;
+  const { char, deviation, fusion, eland, locked, skill, activity, variant } = filters;
   if (char)      rows = rows.filter(r => r.char === char);
   if (deviation) rows = rows.filter(r => r.name.toLowerCase().includes(deviation.toLowerCase()));
   if (fusion  !== '') rows = rows.filter(r => (r.fusion ?'1':'0') === fusion);
+  if (eland   !== '') rows = rows.filter(r => (r.eland ?'1':'0') === eland);
   if (locked  !== '') rows = rows.filter(r => (r.locked ?'1':'0') === locked);
   if (skill)     rows = rows.filter(r => String(r.skill)    === skill);
   if (activity)  rows = rows.filter(r => String(r.activity) === activity);
@@ -1999,7 +2090,9 @@ function renderTable() {
 function renderSkillSelect(rowId, val, dataField) {
   const v = val ? String(val) : '';
   const attr = dataField ? ` data-field="${dataField}"` : '';
-  return `<select${attr} onchange="rowChange('${rowId}','skill',this.value)">
+  const cls = getLevelClass(v);
+  const classAttr = cls ? ` class="level-select ${cls}"` : '';
+  return `<select${attr}${classAttr} onchange="updateLevelSelectClass(this);rowChange('${rowId}','skill',this.value)">
     <option value=""${!v?' selected':''}>—</option>
     <option value="1"${v==='1'?' selected':''}>1</option>
     <option value="2"${v==='2'?' selected':''}>2</option>
@@ -2012,7 +2105,9 @@ function renderSkillSelect(rowId, val, dataField) {
 function renderActivitySelect(rowId, val, dataField) {
   const v = val ? String(val) : '';
   const attr = dataField ? ` data-field="${dataField}"` : '';
-  return `<select${attr} onchange="rowChange('${rowId}','activity',this.value)">
+  const cls = getLevelClass(v);
+  const classAttr = cls ? ` class="level-select ${cls}"` : '';
+  return `<select${attr}${classAttr} onchange="updateLevelSelectClass(this);rowChange('${rowId}','activity',this.value)">
     <option value=""${!v?' selected':''}>—</option>
     <option value="1"${v==='1'?' selected':''}>1</option>
     <option value="2"${v==='2'?' selected':''}>2</option>
@@ -2020,6 +2115,19 @@ function renderActivitySelect(rowId, val, dataField) {
     <option value="4"${v==='4'?' selected':''}>4</option>
     <option value="5"${v==='5'?' selected':''}>5</option>
   </select>`;
+}
+
+function getLevelClass(value) {
+  const v = String(value || '');
+  if (!v || !/^[1-5]$/.test(v)) return '';
+  return 'level-' + v;
+}
+
+function updateLevelSelectClass(sel) {
+  if (!sel) return;
+  sel.classList.remove('level-select', 'level-1', 'level-2', 'level-3', 'level-4', 'level-5');
+  const cls = getLevelClass(sel.value);
+  if (cls) sel.classList.add('level-select', cls);
 }
 
 function renderTraitCell(rowId, slotIdx, devName, curTrait) {
@@ -2030,7 +2138,7 @@ function renderTraitCell(rowId, slotIdx, devName, curTrait) {
   const isNeg    = traitDef?.neg || false;
 
   let opts = '<option value="">—</option>';
-  avail.forEach(t => opts += `<option value="${escHtml(t.name)}"${t.name===curTrait?' selected':''}>${escHtml(t.name)}</option>`);
+  avail.forEach(t => opts += `<option value="${escHtml(t.name)}"${t.name===curTrait?' selected':''}>${escHtml(traitDisplayName(t.name))}</option>`);
 
   cell.innerHTML = `<select class="${isNeg?'neg-trait':''}" onchange="traitChange('${rowId}',${slotIdx},this.value)">${opts}</select>`;
 
@@ -2140,7 +2248,7 @@ function showTraitTooltip(el, name, effect, isNeg) {
   const tip    = document.getElementById('shared-tooltip');
   const header = document.getElementById('shared-tooltip-header');
   const body   = document.getElementById('shared-tooltip-body');
-  header.textContent = name;
+  header.textContent = traitDisplayName(name);
   header.className   = 'tooltip-header ' + (isNeg ? 'neg' : 'pos');
   body.textContent   = effect;
   tip.style.display  = 'block';
@@ -2196,6 +2304,7 @@ function applyFilters() {
   filters.char      = document.getElementById('fChar').value;
   filters.deviation = document.getElementById('fDeviation').value;
   filters.fusion    = document.getElementById('fFusion').value;
+  filters.eland     = document.getElementById('fEland').value;
   filters.locked    = document.getElementById('fLocked').value;
   filters.skill     = document.getElementById('fSkill').value;
   filters.activity  = document.getElementById('fActivity').value;
@@ -2204,9 +2313,9 @@ function applyFilters() {
 }
 
 function clearAllFilters() {
-  ['fChar','fFusion','fLocked','fSkill','fActivity','fVariant'].forEach(id => document.getElementById(id).value = '');
+  ['fChar','fFusion','fEland','fLocked','fSkill','fActivity','fVariant'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('fDeviation').value = '';
-  filters = { char:'', deviation:'', fusion:'', locked:'', skill:'', activity:'', variant:'' };
+  filters = { char:'', deviation:'', fusion:'', eland:'', locked:'', skill:'', activity:'', variant:'' };
   renderView();
 }
 
@@ -2384,14 +2493,19 @@ function handleListLoad(e) {
       if (!confirm('This will replace all current data with the backup. Continue?')) return;
       if (data.deviations             !== undefined) {
         const normalized = normalizeDeviationRows(data.deviations);
-        state.deviations = normalized.rows;
+        const aliased = normalizeDeviationTraitAliases(normalized.rows);
+        state.deviations = aliased.rows;
         save('deviations');
       }
       if (data.materials              !== undefined) { state.materials              = data.materials;              save('materials'); }
       if (data.settings               !== undefined) { state.settings               = data.settings;               save('settings'); }
       if (data.custom_deviations      !== undefined) { state.customDeviations       = data.custom_deviations;      save('customDeviations'); }
       if (data.custom_traits          !== undefined) { state.customTraits           = data.custom_traits;          save('customTraits'); }
-      if (data.custom_trait_assignments !== undefined) { state.customTraitAssignments = data.custom_trait_assignments; save('customTraitAssignments'); }
+      if (data.custom_trait_assignments !== undefined) {
+        const assignmentAliases = normalizeTraitAssignmentAliases(data.custom_trait_assignments);
+        state.customTraitAssignments = assignmentAliases.assignments;
+        save('customTraitAssignments');
+      }
       renderCharList();
       updateFilterCharDropdown();
       renderVariantList();
@@ -2501,12 +2615,16 @@ function renderMaterials() {
    ============================================================ */
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
-    ['manageDevModal','manageTraitModal','manageVariantModal','confirmModal'].forEach(id => {
+    ['manageDevModal','manageTraitModal','manageVariantModal','confirmModal','contributeConfigModal'].forEach(id => {
       if (document.getElementById(id).classList.contains('open')) closeModal(id);
     });
     if (document.getElementById('settingsOverlay').classList.contains('open')) closeSettings();
   }
 });
+
+function openContributeConfig() {
+  openModal('contributeConfigModal');
+}
 
 /* ============================================================
    UTILS
@@ -2542,4 +2660,3 @@ document.addEventListener('DOMContentLoaded', () => {
 </div><!-- /#app -->
 </body>
 </html>
-

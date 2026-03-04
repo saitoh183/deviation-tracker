@@ -149,7 +149,7 @@ const TRAIT_DATA = [
   {name:"⚠ No Such Thing As a Small Cup",effect:"Max Storage Capacity -10%.",deviants:["Frog the Leaper","Masonic Pyramid","Pup Buddy","Space Turner","Strange Door"],neg:true},
   {name:"⚠ Panovision",effect:"Working speed -10% for Territorial Deviations.",deviants:["Electric Eel"],neg:true},
   {name:"⚠ Sedentary",effect:"Syncing grants Max Load -8 when exploring Settlements.",deviants:["Mini Feaster","Polar Jelly","Pyro Dino","Zeno-Purifier"],neg:true},
-  {name:"⚠ Slacking Off (Negative)",effect:"Mood and Deviant Power consumption speed +5% for working Territorial Deviations.",deviants:"ALL",neg:true},
+  {name:"⚠ Slacking Off",effect:"Mood and Deviant Power consumption speed +5% for working Territorial Deviations.",deviants:"ALL",neg:true},
   {name:"⚠ Stay Indoors",effect:"Sync grants Stamina consumption +8% in Settlements.",deviants:["Lonewolf's Whisper","Festering Gel","Zeno-Purifier","Mini Feaster","Voodoo Doll"],neg:true},
   {name:"⚠ Worn-Out 1",effect:"Max Deviant Power -5%.",deviants:["Artisan's Touch","Buzzy Bee","Electric Eel","Extradimensional Cat","Lonewolf's Whisper","Mini Feaster","Party Animal","Pup Buddy","Voodoo Doll","Wish Box"],neg:true},
   {name:"⚠ Worn-Out 2",effect:"Max Deviant Power -10%.",deviants:["Buzzy Bee","By-The-Wind","Disco Ball","Electric Eel","Enchanting Void","Extradimensional Cat","Frog the Leaper","Space Turner","Growshroom","Paper Doll","Polar Jelly","Rain Man","Dreamcatcher","Zeno-Purifier"],neg:true},
