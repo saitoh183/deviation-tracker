@@ -535,6 +535,13 @@ input,select,button,textarea{touch-action:manipulation}
     </div>
 
     <div class="settings-section">
+      <h3>Contribution</h3>
+      <div class="settings-btn-list">
+        <button class="btn btn-primary" onclick="closeSettings();openContributeConfig()">Contribute Config (PR)</button>
+      </div>
+    </div>
+
+    <div class="settings-section">
       <h3>My Characters</h3>
       <div class="char-add-row">
         <input id="charInput" type="text" maxlength="10" placeholder="Character name…" onkeydown="if(event.key==='Enter')addChar()" oninput="document.getElementById('charCounter').textContent=this.value.length+'/10'">
@@ -778,6 +785,31 @@ input,select,button,textarea{touch-action:manipulation}
   </div>
 </div>
 
+<!-- ======================================================= -->
+<!-- CONTRIBUTE CONFIG MODAL                                 -->
+<!-- ======================================================= -->
+<div class="modal-overlay" id="contributeConfigModal" onclick="closeModalIfBg(event,'contributeConfigModal')">
+  <div class="modal modal-sm" role="dialog" aria-modal="true" aria-labelledby="contributeConfigTitle">
+    <div class="modal-header">
+      <h3 id="contributeConfigTitle">Contribute Config (PR)</h3>
+      <button class="close-btn" onclick="closeModal('contributeConfigModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p class="modal-msg">Upload your exported <strong>&lt;name&gt;-config.json</strong>. Maintainers validate and merge it into config.js defaults.</p>
+      <div class="settings-btn-list" style="margin-top:12px">
+        <button class="btn btn-primary" onclick="saveContribConfigNow()">Save Config Now</button>
+        <a class="btn btn-secondary" href="https://github.com/saitoh183/deviation-tracker/tree/dev/contrib/configs" target="_blank" rel="noopener">Upload to GitHub (Create PR)</a>
+      </div>
+      <p class="modal-msg" style="margin-top:12px">
+        1) Add file → Upload files<br>
+        2) Upload <strong>&lt;name&gt;-config.json</strong> into <code>contrib/configs/</code><br>
+        3) Commit changes<br>
+        4) Open PR with base branch <strong>dev</strong>
+      </p>
+    </div>
+  </div>
+</div>
+
 <!-- SHARED TRAIT TOOLTIP (fixed, body-level, z-index 9999) -->
 <div id="shared-tooltip">
   <div id="shared-tooltip-header" class="tooltip-header pos"></div>
@@ -826,6 +858,14 @@ let defaultFusion    = false;
 let defaultEland     = false;
 let variantEditIndex = -1;
 let editingTraitId   = null;
+const IS_OFFICIAL_DEPLOYMENT = (() => {
+  try {
+    return window.location.hostname === 'saitoh183.github.io'
+      && window.location.pathname.startsWith('/deviation-tracker/');
+  } catch (e) {
+    return false;
+  }
+})();
 
 /* ── Migration ── */
 function migrateStorage() {
@@ -876,14 +916,14 @@ function normalizeDeviationRows(rows) {
 function load() {
   migrateStorage();
   const parse = (key, def) => { try { return JSON.parse(localStorage.getItem(KEYS[key])) || def; } catch(e) { return def; } };
+  const defaultSettings = mergeSettingsWithDefaults(null);
   state.deviations             = parse('deviations',             []);
   state.materials              = parse('materials',              []);
-  state.settings               = parse('settings',               { characters: [] });
+  state.settings               = parse('settings',               defaultSettings);
   state.customDeviations       = parse('customDeviations',       []);
   state.customTraits           = parse('customTraits',           []);
   state.customTraitAssignments = parse('customTraitAssignments', {});
-  if (!state.settings.characters) state.settings.characters = [];
-  if (!state.settings.variants)   state.settings.variants   = [];
+  state.settings = mergeSettingsWithDefaults(state.settings);
   if (!state.customTraitAssignments) state.customTraitAssignments = {};
   const normalized = normalizeDeviationRows(state.deviations);
   state.deviations = normalized.rows;
@@ -948,12 +988,41 @@ function save(key) {
   localStorage.setItem(KEYS[key], JSON.stringify(state[key]));
 }
 
+function defaultsAreLocked() {
+  return IS_OFFICIAL_DEPLOYMENT;
+}
+
+function getDefaultVariantEntries() {
+  const src = (typeof DEFAULT_SETTINGS === 'object' && DEFAULT_SETTINGS && Array.isArray(DEFAULT_SETTINGS.variants))
+    ? DEFAULT_SETTINGS.variants
+    : [];
+  return src
+    .map(v => (typeof v === 'string' ? { name: v, description: v } : v))
+    .filter(v => v && typeof v.name === 'string' && v.name.trim())
+    .map(v => ({ name: String(v.name).trim(), description: String(v.description || v.name).trim() || String(v.name).trim() }));
+}
+
+function isDefaultVariantName(name) {
+  const q = String(name || '').toLowerCase();
+  return getDefaultVariantEntries().some(v => v.name.toLowerCase() === q);
+}
+
+function mergeSettingsWithDefaults(settings) {
+  const base = { characters: [], variants: getDefaultVariantEntries(), hiddenDefaultDeviations: [], hiddenDefaultTraits: [] };
+  if (!settings || typeof settings !== 'object') return base;
+  return { ...base, ...settings };
+}
+
 /* ── Data Getters ── */
 function getAllDeviations() {
-  return [...new Set([...DEVIANT_LIST, ...state.customDeviations])].sort((a, b) => a.localeCompare(b));
+  const hidden = new Set((state.settings.hiddenDefaultDeviations || []).map(n => String(n).toLowerCase()));
+  const defaults = DEVIANT_LIST.filter(n => !hidden.has(String(n).toLowerCase()));
+  return [...new Set([...defaults, ...state.customDeviations])].sort((a, b) => a.localeCompare(b));
 }
 
 function getAllTraits() {
+  const hidden = new Set((state.settings.hiddenDefaultTraits || []).map(n => String(n).toLowerCase()));
+  const builtins = TRAIT_DATA.filter(t => !hidden.has(String(t.name || '').toLowerCase()));
   const custom = (state.customTraits || []).map(t => ({
     name: t.type === 'negative' ? '⚠ ' + t.name : t.name,
     effect: t.effect,
@@ -963,7 +1032,7 @@ function getAllTraits() {
     rawName: t.name,
     id: t.id,
   }));
-  return [...TRAIT_DATA, ...custom];
+  return [...builtins, ...custom];
 }
 
 function traitsForDeviation(devName) {
@@ -1204,9 +1273,10 @@ function renderVariantList() {
   if (!variants.length) { empty.style.display = ''; return; }
   empty.style.display = 'none';
   variants.forEach((v, i) => {
+    const isBuiltIn = defaultsAreLocked() && isDefaultVariantName(v.name);
     const div = document.createElement('div');
     div.className = 'char-item';
-    if (variantEditIndex === i) {
+    if (variantEditIndex === i && !isBuiltIn) {
       div.style.display = 'block';
       div.innerHTML = `
         <input id="editVariantName" class="form-input" type="text" maxlength="30" value="${escHtml(v.name)}" style="margin-bottom:6px">
@@ -1224,6 +1294,10 @@ function renderVariantList() {
           <button class="char-del" onclick="delVariant(${i})" title="Remove">✕</button>
         </div>
       `;
+      if (isBuiltIn) {
+        const actions = div.querySelector('div[style*="align-items:center"]');
+        if (actions) actions.innerHTML = '<span class="lock-icon" title="Built-in variant — locked on official deployment">🔒</span>';
+      }
     }
     list.appendChild(div);
   });
@@ -1249,6 +1323,7 @@ function addVariant() {
 
 function delVariant(i) {
   const variants = getVariantEntries();
+  if (variants[i] && defaultsAreLocked() && isDefaultVariantName(variants[i].name)) return;
   variants.splice(i, 1);
   state.settings.variants = variants;
   save('settings');
@@ -1258,6 +1333,8 @@ function delVariant(i) {
 }
 
 function startEditVariant(i) {
+  const variants = getVariantEntries();
+  if (variants[i] && defaultsAreLocked() && isDefaultVariantName(variants[i].name)) return;
   variantEditIndex = i;
   renderVariantList();
 }
@@ -1271,6 +1348,7 @@ function saveEditVariant(i) {
   const variants = getVariantEntries();
   const oldEntry = variants[i];
   if (!oldEntry) return;
+  if (defaultsAreLocked() && isDefaultVariantName(oldEntry.name)) return;
   const nameInp = document.getElementById('editVariantName');
   const descInp = document.getElementById('editVariantDesc');
   const newName = (nameInp ? nameInp.value : '').trim().slice(0, 30);
@@ -1363,7 +1441,7 @@ function renderDevRemoveList() {
   list.innerHTML = '';
   if (!visible.length) { list.innerHTML = '<div class="mgr-empty">No deviations found.</div>'; return; }
   visible.forEach(name => {
-    const isBuiltIn = DEVIANT_LIST.includes(name);
+    const isBuiltIn = defaultsAreLocked() && DEVIANT_LIST.includes(name);
     const div = document.createElement('div');
     div.className = 'mgr-item';
     div.innerHTML = `<span class="mgr-item-name">${escHtml(name)}</span>` + (
@@ -1378,6 +1456,15 @@ function renderDevRemoveList() {
 function filterDevRemoveList() { renderDevRemoveList(); }
 
 function removeCustomDeviation(name) {
+  if (!defaultsAreLocked() && DEVIANT_LIST.includes(name)) {
+    const hidden = new Set(state.settings.hiddenDefaultDeviations || []);
+    hidden.add(name);
+    state.settings.hiddenDefaultDeviations = [...hidden];
+    save('settings');
+    renderDevRemoveList();
+    refreshAllDeviationDropdowns();
+    return;
+  }
   showConfirm(
     'Remove Deviation',
     `Remove "${name}" from the deviation list? Rows using it will keep the value but it won't appear in future dropdowns.`,
@@ -1466,7 +1553,7 @@ function loadEditDeviation() {
   const panel   = document.getElementById('editDevPanel');
   if (!devName) { panel.style.display = 'none'; return; }
   const note = document.getElementById('editDevBuiltinNote');
-  note.textContent = DEVIANT_LIST.includes(devName)
+  note.textContent = (defaultsAreLocked() && DEVIANT_LIST.includes(devName))
     ? '🔒 Built-in deviation — changes stored as overrides, config.js is not modified.'
     : '';
   panel.style.display = 'block';
@@ -1662,7 +1749,8 @@ function renderTraitRemoveList() {
     head.textContent = label;
     list.appendChild(head);
     traits.forEach(t => {
-      const isBuiltIn = TRAIT_DATA.some(bt => bt.name === t.name);
+      const isBuiltInDefault = TRAIT_DATA.some(bt => bt.name === t.name);
+      const isBuiltIn = defaultsAreLocked() && isBuiltInDefault;
       const div = document.createElement('div');
       div.className = 'mgr-item';
       div.innerHTML = `<span class="mgr-item-name${t.neg?' neg-name':''}">${escHtml(t.name)}</span>` + (
@@ -1670,6 +1758,10 @@ function renderTraitRemoveList() {
           ? `<span class="lock-icon" title="Built-in trait — edit config.js to remove">🔒</span>`
           : `<div style="display:flex;gap:6px"><button class="mgr-del-btn" onclick="startEditTrait(${JSON.stringify(t.id)})">✎</button><button class="mgr-del-btn" onclick="removeCustomTrait(${JSON.stringify(t.rawName||t.name)},${JSON.stringify(t.id)})">✕</button></div>`
       );
+      if (!defaultsAreLocked() && isBuiltInDefault) {
+        const controls = div.querySelector('div[style*="display:flex;gap:6px"]');
+        if (controls) controls.innerHTML = `<button class="mgr-del-btn" onclick="removeBuiltInTrait(${JSON.stringify(t.name)})">Remove</button>`;
+      }
       list.appendChild(div);
     });
   }
@@ -1693,6 +1785,23 @@ function removeCustomTrait(rawName, id) {
     }
   );
 }
+
+function removeBuiltInTrait(name) {
+  if (defaultsAreLocked()) return;
+  showConfirm(
+    'Remove Trait',
+    `Remove "${name}" from the built-in trait list for this environment?`,
+    () => {
+      const hidden = new Set(state.settings.hiddenDefaultTraits || []);
+      hidden.add(name);
+      state.settings.hiddenDefaultTraits = [...hidden];
+      save('settings');
+      renderTraitRemoveList();
+      renderView();
+    }
+  );
+}
+
 function startEditTrait(id) {
   const trait = (state.customTraits || []).find(t => String(t.id) === String(id));
   if (!trait) return;
@@ -2325,6 +2434,30 @@ function saveConfig() {
   a.click();
 }
 
+function saveContribConfigNow() {
+  const raw = window.prompt('Enter a short name for your contribution file (example: mylatest).');
+  if (raw === null) return;
+  const cleaned = String(raw || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]+/g, '-')
+    .replace(/^-+|-+$/g, '') || 'mylatest';
+  const base = cleaned.endsWith('-config') ? cleaned : `${cleaned}-config`;
+
+  const data = {
+    version:                2,
+    customDeviations:       state.customDeviations,
+    customTraits:           state.customTraits,
+    settings:               state.settings,
+    customTraitAssignments: state.customTraitAssignments || {},
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `${base}.json`;
+  a.click();
+}
+
 function triggerLoadConfig() {
   document.getElementById('configFileInput').click();
 }
@@ -2338,7 +2471,7 @@ function handleConfigLoad(e) {
       const data = JSON.parse(ev.target.result);
       if (data.customDeviations)       { state.customDeviations       = data.customDeviations;       save('customDeviations'); }
       if (data.customTraits)           { state.customTraits           = data.customTraits;           save('customTraits'); }
-      if (data.settings)               { state.settings               = data.settings;               save('settings'); }
+      if (data.settings)               { state.settings               = mergeSettingsWithDefaults(data.settings); normalizeVariantSettings(); save('settings'); }
       if (data.customTraitAssignments) { state.customTraitAssignments = data.customTraitAssignments; save('customTraitAssignments'); }
       renderCharList();
       updateFilterCharDropdown();
@@ -2404,7 +2537,7 @@ function handleListLoad(e) {
         save('deviations');
       }
       if (data.materials              !== undefined) { state.materials              = data.materials;              save('materials'); }
-      if (data.settings               !== undefined) { state.settings               = data.settings;               save('settings'); }
+      if (data.settings               !== undefined) { state.settings               = mergeSettingsWithDefaults(data.settings); normalizeVariantSettings(); save('settings'); }
       if (data.custom_deviations      !== undefined) { state.customDeviations       = data.custom_deviations;      save('customDeviations'); }
       if (data.custom_traits          !== undefined) { state.customTraits           = data.custom_traits;          save('customTraits'); }
       if (data.custom_trait_assignments !== undefined) { state.customTraitAssignments = data.custom_trait_assignments; save('customTraitAssignments'); }
