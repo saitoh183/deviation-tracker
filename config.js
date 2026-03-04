@@ -1,4 +1,21 @@
 'use strict';
+
+const VARIANT_LIST = [
+
+  "Dream Zone",
+  "Radiant Variant",
+  "Marine Star",
+  "Milk Sugar",
+  "Bursting Magma",
+  "Aquarius",
+  "Christmas",
+  "Christmas Spirit",
+  "Childlike Whimsy",
+  "Fool's Memory",
+  "Lunar Oracle",
+  "Glistening Blue",
+  "StarFall Inversion",
+];
 /* ============================================================
    ONCE HUMAN DEVIANT TRACKER — Static Data
    Edit this file to add/remove built-in deviations and traits.
@@ -16,6 +33,18 @@ const DEVIANT_LIST = [
   "Polar Jelly","Pup Buddy","Pyro Dino","Rain Man","Rebecca","Shattered Maiden",
   "Snow Globe","Snowsprite","Space Turner","Strange Door","The Digby Boy",
   "Upper World Spawn","Voodoo Doll","Wish Box","Zeno-Purifier"
+,
+  "Harveseed",
+  "Hydronaut Fish",
+  "ZapCam",
+  "Invincible Sun",
+  "Zapamander",
+  "Gazocchio",
+  "Whalepup",
+  "Soul Summoner",
+  "Director Fox",
+  "Cattiva",
+  "Ice Pot",
 ];
 
 // Format: { name, effect, deviants: [] | "ALL", neg: bool }
@@ -154,4 +183,6 @@ const TRAIT_DATA = [
   {name:"⚠ Worn-Out 1",effect:"Max Deviant Power -5%.",deviants:["Artisan's Touch","Buzzy Bee","Electric Eel","Extradimensional Cat","Lonewolf's Whisper","Mini Feaster","Party Animal","Pup Buddy","Voodoo Doll","Wish Box"],neg:true},
   {name:"⚠ Worn-Out 2",effect:"Max Deviant Power -10%.",deviants:["Buzzy Bee","By-The-Wind","Disco Ball","Electric Eel","Enchanting Void","Extradimensional Cat","Frog the Leaper","Space Turner","Growshroom","Paper Doll","Polar Jelly","Rain Man","Dreamcatcher","Zeno-Purifier"],neg:true},
   {name:"⚠ Worn-Out 3",effect:"Max Deviant Power -15%.",deviants:"ALL",neg:true},
+
+  {name:"Productivity First",effect:"The resource production interval for Crafting is reduced by 5%",deviants:["Masonic Pyramid"],neg:false},
 ];
