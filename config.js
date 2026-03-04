@@ -47,12 +47,6 @@ const DEVIANT_LIST = [
   "Ice Pot",
 ];
 
-// Default shipped settings (used when no local settings exist yet).
-// Variants use the same schema as exported config: [{ name, description }, ...]
-const DEFAULT_SETTINGS = {
-  variants: [],
-};
-
 // Format: { name, effect, deviants: [] | "ALL", neg: bool }
 // Negative traits are prefixed with "⚠ " in name.
 const TRAIT_DATA = [
