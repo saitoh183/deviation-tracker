@@ -1014,6 +1014,12 @@ function mergeSettingsWithDefaults(settings) {
 }
 
 /* ── Data Getters ── */
+function isOfficialDeployment() {
+  const host = window.location && window.location.hostname ? window.location.hostname : '';
+  const path = window.location && window.location.pathname ? window.location.pathname : '';
+  return host === 'saitoh183.github.io' && path.startsWith('/deviation-tracker/');
+}
+
 function getAllDeviations() {
   const hidden = new Set((state.settings.hiddenDefaultDeviations || []).map(n => String(n).toLowerCase()));
   const defaults = DEVIANT_LIST.filter(n => !hidden.has(String(n).toLowerCase()));
@@ -1441,7 +1447,8 @@ function renderDevRemoveList() {
   list.innerHTML = '';
   if (!visible.length) { list.innerHTML = '<div class="mgr-empty">No deviations found.</div>'; return; }
   visible.forEach(name => {
-    const isBuiltIn = defaultsAreLocked() && DEVIANT_LIST.includes(name);
+    const isDefaultItem = DEVIANT_LIST.includes(name);
+    const locked = isOfficialDeployment() && isDefaultItem;
     const div = document.createElement('div');
     div.className = 'mgr-item';
     div.innerHTML = `<span class="mgr-item-name">${escHtml(name)}</span>` + (
@@ -1456,15 +1463,9 @@ function renderDevRemoveList() {
 function filterDevRemoveList() { renderDevRemoveList(); }
 
 function removeCustomDeviation(name) {
-  if (!defaultsAreLocked() && DEVIANT_LIST.includes(name)) {
-    const hidden = new Set(state.settings.hiddenDefaultDeviations || []);
-    hidden.add(name);
-    state.settings.hiddenDefaultDeviations = [...hidden];
-    save('settings');
-    renderDevRemoveList();
-    refreshAllDeviationDropdowns();
-    return;
-  }
+  const isDefaultItem = DEVIANT_LIST.includes(name);
+  const locked = isOfficialDeployment() && isDefaultItem;
+  if (locked) return;
   showConfirm(
     'Remove Deviation',
     `Remove "${name}" from the deviation list? Rows using it will keep the value but it won't appear in future dropdowns.`,
@@ -1749,8 +1750,8 @@ function renderTraitRemoveList() {
     head.textContent = label;
     list.appendChild(head);
     traits.forEach(t => {
-      const isBuiltInDefault = TRAIT_DATA.some(bt => bt.name === t.name);
-      const isBuiltIn = defaultsAreLocked() && isBuiltInDefault;
+      const isDefaultItem = TRAIT_DATA.some(bt => bt.name === t.name);
+      const locked = isOfficialDeployment() && isDefaultItem;
       const div = document.createElement('div');
       div.className = 'mgr-item';
       div.innerHTML = `<span class="mgr-item-name${t.neg?' neg-name':''}">${escHtml(t.name)}</span>` + (
