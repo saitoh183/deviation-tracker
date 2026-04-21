@@ -1882,7 +1882,10 @@ function applyExtractedData() {
     ssBatchIndex++;
     ssBatchAdded++;
     ssImageDataUrl = ssBatch[ssBatchIndex];
-    resetScreenshotModal();
+    document.getElementById('ssStep1').style.display = '';
+    document.getElementById('ssStep2').style.display = 'none';
+    document.getElementById('ssStep3').style.display = 'none';
+    document.getElementById('ssFooter').style.display = 'none';
     analyzeScreenshot();
     return;
   }
