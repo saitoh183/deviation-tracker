@@ -1307,7 +1307,7 @@ function showFlash(elId, msg, isErr = false) {
 /* ============================================================
    SETTINGS
    ============================================================ */
-function openSettings()  { document.getElementById('settingsOverlay').classList.add('open'); }
+function openSettings()  { loadVisionConfig(); document.getElementById('settingsOverlay').classList.add('open'); }
 function closeSettings() { document.getElementById('settingsOverlay').classList.remove('open'); }
 function closeSettingsIfBg(e) { if (e.target === document.getElementById('settingsOverlay')) closeSettings(); }
 
