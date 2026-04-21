@@ -629,6 +629,15 @@ input,select,button,textarea{touch-action:manipulation}
       </p>
     </div>
 
+    <div class="settings-section">
+      <h3>📷 Screenshot Behavior</h3>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <label class="toggle"><input type="checkbox" id="autoCreateToggle" onchange="saveAutoCreateSetting()"><span class="toggle-slider"></span></label>
+        <span style="font-size:.85rem;color:var(--text)">Auto-create missing deviations, variants &amp; traits</span>
+      </div>
+      <p style="font-size:.72rem;color:var(--text-muted)">When off, extracted names stay as text in the review form. You manually add new items via Manage.</p>
+    </div>
+
     <p class="settings-note">Character names max 10 characters; up to 20 characters. Changes reflect immediately in the tracker.<br><br>Custom deviations and traits are stored in your browser and can be exported via 💾 Save Config.</p>
   </div>
 </div>
@@ -1320,7 +1329,7 @@ function showFlash(elId, msg, isErr = false) {
 /* ============================================================
    SETTINGS
    ============================================================ */
-function openSettings()  { loadVisionConfig(); document.getElementById('settingsOverlay').classList.add('open'); }
+function openSettings()  { loadVisionConfig(); loadAutoCreateSetting(); document.getElementById('settingsOverlay').classList.add('open'); }
 function closeSettings() { document.getElementById('settingsOverlay').classList.remove('open'); }
 function closeSettingsIfBg(e) { if (e.target === document.getElementById('settingsOverlay')) closeSettings(); }
 
@@ -1380,7 +1389,20 @@ function updateFilterCharDropdown() {
    ============================================================ */
 const VISION_STORAGE_KEY = 'ohdt_vision_config';
 const SS_MAX_SIZE = 10 * 1024 * 1024; // 10MB
+const SS_AUTOCREATE_KEY = 'ohdt_autocreate';
 let ssImageDataUrl = null;  // base64 data URL of current screenshot
+
+function loadAutoCreateSetting() {
+  const el = document.getElementById('autoCreateToggle');
+  if (el) el.checked = localStorage.getItem(SS_AUTOCREATE_KEY) === '1';
+}
+function saveAutoCreateSetting() {
+  const el = document.getElementById('autoCreateToggle');
+  if (el) localStorage.setItem(SS_AUTOCREATE_KEY, el.checked ? '1' : '0');
+}
+function getAutoCreate() {
+  return localStorage.getItem(SS_AUTOCREATE_KEY) === '1';
+}
 
 function loadVisionConfig() {
   let cfg = {};
@@ -1712,18 +1734,22 @@ function applyExtractedData() {
   const name = document.getElementById('ssName').value.trim();
   if (!name) { alert('Deviation name is required.'); return; }
 
-  // Check if this deviation exists in our lists, add as custom if not
-  const allDevs = getAllDeviations();
-  if (!allDevs.includes(name)) {
-    if (!state.customDeviations.includes(name)) {
-      state.customDeviations.push(name);
-      save('customDeviations');
+  const doAutoCreate = getAutoCreate();
+
+  // Check if this deviation exists in our lists, add as custom if not (only when enabled)
+  if (doAutoCreate) {
+    const allDevs = getAllDeviations();
+    if (!allDevs.includes(name)) {
+      if (!state.customDeviations.includes(name)) {
+        state.customDeviations.push(name);
+        save('customDeviations');
+      }
     }
   }
 
-  // Auto-create variant if not in list
+  // Auto-create variant if not in list (only when enabled)
   const variant = document.getElementById('ssVariant').value.trim();
-  if (variant) {
+  if (doAutoCreate && variant) {
     const allVars = getAllVariants();
     if (!allVars.includes(variant)) {
       const vars = state.settings.variants || [];
@@ -1733,25 +1759,25 @@ function applyExtractedData() {
     }
   }
 
-  // Collect traits from dropdowns — auto-create custom traits if not found
+  // Collect traits from dropdowns — auto-create custom traits if not found (only when enabled)
   const traitSelects = document.querySelectorAll('#ssTraitsContainer select');
   const traits = [];
   const allTraits = getAllTraits();
   traitSelects.forEach(sel => {
     const val = sel.value;
     if (!val) return;
-    // Check if trait exists in known lists
-    const exists = allTraits.find(t => t.name === val);
-    if (!exists) {
-      // Add as custom trait — default to positive, applies to this deviation only
-      if (!state.customTraits.find(t => t.name === val)) {
-        state.customTraits.push({
-          name: val,
-          effect: 'Custom trait (extracted from screenshot)',
-          neg: false,
-          deviants: [name]
-        });
-        save('customTraits');
+    if (doAutoCreate) {
+      const exists = allTraits.find(t => t.name === val);
+      if (!exists) {
+        if (!state.customTraits.find(t => t.name === val)) {
+          state.customTraits.push({
+            name: val,
+            effect: 'Custom trait (extracted from screenshot)',
+            neg: false,
+            deviants: [name]
+          });
+          save('customTraits');
+        }
       }
     }
     traits.push(val);
