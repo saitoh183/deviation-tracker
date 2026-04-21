@@ -1348,18 +1348,23 @@ document.addEventListener('DOMContentLoaded', async () => {
   initPersistenceListeners();
 });
 
-/* ============================================================
-   STATE & STORAGE
-   ============================================================ */
-const KEYS = {
-  deviations:             'ohdt_deviations',
-  materials:              'ohdt_materials',
-  settings:               'ohdt_settings',
-  addDefaults:            'ohdt_add_defaults',
-  customDeviations:       'ohdt_custom_deviations',
-  customTraits:           'ohdt_custom_traits',
-  customTraitAssignments: 'ohdt_custom_trait_assignments',
-};
+// ============================================================
+// STATE & STORAGE (Desktop: SQLite-backed)
+// ============================================================
+
+// All storage is handled by the async loadAll() and saveToDB() functions
+// defined at the top of the script. These old localStorage functions
+// are kept as no-op stubs for backward compatibility with existing code.
+
+function migrateStorage() { /* no-op: SQLite handles everything */ }
+function migrateData() { /* no-op: SQLite handles everything */ }
+function normalizeDeviationRows(rows) { return { rows: rows || [], changed: false }; }
+
+const KEYS = {};
+function load() { /* no-op: async loadAll() handles this */ }
+function save(type) { /* no-op: async saveToDB() handles this */ }
+function loadAddDefaults() { /* no-op */ }
+function initPersistenceListeners() { /* no-op */ }
 
 let state = {
   deviations:             [],
@@ -1383,102 +1388,17 @@ let defaultFusion    = false;
 let defaultEland     = false;
 let variantEditIndex = -1;
 let editingTraitId   = null;
-const IS_OFFICIAL_DEPLOYMENT = (() => {
-  try {
-    return window.location.hostname === 'saitoh183.github.io'
-      && window.location.pathname.startsWith('/deviation-tracker/');
-  } catch (e) {
-    return false;
-  }
-})();
+const IS_OFFICIAL_DEPLOYMENT = false; // Desktop app, not a web deployment
 
-/* ── Migration ── */
-function migrateStorage() {
-  const old = localStorage.getItem('ohdt_deviants');
-  const cur = localStorage.getItem(KEYS.deviations);
-  if (old && !cur) {
-    localStorage.setItem(KEYS.deviations, old);
-    localStorage.removeItem('ohdt_deviants');
-  }
+// State defaults and helpers (these still need to exist for the rest of the code)
+function mergeSettingsWithDefaults(s) {
+  const defaults = { characters: [], variants: [] };
+  if (!s || typeof s !== 'object') return { ...defaults };
+  return { ...defaults, ...s };
 }
 
-function migrateData() {
-  let custom = [];
-  try { custom = JSON.parse(localStorage.getItem('ohdt_custom_deviations') || '[]'); } catch (e) { custom = []; }
-  custom = custom.map(d => d === 'Pyro' ? 'Pyro Dino' : d);
-  localStorage.setItem('ohdt_custom_deviations', JSON.stringify(custom));
-
-  let rows = [];
-  try { rows = JSON.parse(localStorage.getItem('ohdt_deviations') || '[]'); } catch (e) { rows = []; }
-  rows = rows.map(r => {
-    if (r && r.deviationName === 'Pyro') r.deviationName = 'Pyro Dino';
-    if (r && r.name === 'Pyro') r.name = 'Pyro Dino';
-    return r;
-  });
-  localStorage.setItem('ohdt_deviations', JSON.stringify(rows));
-
-  let assignments = {};
-  try { assignments = JSON.parse(localStorage.getItem('ohdt_custom_trait_assignments') || '{}'); } catch (e) { assignments = {}; }
-  if (assignments['Pyro']) {
-    assignments['Pyro Dino'] = assignments['Pyro'];
-    delete assignments['Pyro'];
-    localStorage.setItem('ohdt_custom_trait_assignments', JSON.stringify(assignments));
-  }
-}
-
-function normalizeDeviationRows(rows) {
-  if (!Array.isArray(rows)) return { rows: [], changed: false };
-  let changed = false;
-  const normalized = rows.map(r => {
-    if (!r || typeof r !== 'object') return r;
-    if (typeof r.eland === 'boolean') return r;
-    changed = true;
-    return { ...r, eland: false };
-  });
-  return { rows: normalized, changed };
-}
-
-function load() {
-  migrateStorage();
-  const parse = (key, def) => { try { return JSON.parse(localStorage.getItem(KEYS[key])) || def; } catch(e) { return def; } };
-  const defaultSettings = mergeSettingsWithDefaults(null);
-  state.deviations             = parse('deviations',             []);
-  state.materials              = parse('materials',              []);
-  state.settings               = parse('settings',               defaultSettings);
-  state.customDeviations       = parse('customDeviations',       []);
-  state.customTraits           = parse('customTraits',           []);
-  state.customTraitAssignments = parse('customTraitAssignments', {});
-  state.settings = mergeSettingsWithDefaults(state.settings);
-  if (!state.customTraitAssignments) state.customTraitAssignments = {};
-  const normalized = normalizeDeviationRows(state.deviations);
-  state.deviations = normalized.rows;
-  if (normalized.changed) save('deviations');
-  normalizeVariantSettings();
-}
-
-function loadAddDefaults() {
-  let saved = {};
-  try { saved = JSON.parse(localStorage.getItem(KEYS.addDefaults) || '{}'); } catch (e) { saved = {}; }
-  defaultCharacter     = typeof saved.character === 'string' ? saved.character : '';
-  defaultDeviationName = typeof saved.name === 'string' ? saved.name : '';
-  defaultVariant       = typeof saved.variant === 'string' ? saved.variant : '';
-  defaultSkill         = saved.skill === '' || typeof saved.skill === 'string' ? saved.skill || '' : '';
-  defaultActivity      = saved.activity === '' || typeof saved.activity === 'string' ? saved.activity || '' : '';
-  defaultFusion        = !!saved.fusion;
-  defaultEland         = !!saved.eland;
-}
-
-function saveAddDefaults() {
-  localStorage.setItem(KEYS.addDefaults, JSON.stringify({
-    character: defaultCharacter || '',
-    name: defaultDeviationName || '',
-    variant: defaultVariant || '',
-    skill: defaultSkill || '',
-    activity: defaultActivity || '',
-    fusion: !!defaultFusion,
-    eland: !!defaultEland,
-  }));
-}
+// These functions are no-op stubs for backward compatibility
+function saveAddDefaults() { /* no-op: defaults handled by SQLite */ }
 
 function normalizeVariantSettings() {
   const src = Array.isArray(state.settings.variants) ? state.settings.variants : [];
@@ -2757,16 +2677,9 @@ function saveEditTrait() {
 /* ============================================================
    RESPONSIVE VIEW CONTROLLER
    ============================================================ */
-const isMobile = () => window.matchMedia('(max-width:767px)').matches;
-
 function renderView() {
-  if (isMobile()) {
-    renderCards();
-    document.getElementById('deviationBody').innerHTML = '';
-  } else {
-    renderTable();
-    document.getElementById('cardContainer').innerHTML = '';
-  }
+  renderTable();
+  document.getElementById('cardContainer').innerHTML = '';
 }
 
 let _resizeTimer;
@@ -2878,7 +2791,7 @@ function addDeviationRow() {
   state.deviations.push(row);
   save('deviations');
   renderView();
-  const container = isMobile() ? document.getElementById('cardContainer') : document.getElementById('deviationBody');
+  const container = document.getElementById('deviationBody');
   const rowEl = container ? container.querySelector(`[data-id="${row.id}"]`) : null;
   if (!rowEl) return;
 
