@@ -340,6 +340,50 @@ input,select,button,textarea{touch-action:manipulation}
   .dev-checklist{max-height:none !important;overflow:visible}
   #deviations-controls{padding:8px 12px 0}
 }
+
+/* ===== SCREENSHOT MODAL ===== */
+#screenshotModal .modal{max-width:680px}
+.ss-drop-zone{
+  border:2px dashed var(--border-light);border-radius:var(--radius);
+  padding:40px 20px;text-align:center;cursor:pointer;
+  transition:all .2s;background:var(--bg0);position:relative;
+}
+.ss-drop-zone:hover,.ss-drop-zone.drag-over{
+  border-color:var(--accent);background:rgba(0,212,255,0.04);
+}
+.ss-drop-zone .ss-icon{font-size:2.4rem;margin-bottom:8px;display:block}
+.ss-drop-zone .ss-label{font-size:.88rem;color:var(--text-dim)}
+.ss-drop-zone .ss-hint{font-size:.72rem;color:var(--text-muted);margin-top:6px}
+.ss-drop-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
+.ss-preview{margin-top:12px;text-align:center}
+.ss-preview img{max-width:100%;max-height:260px;border-radius:var(--radius);border:1px solid var(--border)}
+.ss-preview .ss-remove{margin-top:6px;font-size:.78rem;color:var(--text-dim);cursor:pointer}
+.ss-preview .ss-remove:hover{color:var(--neg)}
+.ss-status{text-align:center;padding:16px;font-size:.88rem;color:var(--text-dim)}
+.ss-status.error{color:var(--neg)}
+.ss-extracted{display:flex;flex-direction:column;gap:10px}
+.ss-field{display:flex;flex-direction:column;gap:3px}
+.ss-field label{font-size:.72rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.6px}
+.ss-field input,.ss-field select,.ss-field textarea{
+  background:var(--bg2);border:1px solid var(--border);border-radius:4px;
+  color:var(--text);padding:6px 8px;font-size:.85rem;font-family:inherit;
+}
+.ss-field input:focus,.ss-field select:focus,.ss-field textarea:focus{outline:none;border-color:var(--accent)}
+.ss-field textarea{resize:vertical;min-height:50px}
+.ss-field-row{display:flex;gap:10px}
+.ss-field-row .ss-field{flex:1}
+.ss-trait-row{display:flex;gap:8px;align-items:center}
+.ss-trait-row select{flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:4px;color:var(--text);padding:5px 8px;font-size:.82rem}
+.ss-trait-row select:focus{outline:none;border-color:var(--accent)}
+.ss-trait-row select.neg-trait{color:var(--neg)}
+/* vision config in settings */
+.vision-config-group{display:flex;flex-direction:column;gap:8px}
+.vision-config-group label{font-size:.72rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.6px}
+.vision-config-group input,.vision-config-group select{
+  background:var(--bg0);border:1px solid var(--border);border-radius:4px;
+  color:var(--text);padding:6px 8px;font-size:.82rem;
+}
+.vision-config-group input:focus,.vision-config-group select:focus{outline:none;border-color:var(--accent)}
 </style>
 </head>
 <body style="margin:0; padding:0; overflow:hidden; height:100vh;">
@@ -416,6 +460,7 @@ input,select,button,textarea{touch-action:manipulation}
     <div class="controls-bar">
       <div class="btn-group">
         <button class="btn btn-primary" onclick="addDeviationRow()">+ Add Deviation</button>
+        <button class="btn btn-secondary" onclick="openScreenshotModal()">📷 Screenshot</button>
         <button class="btn btn-secondary btn-desktop-only" onclick="openManageDeviations()">⚡ Manage Deviations</button>
         <button class="btn btn-secondary btn-desktop-only" onclick="openManageTraits()">✨ Manage Traits</button>
         <button class="btn btn-secondary btn-desktop-only" onclick="openManageVariants()">🧬 Manage Variants</button>
@@ -559,6 +604,27 @@ input,select,button,textarea{touch-action:manipulation}
         <button class="btn btn-secondary" onclick="closeSettings();openManageTraits()">✨ Manage Traits</button>
         <button class="btn btn-secondary" onclick="closeSettings();openManageVariants()">🧬 Manage Variants</button>
       </div>
+    </div>
+
+    <div class="settings-section">
+      <h3>📷 Vision API (Screenshot OCR)</h3>
+      <div class="vision-config-group">
+        <label>Provider</label>
+        <select id="visionProvider" onchange="saveVisionConfig()">
+          <option value="openai">OpenAI (GPT-4o, etc.)</option>
+          <option value="ollama">Ollama (local)</option>
+          <option value="custom">Custom (OpenAI-compatible)</option>
+        </select>
+        <label>API Endpoint</label>
+        <input id="visionEndpoint" type="text" placeholder="https://api.openai.com" oninput="saveVisionConfig()">
+        <label>API Key <span style="color:var(--text-muted)">(not needed for local Ollama)</span></label>
+        <input id="visionApiKey" type="password" placeholder="sk-..." oninput="saveVisionConfig()">
+        <label>Model</label>
+        <input id="visionModel" type="text" placeholder="gpt-4o" oninput="saveVisionConfig()">
+      </div>
+      <p style="font-size:.72rem;color:var(--text-muted);margin-top:8px">
+        For Ollama: endpoint = <code>http://hostname:11434</code>, no key needed, model = e.g. <code>llava</code> or <code>llama3.2-vision</code>.
+      </p>
     </div>
 
     <p class="settings-note">Character names max 10 characters; up to 20 characters. Changes reflect immediately in the tracker.<br><br>Custom deviations and traits are stored in your browser and can be exported via 💾 Save Config.</p>
@@ -806,6 +872,80 @@ input,select,button,textarea{touch-action:manipulation}
         3) Commit changes<br>
         4) Open PR with base branch <strong>dev</strong>
       </p>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================= -->
+<!-- SCREENSHOT TO ENTRY MODAL                                -->
+<!-- ======================================================= -->
+<div class="modal-overlay" id="screenshotModal" onclick="closeModalIfBg(event,'screenshotModal')">
+  <div class="modal modal-lg" role="dialog" aria-modal="true" aria-labelledby="ssModalTitle">
+    <div class="modal-header">
+      <h3 id="ssModalTitle">📷 Add Deviation from Screenshot</h3>
+      <button class="close-btn" onclick="closeScreenshotModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <!-- Step 1: Drop zone -->
+      <div id="ssStep1">
+        <div class="ss-drop-zone" id="ssDropZone">
+          <span class="ss-icon">📸</span>
+          <div class="ss-label">Drop screenshot here, paste (Ctrl+V), or click to browse</div>
+          <div class="ss-hint">Supports PNG, JPG, WebP. Max ~10MB.</div>
+          <input type="file" id="ssFileInput" accept="image/*">
+        </div>
+        <div id="ssPreview" class="ss-preview" style="display:none">
+          <img id="ssPreviewImg" alt="Screenshot preview">
+          <div class="ss-remove" onclick="clearScreenshot()">✕ Remove</div>
+        </div>
+        <div style="text-align:center;margin-top:12px">
+          <button class="btn btn-primary" id="ssAnalyzeBtn" onclick="analyzeScreenshot()" disabled>🔍 Analyze Screenshot</button>
+        </div>
+      </div>
+      <!-- Step 2: Status -->
+      <div id="ssStep2" style="display:none">
+        <div class="ss-status" id="ssStatus">Analyzing screenshot...</div>
+      </div>
+      <!-- Step 3: Review extracted data -->
+      <div id="ssStep3" style="display:none">
+        <div class="ss-extracted">
+          <div class="ss-field-row">
+            <div class="ss-field">
+              <label>Deviation Name</label>
+              <input type="text" id="ssName" list="ssDevList">
+              <datalist id="ssDevList"></datalist>
+            </div>
+            <div class="ss-field">
+              <label>Variant</label>
+              <input type="text" id="ssVariant" list="ssVarList">
+              <datalist id="ssVarList"></datalist>
+            </div>
+          </div>
+          <div class="ss-field">
+            <label>Description</label>
+            <textarea id="ssDesc" rows="2"></textarea>
+          </div>
+          <div class="ss-field-row">
+            <div class="ss-field">
+              <label>Skill Rating (1-5)</label>
+              <input type="number" id="ssSkill" min="0" max="5" value="0">
+            </div>
+            <div class="ss-field">
+              <label>Activity Rating (1-5)</label>
+              <input type="number" id="ssActivity" min="0" max="5" value="0">
+            </div>
+          </div>
+          <div class="ss-field">
+            <label>Detected Traits — pick from dropdowns</label>
+            <div id="ssTraitsContainer"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer" id="ssFooter" style="display:none">
+      <button class="btn btn-secondary" onclick="closeScreenshotModal()">Cancel</button>
+      <button class="btn btn-secondary" onclick="resetScreenshotModal()">← Back</button>
+      <button class="btn btn-primary" onclick="applyExtractedData()">✓ Add to Tracker</button>
     </div>
   </div>
 </div>
@@ -1216,6 +1356,351 @@ function updateFilterCharDropdown() {
   const cur = sel.value;
   sel.innerHTML = '<option value="">All</option>' +
     state.settings.characters.map(c => `<option value="${escHtml(c)}"${c===cur?' selected':''}>${escHtml(c)}</option>`).join('');
+}
+
+/* ============================================================
+   VISION API CONFIG (screenshot OCR)
+   ============================================================ */
+const VISION_STORAGE_KEY = 'ohdt_vision_config';
+const SS_MAX_SIZE = 10 * 1024 * 1024; // 10MB
+let ssImageDataUrl = null;  // base64 data URL of current screenshot
+
+function loadVisionConfig() {
+  let cfg = {};
+  try { cfg = JSON.parse(localStorage.getItem(VISION_STORAGE_KEY) || '{}'); } catch(e) { cfg = {}; }
+  document.getElementById('visionProvider').value = cfg.provider || 'openai';
+  document.getElementById('visionEndpoint').value = cfg.endpoint || '';
+  document.getElementById('visionApiKey').value = cfg.apiKey || '';
+  document.getElementById('visionModel').value = cfg.model || 'gpt-4o';
+}
+
+function saveVisionConfig() {
+  const cfg = {
+    provider: document.getElementById('visionProvider').value,
+    endpoint: document.getElementById('visionEndpoint').value.trim(),
+    apiKey:   document.getElementById('visionApiKey').value,
+    model:    document.getElementById('visionModel').value.trim() || 'gpt-4o',
+  };
+  localStorage.setItem(VISION_STORAGE_KEY, JSON.stringify(cfg));
+}
+
+function getVisionConfig() {
+  try { return JSON.parse(localStorage.getItem(VISION_STORAGE_KEY) || '{}'); } catch(e) { return {}; }
+}
+
+/* ============================================================
+   SCREENSHOT TO ENTRY
+   ============================================================ */
+function openScreenshotModal() {
+  loadVisionConfig();
+  resetScreenshotModal();
+  openModal('screenshotModal');
+}
+
+function closeScreenshotModal() {
+  closeModal('screenshotModal');
+  ssImageDataUrl = null;
+}
+
+function resetScreenshotModal() {
+  ssImageDataUrl = null;
+  document.getElementById('ssStep1').style.display = '';
+  document.getElementById('ssStep2').style.display = 'none';
+  document.getElementById('ssStep3').style.display = 'none';
+  document.getElementById('ssFooter').style.display = 'none';
+  document.getElementById('ssPreview').style.display = 'none';
+  document.getElementById('ssAnalyzeBtn').disabled = true;
+  document.getElementById('ssStatus').className = 'ss-status';
+  const dz = document.getElementById('ssDropZone');
+  dz.style.display = '';
+}
+
+// --- Image input handlers ---
+(function initScreenshotDropZone() {
+  document.addEventListener('DOMContentLoaded', () => {
+    const dz = document.getElementById('ssDropZone');
+    const fi = document.getElementById('ssFileInput');
+    if (!dz || !fi) return;
+
+    // Drag & drop
+    dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over'); });
+    dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
+    dz.addEventListener('drop', e => {
+      e.preventDefault(); dz.classList.remove('drag-over');
+      const file = e.dataTransfer.files[0];
+      if (file && file.type.startsWith('image/')) loadImageFile(file);
+    });
+
+    // File input
+    fi.addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (file) loadImageFile(file);
+      e.target.value = '';
+    });
+
+    // Paste
+    document.addEventListener('paste', e => {
+      const modal = document.getElementById('screenshotModal');
+      if (!modal.classList.contains('open')) return;
+      const items = e.clipboardData?.items;
+      if (!items) return;
+      for (const item of items) {
+        if (item.type.startsWith('image/')) {
+          loadImageFile(item.getAsFile());
+          break;
+        }
+      }
+    });
+  });
+})();
+
+function loadImageFile(file) {
+  if (!file) return;
+  if (file.size > SS_MAX_SIZE) {
+    alert('Image too large. Max 10MB.');
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = e => {
+    ssImageDataUrl = e.target.result;
+    const img = document.getElementById('ssPreviewImg');
+    img.src = ssImageDataUrl;
+    document.getElementById('ssPreview').style.display = '';
+    document.getElementById('ssAnalyzeBtn').disabled = false;
+    document.getElementById('ssDropZone').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearScreenshot() {
+  ssImageDataUrl = null;
+  document.getElementById('ssPreview').style.display = 'none';
+  document.getElementById('ssAnalyzeBtn').disabled = true;
+  document.getElementById('ssDropZone').style.display = '';
+}
+
+// --- Vision API call ---
+async function analyzeScreenshot() {
+  if (!ssImageDataUrl) return;
+  const cfg = getVisionConfig();
+  if (!cfg.endpoint) {
+    showStatus('⚠ Configure the Vision API in Settings (⚙) first.', true);
+    return;
+  }
+
+  // Switch to step 2
+  document.getElementById('ssStep1').style.display = 'none';
+  document.getElementById('ssStep2').style.display = '';
+  showStatus('Sending screenshot to vision API...');
+
+  try {
+    const extracted = await callVisionAPI(ssImageDataUrl, cfg);
+    populateExtractedForm(extracted);
+    // Switch to step 3
+    document.getElementById('ssStep2').style.display = 'none';
+    document.getElementById('ssStep3').style.display = '';
+    document.getElementById('ssFooter').style.display = '';
+  } catch (err) {
+    showStatus('Error: ' + err.message, true);
+  }
+}
+
+function showStatus(msg, isErr = false) {
+  const el = document.getElementById('ssStatus');
+  el.textContent = msg;
+  el.className = 'ss-status' + (isErr ? ' error' : '');
+}
+
+async function callVisionAPI(imageDataUrl, cfg) {
+  const provider = cfg.provider || 'openai';
+  const base64 = imageDataUrl.split(',')[1];
+  const mime = imageDataUrl.match(/^data:(image\/\w+);/)?.[1] || 'image/png';
+
+  const systemPrompt = `You are a data extraction assistant for a game called Once Human. Analyze the screenshot of a Deviation detail screen and extract the following fields as JSON. Be precise with text extraction.
+
+Output ONLY a JSON object with these fields:
+{
+  "name": "base deviation name (e.g. The Digby Boy, Electric Eel, Butterfly's Emissary)",
+  "variant": "variant/skin name after the dash (e.g. Emerald, Prism) or empty string if none",
+  "description": "the full description text below the name",
+  "skill_rating": number 0-5 (from Skill Rating),
+  "activity_rating": number 0-5 (from Activity Rating),
+  "traits": [{"name": "trait name", "is_negative": boolean}]
+}
+
+Rules:
+- name should NOT include the variant. "The Digby Boy - Emerald" → name="The Digby Boy", variant="Emerald"
+- If no variant is shown, variant=""
+- skill_rating and activity_rating are 0 if not visible
+- traits: list ALL traits visible in the Traits section. is_negative=true if the trait name starts with ⚠ or is clearly negative
+- If a trait is not in the standard list, still include it with the exact text you see
+- Be precise with apostrophes, dashes, and special characters`;
+
+  let url, headers, body;
+
+  if (provider === 'ollama') {
+    // Ollama native API
+    const ep = cfg.endpoint.replace(/\/+$/, '');
+    url = `${ep}/api/chat`;
+    headers = { 'Content-Type': 'application/json' };
+    body = JSON.stringify({
+      model: cfg.model || 'llava',
+      stream: false,
+      messages: [{
+        role: 'user',
+        content: systemPrompt + '\n\nAnalyze this screenshot:',
+        images: [base64]
+      }],
+      format: 'json'
+    });
+  } else {
+    // OpenAI-compatible (OpenAI, custom)
+    const ep = cfg.endpoint.replace(/\/+$/, '');
+    url = `${ep}/v1/chat/completions`;
+    headers = {
+      'Content-Type': 'application/json',
+      ...(cfg.apiKey ? { 'Authorization': `Bearer ${cfg.apiKey}` } : {})
+    };
+    body = JSON.stringify({
+      model: cfg.model || 'gpt-4o',
+      messages: [{
+        role: 'user',
+        content: [
+          { type: 'text', text: systemPrompt },
+          { type: 'image_url', image_url: { url: `data:${mime};base64,${base64}` } }
+        ]
+      }],
+      max_tokens: 1000
+    });
+  }
+
+  const resp = await fetch(url, {
+    method: 'POST',
+    headers,
+    body
+  });
+
+  if (!resp.ok) {
+    const errText = await resp.text().catch(() => '');
+    throw new Error(`API ${resp.status}: ${errText.slice(0, 200)}`);
+  }
+
+  const data = await resp.json();
+
+  // Extract content
+  let content = '';
+  if (provider === 'ollama') {
+    content = data.message?.content || '';
+  } else {
+    content = data.choices?.[0]?.message?.content || '';
+  }
+
+  // Parse JSON from content (handle markdown code blocks)
+  const jsonMatch = content.match(/```(?:json)?\s*([\s\S]*?)```/) || [null, content];
+  let parsed;
+  try {
+    parsed = JSON.parse(jsonMatch[1].trim());
+  } catch(e) {
+    throw new Error('Could not parse API response as JSON. Raw: ' + content.slice(0, 300));
+  }
+
+  return {
+    name:         String(parsed.name || '').trim(),
+    variant:      String(parsed.variant || '').trim(),
+    description:  String(parsed.description || '').trim(),
+    skillRating:  Math.min(5, Math.max(0, parseInt(parsed.skill_rating) || 0)),
+    activityRating: Math.min(5, Math.max(0, parseInt(parsed.activity_rating) || 0)),
+    traits:       Array.isArray(parsed.traits) ? parsed.traits.map(t => ({
+      name: String(t.name || '').trim(),
+      isNegative: !!t.is_negative
+    })).filter(t => t.name) : []
+  };
+}
+
+// --- Populate review form ---
+function populateExtractedForm(data) {
+  // Deviation name + variant with autocomplete
+  document.getElementById('ssName').value = data.name;
+  document.getElementById('ssVariant').value = data.variant;
+  document.getElementById('ssDesc').value = data.description;
+  document.getElementById('ssSkill').value = data.skillRating;
+  document.getElementById('ssActivity').value = data.activityRating;
+
+  // Populate datalists for autocomplete
+  const devList = document.getElementById('ssDevList');
+  devList.innerHTML = getAllDeviations().map(d => `<option value="${escHtml(d)}">`).join('');
+  const varList = document.getElementById('ssVarList');
+  varList.innerHTML = getAllVariants().map(v => `<option value="${escHtml(v)}">`).join('');
+
+  // Populate trait dropdowns
+  const container = document.getElementById('ssTraitsContainer');
+  container.innerHTML = '';
+  const allTraits = getAllTraits();
+
+  // Show up to 5 trait slots, pre-filled if detected
+  for (let i = 0; i < Math.max(5, data.traits.length); i++) {
+    const detected = data.traits[i];
+    const row = document.createElement('div');
+    row.className = 'ss-trait-row';
+    const select = document.createElement('select');
+    select.innerHTML = '<option value="">—</option>' +
+      allTraits.map(t => {
+        const sel = detected && t.name === findBestTraitMatch(detected.name, allTraits) ? ' selected' : '';
+        return `<option value="${escHtml(t.name)}"${sel}${t.neg?' class="neg-trait"':''}>${escHtml(t.name)}</option>`;
+      }).join('');
+    row.appendChild(select);
+    container.appendChild(row);
+  }
+}
+
+function findBestTraitMatch(detectedName, allTraits) {
+  if (!detectedName) return '';
+  const lower = detectedName.toLowerCase();
+  // Exact match
+  const exact = allTraits.find(t => t.name.toLowerCase() === lower);
+  if (exact) return exact.name;
+  // Partial match
+  const partial = allTraits.find(t => t.name.toLowerCase().includes(lower) || lower.includes(t.name.toLowerCase()));
+  if (partial) return partial.name;
+  return '';
+}
+
+// --- Apply extracted data to tracker ---
+function applyExtractedData() {
+  const name = document.getElementById('ssName').value.trim();
+  if (!name) { alert('Deviation name is required.'); return; }
+
+  // Check if this deviation exists in our lists, add as custom if not
+  const allDevs = getAllDeviations();
+  if (!allDevs.includes(name)) {
+    if (!state.customDeviations.includes(name)) {
+      state.customDeviations.push(name);
+      save('customDeviations');
+    }
+  }
+
+  // Collect traits from dropdowns
+  const traitSelects = document.querySelectorAll('#ssTraitsContainer select');
+  const traits = Array.from(traitSelects).map(sel => sel.value).filter(Boolean);
+
+  // Create new deviation row
+  const row = newDeviation();
+  row.name = name;
+  row.variant = document.getElementById('ssVariant').value.trim();
+  row.skill = parseInt(document.getElementById('ssSkill').value) || 0;
+  row.activity = parseInt(document.getElementById('ssActivity').value) || 0;
+  for (let i = 0; i < 5 && i < traits.length; i++) {
+    row.traits[i] = traits[i];
+  }
+
+  // Apply defaults if set
+  if (defaultCharacter) row.char = defaultCharacter;
+
+  state.deviations.push(row);
+  save('deviations');
+
+  closeScreenshotModal();
+  renderView();
 }
 
 /* ============================================================
@@ -2651,7 +3136,7 @@ function renderMaterials() {
    ============================================================ */
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
-    ['manageDevModal','manageTraitModal','manageVariantModal','confirmModal','contributeConfigModal'].forEach(id => {
+    ['manageDevModal','manageTraitModal','manageVariantModal','confirmModal','contributeConfigModal','screenshotModal'].forEach(id => {
       if (document.getElementById(id).classList.contains('open')) closeModal(id);
     });
     if (document.getElementById('settingsOverlay').classList.contains('open')) closeSettings();
