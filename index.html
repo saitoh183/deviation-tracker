@@ -1765,8 +1765,9 @@ function applyExtractedData() {
   if (doAutoCreate && variant) {
     const allVars = getAllVariants();
     if (!allVars.includes(variant)) {
+      const variantEffect = document.getElementById('ssVariantEffect')?.textContent?.trim() || '';
       const vars = state.settings.variants || [];
-      vars.push({ name: variant, description: variant });
+      vars.push({ name: variant, description: variantEffect || variant });
       state.settings.variants = vars;
       save('settings');
     }
