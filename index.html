@@ -632,10 +632,14 @@ input,select,button,textarea{touch-action:manipulation}
     <div class="settings-section">
       <h3>📷 Screenshot Behavior</h3>
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <label class="toggle"><input type="checkbox" id="quickAddToggle" onchange="saveQuickAddSetting()"><span class="toggle-slider"></span></label>
+        <span style="font-size:.85rem;color:var(--text)">Quick Add — skip review, add directly</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
         <label class="toggle"><input type="checkbox" id="autoCreateToggle" onchange="saveAutoCreateSetting()"><span class="toggle-slider"></span></label>
         <span style="font-size:.85rem;color:var(--text)">Auto-create missing deviations, variants &amp; traits</span>
       </div>
-      <p style="font-size:.72rem;color:var(--text-muted)">When off, extracted names stay as text in the review form. You manually add new items via Manage.</p>
+      <p style="font-size:.72rem;color:var(--text-muted)">Quick Add: OCR results go straight to tracker (no review). Auto-create: new items are added to your lists automatically.</p>
     </div>
 
     <p class="settings-note">Character names max 10 characters; up to 20 characters. Changes reflect immediately in the tracker.<br><br>Custom deviations and traits are stored in your browser and can be exported via 💾 Save Config.</p>
@@ -966,9 +970,6 @@ input,select,button,textarea{touch-action:manipulation}
       </div>
     </div>
     <div class="modal-footer" id="ssFooter" style="display:none">
-      <label class="toggle" title="Quick Add: skip review, add directly" style="margin-right:auto;display:flex;align-items:center;gap:8px;font-size:.78rem;color:var(--text-dim)">
-        <input type="checkbox" id="ssQuickAdd"><span class="toggle-slider"></span> Quick Add
-      </label>
       <button class="btn btn-secondary" onclick="closeScreenshotModal()">Cancel</button>
       <button class="btn btn-secondary" onclick="resetScreenshotModal()">← Back</button>
       <button class="btn btn-primary" onclick="applyExtractedData()">✓ Add to Tracker</button>
@@ -1329,7 +1330,7 @@ function showFlash(elId, msg, isErr = false) {
 /* ============================================================
    SETTINGS
    ============================================================ */
-function openSettings()  { loadVisionConfig(); loadAutoCreateSetting(); document.getElementById('settingsOverlay').classList.add('open'); }
+function openSettings()  { loadVisionConfig(); loadAutoCreateSetting(); loadQuickAddSetting(); document.getElementById('settingsOverlay').classList.add('open'); }
 function closeSettings() { document.getElementById('settingsOverlay').classList.remove('open'); }
 function closeSettingsIfBg(e) { if (e.target === document.getElementById('settingsOverlay')) closeSettings(); }
 
@@ -1390,6 +1391,7 @@ function updateFilterCharDropdown() {
 const VISION_STORAGE_KEY = 'ohdt_vision_config';
 const SS_MAX_SIZE = 10 * 1024 * 1024; // 10MB
 const SS_AUTOCREATE_KEY = 'ohdt_autocreate';
+const SS_QUICKADD_KEY = 'ohdt_quickadd';
 let ssImageDataUrl = null;  // base64 data URL of current screenshot
 
 function loadAutoCreateSetting() {
@@ -1402,6 +1404,17 @@ function saveAutoCreateSetting() {
 }
 function getAutoCreate() {
   return localStorage.getItem(SS_AUTOCREATE_KEY) === '1';
+}
+function loadQuickAddSetting() {
+  const el = document.getElementById('quickAddToggle');
+  if (el) el.checked = localStorage.getItem(SS_QUICKADD_KEY) === '1';
+}
+function saveQuickAddSetting() {
+  const el = document.getElementById('quickAddToggle');
+  if (el) localStorage.setItem(SS_QUICKADD_KEY, el.checked ? '1' : '0');
+}
+function getQuickAdd() {
+  return localStorage.getItem(SS_QUICKADD_KEY) === '1';
 }
 
 function loadVisionConfig() {
@@ -1712,7 +1725,7 @@ function populateExtractedForm(data) {
   }
 
   // Quick Add: if enabled, auto-apply after form is fully populated
-  if (document.getElementById('ssQuickAdd')?.checked) {
+  if (getQuickAdd()) {
     setTimeout(() => applyExtractedData(), 50);
   }
 }
