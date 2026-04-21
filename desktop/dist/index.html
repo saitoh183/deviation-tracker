@@ -1429,10 +1429,6 @@ function normalizeVariantSettings() {
   if (before !== after) save('settings');
 }
 
-function save(key) {
-  localStorage.setItem(KEYS[key], JSON.stringify(state[key]));
-}
-
 function defaultsAreLocked() {
   return IS_OFFICIAL_DEPLOYMENT;
 }
