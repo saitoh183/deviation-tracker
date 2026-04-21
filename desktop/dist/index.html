@@ -519,28 +519,7 @@ input,select,button,textarea{touch-action:manipulation}
       <p class="char-empty" id="charEmpty">No characters added yet. Add one above.</p>
     </div>
 
-    <div class="settings-section">
-      <h3>📷 Vision API (Screenshot OCR)</h3>
-      <div class="vision-config-group">
-        <label>Provider</label>
-        <select id="visionProvider" onchange="saveVisionConfig()">
-          <option value="openai">OpenAI (GPT-4o, etc.)</option>
-          <option value="ollama">Ollama (local)</option>
-          <option value="custom">Custom (OpenAI-compatible)</option>
-        </select>
-        <label>API Endpoint</label>
-        <input id="visionEndpoint" type="text" placeholder="https://openrouter.ai/api/v1" oninput="saveVisionConfig()">
-        <label>API Key <span style="color:var(--text-muted)">(not needed for local Ollama)</span></label>
-        <input id="visionApiKey" type="password" placeholder="sk-..." oninput="saveVisionConfig()">
-        <label>Model</label>
-        <input id="visionModel" type="text" placeholder="gpt-4o" oninput="saveVisionConfig()">
-      </div>
-      <p style="font-size:.72rem;color:var(--text-muted);margin-top:8px">
-        <strong>OpenRouter:</strong> endpoint = <code>https://openrouter.ai/api/v1</code>, model = <code>openai/gpt-4o-mini</code>.<br>
-        <strong>Ollama:</strong> endpoint = <code>http://hostname:11434</code>, model = e.g. <code>llama3.2-vision:11b</code>.<br>
-        <strong>⚠ Local Ollama:</strong> requires this site to be served over HTTP (not HTTPS) due to browser mixed-content restrictions.
-      </p>
-    </div>
+    <p class="settings-note">Character names max 10 characters; up to 20 characters. Changes reflect immediately in the tracker.<br><br>Custom deviations and traits are stored in your browser and can be exported via 💾 Save Config.</p>
 
     <div class="settings-section">
       <h3>📷 Screenshot Behavior</h3>
@@ -1709,7 +1688,7 @@ function showFlash(elId, msg, isErr = false) {
 /* ============================================================
    SETTINGS
    ============================================================ */
-function openSettings()  { loadVisionConfig(); loadAutoCreateSetting(); loadQuickAddSetting(); document.getElementById('settingsOverlay').classList.add('open'); }
+function openSettings()  { loadAutoCreateSetting(); loadQuickAddSetting(); document.getElementById('settingsOverlay').classList.add('open'); }
 function closeSettings() { document.getElementById('settingsOverlay').classList.remove('open'); }
 function closeSettingsIfBg(e) { if (e.target === document.getElementById('settingsOverlay')) closeSettings(); }
 
@@ -1764,10 +1743,9 @@ function updateFilterCharDropdown() {
     state.settings.characters.map(c => `<option value="${escHtml(c)}"${c===cur?' selected':''}>${escHtml(c)}</option>`).join('');
 }
 
-/* ============================================================
-   VISION API CONFIG (screenshot OCR)
-   ============================================================ */
-const VISION_STORAGE_KEY = 'ohdt_vision_config';
+// ============================================================
+// SCREENSHOT STATE
+// ============================================================
 const SS_MAX_SIZE = 10 * 1024 * 1024; // 10MB
 const SS_AUTOCREATE_KEY = 'ohdt_autocreate';
 const SS_QUICKADD_KEY = 'ohdt_quickadd';
@@ -1799,34 +1777,11 @@ function getQuickAdd() {
   return localStorage.getItem(SS_QUICKADD_KEY) === '1';
 }
 
-function loadVisionConfig() {
-  let cfg = {};
-  try { cfg = JSON.parse(localStorage.getItem(VISION_STORAGE_KEY) || '{}'); } catch(e) { cfg = {}; }
-  document.getElementById('visionProvider').value = cfg.provider || 'openai';
-  document.getElementById('visionEndpoint').value = cfg.endpoint || '';
-  document.getElementById('visionApiKey').value = cfg.apiKey || '';
-  document.getElementById('visionModel').value = cfg.model || 'gpt-4o';
-}
-
-function saveVisionConfig() {
-  const cfg = {
-    provider: document.getElementById('visionProvider').value,
-    endpoint: document.getElementById('visionEndpoint').value.trim(),
-    apiKey:   document.getElementById('visionApiKey').value,
-    model:    document.getElementById('visionModel').value.trim() || 'gpt-4o',
-  };
-  localStorage.setItem(VISION_STORAGE_KEY, JSON.stringify(cfg));
-}
-
-function getVisionConfig() {
-  try { return JSON.parse(localStorage.getItem(VISION_STORAGE_KEY) || '{}'); } catch(e) { return {}; }
-}
-
-/* ============================================================
-   SCREENSHOT TO ENTRY
-   ============================================================ */
+// --- Image input handlers ---
+// ============================================================
+// SCREENSHOT TO ENTRY
+// ============================================================
 function openScreenshotModal() {
-  loadVisionConfig();
   resetScreenshotModal();
   openModal('screenshotModal');
 }
@@ -2008,122 +1963,6 @@ function showStatus(msg, isErr = false) {
   const el = document.getElementById('ssStatus');
   el.textContent = msg;
   el.className = 'ss-status' + (isErr ? ' error' : '');
-}
-
-async function callVisionAPI(imageDataUrl, cfg) {
-  const provider = cfg.provider || 'openai';
-  const base64 = imageDataUrl.split(',')[1];
-  const mime = imageDataUrl.match(/^data:(image\/\w+);/)?.[1] || 'image/png';
-
-  const systemPrompt = `You are a data extraction assistant for a game called Once Human. Analyze the screenshot of a Deviation detail screen and extract the following fields as JSON. Be precise with text extraction.
-
-Output ONLY a JSON object with these fields:
-{
-  "name": "base deviation name (e.g. The Digby Boy, Electric Eel, Butterfly's Emissary)",
-  "variant": "variant/skin name after the dash (e.g. Emerald, Prism, Good Fortune) or empty string if none",
-  "variant_effect": "the gold-colored variant description that starts with 'Appearance changed.' — extract the full text, or empty string if none",
-  "description": "the full description text below the name (NOT the variant effect)",
-  "skill_rating": number 0-5 (from Skill Rating),
-  "activity_rating": number 0-5 (from Activity Rating),
-  "fusion": 0 or 1 (Fusion state: 1 = on/active, 0 = off),
-  "traits": [{"name": "trait name", "is_negative": boolean}]
-}
-
-CRITICAL VARIANT vs TRAIT RULES:
-- The deviation name often has format "Name - Variant". Example: "The Digby Boy - Emerald" → name="The Digby Boy", variant="Emerald"
-- The gold text starting with "Appearance changed." is the VARIANT EFFECT, NOT a trait. Do NOT include it in traits.
-- Only include traits from the TRAITS section of the UI. These are gameplay traits like "Cheer Up 1", "Growing Pains 2", etc.
-- If a trait is negative (starts with ⚠ symbol), set is_negative=true
-- If no traits are visible, traits=[]
-
-Other rules:
-- If no variant is shown, variant="" and variant_effect=""
-- skill_rating and activity_rating are 0 if not visible
-- Be precise with apostrophes, dashes, and special characters`;
-
-  let url, headers, body;
-
-  if (provider === 'ollama') {
-    // Ollama native API
-    const ep = cfg.endpoint.replace(/\/+$/, '');
-    url = `${ep}/api/chat`;
-    headers = { 'Content-Type': 'application/json' };
-    body = JSON.stringify({
-      model: cfg.model || 'llava',
-      stream: false,
-      messages: [{
-        role: 'user',
-        content: systemPrompt + '\n\nAnalyze this screenshot:',
-        images: [base64]
-      }],
-      format: 'json'
-    });
-  } else {
-    // OpenAI-compatible (OpenAI, custom, OpenRouter)
-    const ep = cfg.endpoint.replace(/\/+$/, '');
-    // Smart path: if endpoint already ends with /v1 or /v1/, use /chat/completions only
-    const needsV1 = !/\/v1\/?$/.test(ep);
-    url = `${ep}${needsV1 ? '/v1' : ''}/chat/completions`;
-    headers = {
-      'Content-Type': 'application/json',
-      ...(cfg.apiKey ? { 'Authorization': `Bearer ${cfg.apiKey}` } : {})
-    };
-    body = JSON.stringify({
-      model: cfg.model || 'gpt-4o',
-      messages: [{
-        role: 'user',
-        content: [
-          { type: 'text', text: systemPrompt },
-          { type: 'image_url', image_url: { url: `data:${mime};base64,${base64}` } }
-        ]
-      }],
-      max_tokens: 1000
-    });
-  }
-
-  const resp = await fetch(url, {
-    method: 'POST',
-    headers,
-    body
-  });
-
-  if (!resp.ok) {
-    const errText = await resp.text().catch(() => '');
-    throw new Error(`API ${resp.status}: ${errText.slice(0, 200)}`);
-  }
-
-  const data = await resp.json();
-
-  // Extract content
-  let content = '';
-  if (provider === 'ollama') {
-    content = data.message?.content || '';
-  } else {
-    content = data.choices?.[0]?.message?.content || '';
-  }
-
-  // Parse JSON from content (handle markdown code blocks)
-  const jsonMatch = content.match(/```(?:json)?\s*([\s\S]*?)```/) || [null, content];
-  let parsed;
-  try {
-    parsed = JSON.parse(jsonMatch[1].trim());
-  } catch(e) {
-    throw new Error('Could not parse API response as JSON. Raw: ' + content.slice(0, 300));
-  }
-
-  return {
-    name:         String(parsed.name || '').trim(),
-    variant:      String(parsed.variant || '').trim(),
-    variantEffect: String(parsed.variant_effect || '').trim(),
-    description:  String(parsed.description || '').trim(),
-    skillRating:  Math.min(5, Math.max(0, parseInt(parsed.skill_rating) || 0)),
-    activityRating: Math.min(5, Math.max(0, parseInt(parsed.activity_rating) || 0)),
-    fusion:       parsed.fusion ? 1 : 0,
-    traits:       Array.isArray(parsed.traits) ? parsed.traits.map(t => ({
-      name: String(t.name || '').trim(),
-      isNegative: !!t.is_negative
-    })).filter(t => t.name) : []
-  };
 }
 
 // --- Populate review form ---
@@ -3725,28 +3564,6 @@ function escHtml(s) {
   return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-/* ============================================================
-   INIT
-   ============================================================ */
-document.addEventListener('DOMContentLoaded', () => {
-  migrateData();
-  load();
-  loadAddDefaults();
-  renderCharList();
-  updateFilterCharDropdown();
-  renderVariantList();
-  updateFilterVariantDropdown();
-  renderView();
-  renderMaterials();
-  initPersistenceListeners();
-  // Collapse filter bar on mobile by default
-  if (isMobile()) {
-    const fbi = document.getElementById('filterBarInner');
-    const fta = document.getElementById('filterToggleArrow');
-    if (fbi) fbi.classList.add('collapsed');
-    if (fta) fta.textContent = '▸';
-  }
-});
 </script>
 
 </div><!-- /#app -->
