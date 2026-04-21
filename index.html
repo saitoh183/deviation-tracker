@@ -616,14 +616,16 @@ input,select,button,textarea{touch-action:manipulation}
           <option value="custom">Custom (OpenAI-compatible)</option>
         </select>
         <label>API Endpoint</label>
-        <input id="visionEndpoint" type="text" placeholder="https://api.openai.com" oninput="saveVisionConfig()">
+        <input id="visionEndpoint" type="text" placeholder="https://openrouter.ai/api/v1" oninput="saveVisionConfig()">
         <label>API Key <span style="color:var(--text-muted)">(not needed for local Ollama)</span></label>
         <input id="visionApiKey" type="password" placeholder="sk-..." oninput="saveVisionConfig()">
         <label>Model</label>
         <input id="visionModel" type="text" placeholder="gpt-4o" oninput="saveVisionConfig()">
       </div>
       <p style="font-size:.72rem;color:var(--text-muted);margin-top:8px">
-        For Ollama: endpoint = <code>http://hostname:11434</code>, no key needed, model = e.g. <code>llava</code> or <code>llama3.2-vision</code>.
+        <strong>OpenRouter:</strong> endpoint = <code>https://openrouter.ai/api/v1</code>, model = <code>openai/gpt-4o-mini</code>.<br>
+        <strong>Ollama:</strong> endpoint = <code>http://hostname:11434</code>, model = e.g. <code>llama3.2-vision:11b</code>.<br>
+        <strong>⚠ Local Ollama:</strong> requires this site to be served over HTTP (not HTTPS) due to browser mixed-content restrictions.
       </p>
     </div>
 
@@ -939,6 +941,14 @@ input,select,button,textarea{touch-action:manipulation}
               <input type="number" id="ssActivity" min="0" max="5" value="0">
             </div>
           </div>
+          <div class="ss-field-row">
+            <div class="ss-field">
+              <label>Fusion</label>
+              <div style="padding:6px 8px">
+                <label class="toggle"><input type="checkbox" id="ssFusion"><span class="toggle-slider"></span></label>
+              </div>
+            </div>
+          </div>
           <div class="ss-field">
             <label>Detected Traits — pick from dropdowns</label>
             <div id="ssTraitsContainer"></div>
@@ -947,6 +957,9 @@ input,select,button,textarea{touch-action:manipulation}
       </div>
     </div>
     <div class="modal-footer" id="ssFooter" style="display:none">
+      <label class="toggle" title="Quick Add: skip review, add directly" style="margin-right:auto;display:flex;align-items:center;gap:8px;font-size:.78rem;color:var(--text-dim)">
+        <input type="checkbox" id="ssQuickAdd"><span class="toggle-slider"></span> Quick Add
+      </label>
       <button class="btn btn-secondary" onclick="closeScreenshotModal()">Cancel</button>
       <button class="btn btn-secondary" onclick="resetScreenshotModal()">← Back</button>
       <button class="btn btn-primary" onclick="applyExtractedData()">✓ Add to Tracker</button>
@@ -1530,6 +1543,7 @@ Output ONLY a JSON object with these fields:
   "description": "the full description text below the name (NOT the variant effect)",
   "skill_rating": number 0-5 (from Skill Rating),
   "activity_rating": number 0-5 (from Activity Rating),
+  "fusion": 0 or 1 (Fusion state: 1 = on/active, 0 = off),
   "traits": [{"name": "trait name", "is_negative": boolean}]
 }
 
@@ -1563,9 +1577,11 @@ Other rules:
       format: 'json'
     });
   } else {
-    // OpenAI-compatible (OpenAI, custom)
+    // OpenAI-compatible (OpenAI, custom, OpenRouter)
     const ep = cfg.endpoint.replace(/\/+$/, '');
-    url = `${ep}/v1/chat/completions`;
+    // Smart path: if endpoint already ends with /v1 or /v1/, use /chat/completions only
+    const needsV1 = !/\/v1\/?$/.test(ep);
+    url = `${ep}${needsV1 ? '/v1' : ''}/chat/completions`;
     headers = {
       'Content-Type': 'application/json',
       ...(cfg.apiKey ? { 'Authorization': `Bearer ${cfg.apiKey}` } : {})
@@ -1620,6 +1636,7 @@ Other rules:
     description:  String(parsed.description || '').trim(),
     skillRating:  Math.min(5, Math.max(0, parseInt(parsed.skill_rating) || 0)),
     activityRating: Math.min(5, Math.max(0, parseInt(parsed.activity_rating) || 0)),
+    fusion:       parsed.fusion ? 1 : 0,
     traits:       Array.isArray(parsed.traits) ? parsed.traits.map(t => ({
       name: String(t.name || '').trim(),
       isNegative: !!t.is_negative
@@ -1635,6 +1652,7 @@ function populateExtractedForm(data) {
   document.getElementById('ssDesc').value = data.description;
   document.getElementById('ssSkill').value = data.skillRating;
   document.getElementById('ssActivity').value = data.activityRating;
+  document.getElementById('ssFusion').checked = !!data.fusion;
 
   // Variant effect (read-only, shown if present)
   const veWrap = document.getElementById('ssVariantEffectWrap');
@@ -1670,6 +1688,11 @@ function populateExtractedForm(data) {
     row.appendChild(select);
     container.appendChild(row);
   }
+
+  // Quick Add: if enabled, auto-apply after form is fully populated
+  if (document.getElementById('ssQuickAdd')?.checked) {
+    setTimeout(() => applyExtractedData(), 50);
+  }
 }
 
 function findBestTraitMatch(detectedName, allTraits) {
@@ -1698,16 +1721,49 @@ function applyExtractedData() {
     }
   }
 
-  // Collect traits from dropdowns
+  // Auto-create variant if not in list
+  const variant = document.getElementById('ssVariant').value.trim();
+  if (variant) {
+    const allVars = getAllVariants();
+    if (!allVars.includes(variant)) {
+      const vars = state.settings.variants || [];
+      vars.push({ name: variant, description: variant });
+      state.settings.variants = vars;
+      save('settings');
+    }
+  }
+
+  // Collect traits from dropdowns — auto-create custom traits if not found
   const traitSelects = document.querySelectorAll('#ssTraitsContainer select');
-  const traits = Array.from(traitSelects).map(sel => sel.value).filter(Boolean);
+  const traits = [];
+  const allTraits = getAllTraits();
+  traitSelects.forEach(sel => {
+    const val = sel.value;
+    if (!val) return;
+    // Check if trait exists in known lists
+    const exists = allTraits.find(t => t.name === val);
+    if (!exists) {
+      // Add as custom trait — default to positive, applies to this deviation only
+      if (!state.customTraits.find(t => t.name === val)) {
+        state.customTraits.push({
+          name: val,
+          effect: 'Custom trait (extracted from screenshot)',
+          neg: false,
+          deviants: [name]
+        });
+        save('customTraits');
+      }
+    }
+    traits.push(val);
+  });
 
   // Create new deviation row
   const row = newDeviation();
   row.name = name;
-  row.variant = document.getElementById('ssVariant').value.trim();
+  row.variant = variant;
   row.skill = parseInt(document.getElementById('ssSkill').value) || 0;
   row.activity = parseInt(document.getElementById('ssActivity').value) || 0;
+  row.fusion = document.getElementById('ssFusion').checked ? 1 : 0;
   for (let i = 0; i < 5 && i < traits.length; i++) {
     row.traits[i] = traits[i];
   }
