@@ -1,0 +1,3754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Once Human — Deviation Tracker (Desktop)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ===== RESET & BASE ===== */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg0:#0d1117;--bg1:#1a1a2e;--bg2:#16213e;--bg3:#0f3460;
+  --accent:#00d4ff;--accent2:#00b4d8;--accent-dim:#0077a8;
+  --text:#e0e6f0;--text-dim:#8899b0;--text-muted:#4a5568;
+  --row-alt:rgba(0,180,216,0.04);
+  --border:#1e3a5f;--border-light:rgba(0,212,255,0.15);
+  --neg:#ff6b35;
+  --green:#4ade80;--lime:#a3e635;--yellow:#facc15;--orange:#fb923c;--red:#f87171;
+  --gold:#ffd700;
+  --toggle-on:#00d4ff;--toggle-off:#2d3748;
+  --shadow:0 4px 24px rgba(0,0,0,0.6);
+  --radius:6px;
+  font-family:'Exo 2',sans-serif;
+}
+html{background:var(--bg0);color:var(--text);height:100%;overflow:hidden}
+body{display:flex;flex-direction:column;height:100vh;overflow:hidden;background:linear-gradient(160deg,var(--bg0) 0%,var(--bg1) 50%,var(--bg0) 100%)}
+#app{display:flex;flex-direction:column;flex:1;min-height:0}
+#table-wrapper{flex:1 1 0;overflow-x:auto;overflow-y:auto;position:relative;min-height:0}
+input,select,button,textarea{font-family:inherit;font-size:inherit}
+button{cursor:pointer}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--bg1)}
+::-webkit-scrollbar-thumb{background:var(--accent-dim);border-radius:3px}
+
+/* ===== STICKY TOP WRAPPER ===== */
+#sticky-top{position:relative;flex-shrink:0;z-index:200;background:var(--bg1);width:100%}
+#deviations-controls{background:var(--bg0);padding:12px 20px 0}
+
+/* ===== HEADER ===== */
+.app-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 20px;
+  background:linear-gradient(90deg,var(--bg1),var(--bg2));
+  border-bottom:1px solid var(--border-light);
+}
+.app-title{font-size:1.4rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--accent);text-shadow:0 0 20px rgba(0,212,255,0.4)}
+.app-title span{color:var(--text-dim);font-weight:300}
+.gear-btn{background:none;border:1px solid var(--border-light);border-radius:var(--radius);color:var(--text-dim);font-size:1.3rem;padding:6px 10px;transition:all .2s}
+.gear-btn:hover{color:var(--accent);border-color:var(--accent);background:rgba(0,212,255,0.08)}
+
+/* ===== TABS ===== */
+.tab-bar{display:flex;gap:4px;padding:10px 20px 0;background:var(--bg1);border-bottom:1px solid var(--border)}
+.tab-btn{padding:9px 22px;font-weight:600;font-size:.95rem;background:none;border:1px solid transparent;border-bottom:none;color:var(--text-dim);border-radius:var(--radius) var(--radius) 0 0;transition:all .2s;letter-spacing:.5px}
+.tab-btn:hover{color:var(--text);background:rgba(255,255,255,0.04)}
+.tab-btn.active{color:var(--accent);background:var(--bg0);border-color:var(--border-light);text-shadow:0 0 12px rgba(0,212,255,0.3)}
+.tab-content{display:none;padding:16px 20px}
+.tab-content.active{display:block}
+
+/* ===== FILTER BAR ===== */
+.filter-bar{background:var(--bg1);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;margin-bottom:12px;display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px}
+.filter-group{display:flex;flex-direction:column;gap:4px;min-width:120px;flex:1}
+/* Character (1st) and Deviation (3rd) groups slightly wider */
+#filterBarInner .filter-group:nth-child(1),
+#filterBarInner .filter-group:nth-child(3){min-width:150px}
+.filter-group label{font-size:.72rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.8px}
+.filter-bar select,.filter-bar input[type=text]{background:var(--bg2);border:1px solid var(--border);border-radius:4px;color:var(--text);padding:5px 8px;font-size:.82rem;min-width:110px}
+.filter-bar select:focus,.filter-bar input:focus{outline:none;border-color:var(--accent)}
+.filter-actions{display:flex;gap:8px;align-items:flex-end;margin-left:auto;flex-wrap:wrap}
+.row-count{font-size:.78rem;color:var(--text-dim);align-self:center;white-space:nowrap}
+#fSkill,#fActivity{max-width:80px}
+
+/* ===== BUTTONS ===== */
+.btn{padding:6px 14px;border-radius:var(--radius);border:none;font-weight:600;font-size:.82rem;letter-spacing:.5px;transition:all .2s;cursor:pointer;white-space:nowrap}
+.btn-primary{background:var(--accent-dim);color:#fff}
+.btn-primary:hover{background:var(--accent2);box-shadow:0 0 12px rgba(0,212,255,0.3)}
+.btn-secondary{background:var(--bg3);border:1px solid var(--border-light);color:var(--text-dim)}
+.btn-secondary:hover{color:var(--text);border-color:var(--accent)}
+.btn-danger{background:#7f1d1d;border:1px solid #991b1b;color:#fca5a5}
+.btn-danger:hover{background:#991b1b}
+.btn-sm{padding:4px 10px;font-size:.76rem}
+
+/* ===== TOOLBAR ===== */
+.controls-bar{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px}
+.btn-group{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+
+/* ===== TABLE ===== */
+.table-wrap{overflow:visible;width:100%;border:1px solid var(--border);border-radius:var(--radius)}
+table{table-layout:fixed;width:max-content;min-width:100%;border-collapse:collapse;font-size:.83rem}
+thead tr{background:var(--bg2)}
+th{padding:9px 8px;text-align:left;font-weight:600;color:var(--accent);font-size:.75rem;text-transform:uppercase;letter-spacing:.7px;white-space:nowrap;border-bottom:2px solid var(--border-light);cursor:pointer;user-select:none;overflow:hidden}
+th:hover{color:#fff;background:rgba(0,212,255,0.06)}
+.sort-indicator{opacity:.8;margin-left:6px}
+#sticky-thead th{position:sticky;top:0;z-index:100;background:var(--bg2)}
+tbody tr{border-bottom:1px solid var(--border);transition:background .15s}
+tbody tr:nth-child(even){background:var(--row-alt)}
+tbody tr:hover{background:rgba(0,212,255,0.07)}
+td{padding:5px 6px;vertical-align:middle;overflow:hidden}
+.empty-row td{text-align:center;color:var(--text-dim);padding:30px;font-style:italic;overflow:visible}
+
+/* ===== TABLE INPUTS ===== */
+td select,td input[type=text]{background:transparent;border:1px solid transparent;border-radius:4px;color:var(--text);padding:3px 5px;width:100%;display:block;box-sizing:border-box}
+td select:focus,td input[type=text]:focus{outline:none;border-color:var(--accent);background:var(--bg2)}
+td select:hover,td input[type=text]:hover{border-color:var(--border-light)}
+td select option{background:var(--bg2)}
+
+/* ===== TRAIT CELLS ===== */
+.trait-cell select{font-size:.78rem;color:var(--text)}
+.trait-cell select.neg-trait{color:var(--neg)}
+.score-select{font-weight:700;text-align:center;min-width:44px}
+.score-select.skill-1,.score-select.activity-1{color:#fecaca;background:rgba(220,38,38,.22);border-color:rgba(248,113,113,.45)}
+.score-select.skill-2,.score-select.activity-2{color:#e5e7eb;background:rgba(75,85,99,.45);border-color:rgba(156,163,175,.35)}
+.score-select.skill-3,.score-select.activity-3{color:#e9d5ff;background:rgba(109,40,217,.28);border-color:rgba(167,139,250,.45)}
+.score-select.skill-4,.score-select.activity-4{color:#ffedd5;background:rgba(194,65,12,.30);border-color:rgba(251,146,60,.5)}
+.score-select.skill-5,.score-select.activity-5{color:#fef9c3;background:rgba(202,138,4,.35);border-color:rgba(250,204,21,.55)}
+
+/* ===== SHARED TOOLTIP (fixed, body-level) ===== */
+#shared-tooltip{position:fixed;z-index:9999;min-width:220px;max-width:300px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);pointer-events:none;display:none}
+.tooltip-header{padding:8px 10px;font-weight:700;font-size:.82rem;border-radius:var(--radius) var(--radius) 0 0}
+.tooltip-header.pos{background:linear-gradient(90deg,#064e3b,#065f46);color:var(--green);border-bottom:1px solid #065f46}
+.tooltip-header.neg{background:linear-gradient(90deg,#7c2d12,#9a3412);color:var(--neg);border-bottom:1px solid #9a3412}
+.tooltip-body{padding:8px 10px;font-size:.78rem;color:var(--text);line-height:1.45}
+
+/* ===== TOGGLE ===== */
+.toggle-wrap{text-align:center;padding:3px 0}
+.toggle{position:relative;display:inline-block;width:36px;height:20px;cursor:pointer;vertical-align:middle;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0;position:absolute}
+.toggle-slider{position:absolute;top:0;right:0;bottom:0;left:0;background:var(--toggle-off);border-radius:20px;transition:.2s}
+.toggle-slider::before{content:'';position:absolute;width:14px;height:14px;background:#fff;border-radius:50%;left:3px;top:3px;transition:.2s}
+.toggle input:checked~.toggle-slider{background:var(--toggle-on)}
+.toggle input:checked~.toggle-slider::before{transform:translateX(16px)}
+
+/* ===== DELETE BTN ===== */
+.del-btn{background:none;border:1px solid var(--border);border-radius:4px;color:var(--text-muted);padding:3px 8px;font-size:.9rem;transition:all .15s}
+.del-btn:hover{background:#7f1d1d;border-color:#ef4444;color:#fca5a5}
+
+/* ===== FUSION MATERIALS ===== */
+.fm-header{margin-bottom:4px}
+.fm-header h2{font-size:1.1rem;font-weight:700;color:var(--accent);letter-spacing:1px;text-transform:uppercase}
+.fm-header p{font-size:.82rem;color:var(--text-dim);margin-top:2px}
+.fm-controls{display:flex;gap:8px;margin:12px 0}
+.fm-list{display:flex;flex-direction:column;gap:6px}
+.fm-empty{color:var(--text-dim);font-style:italic;font-size:.88rem;padding:20px 0}
+.fm-row{display:flex;align-items:center;gap:8px;background:var(--bg1);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;transition:background .15s}
+.fm-row:hover{background:var(--bg2)}
+.drag-handle{color:var(--text-muted);cursor:grab;font-size:1rem;padding:0 4px;flex-shrink:0;user-select:none}
+.drag-handle:active{cursor:grabbing}
+.fm-row.drag-over{border-color:var(--accent);background:rgba(0,212,255,0.08)}
+.fm-row.dragging{opacity:.4}
+.fm-name{width:220px;min-width:220px;flex:0 0 220px}
+.fm-qty{width:70px;min-width:70px;flex:0 0 70px;text-align:center}
+.fm-notes{flex:1;min-width:0}
+.fm-input{background:var(--bg2);border:1px solid var(--border);border-radius:4px;color:var(--text);padding:6px 8px;width:100%;font-size:.85rem}
+.fm-input:focus{outline:none;border-color:var(--accent)}
+
+/* ===== SETTINGS SLIDE-IN ===== */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:900;backdrop-filter:blur(2px)}
+.overlay.open{display:flex;align-items:flex-start;justify-content:flex-end}
+.settings-panel{width:340px;min-height:100vh;background:var(--bg1);border-left:1px solid var(--border-light);padding:20px;display:flex;flex-direction:column;gap:16px;animation:slideIn .22s ease;box-shadow:-8px 0 40px rgba(0,0,0,.5);overflow-y:auto}
+@keyframes slideIn{from{transform:translateX(100%)}to{transform:translateX(0)}}
+.settings-header{display:flex;align-items:center;justify-content:space-between}
+.settings-header h2{font-size:1rem;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:1px}
+.close-btn{background:none;border:none;color:var(--text-dim);font-size:1.4rem;line-height:1;padding:2px 6px}
+.close-btn:hover{color:var(--text)}
+.settings-section{border-top:1px solid var(--border);padding-top:14px}
+.settings-section h3{font-size:.78rem;text-transform:uppercase;letter-spacing:.8px;color:var(--text-dim);margin-bottom:10px}
+.char-add-row{display:flex;gap:6px;margin-bottom:10px}
+.char-add-row input{flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:4px;color:var(--text);padding:7px 10px;font-size:.85rem}
+.char-add-row input:focus{outline:none;border-color:var(--accent)}
+.char-list{display:flex;flex-direction:column;gap:4px}
+.char-item{display:flex;align-items:center;justify-content:space-between;background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:6px 10px;font-size:.88rem}
+.char-del{background:none;border:none;color:var(--text-muted);font-size:1rem;padding:0 4px}
+.char-del:hover{color:var(--neg)}
+.char-empty{color:var(--text-dim);font-style:italic;font-size:.82rem;padding:6px 0}
+.settings-note{font-size:.75rem;color:var(--text-muted);line-height:1.5;border-top:1px solid var(--border);padding-top:10px}
+.settings-btn-list{display:flex;flex-direction:column;gap:6px}
+
+/* ===== MODALS (shared) ===== */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:1000;align-items:center;justify-content:center;padding:16px}
+.modal-overlay.open{display:flex}
+.modal{background:var(--bg1);border:1px solid var(--accent);border-radius:8px;box-shadow:var(--shadow);width:100%;display:flex;flex-direction:column;max-height:90vh}
+.modal-sm{max-width:400px}
+.modal-lg{max-width:620px}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--border);flex-shrink:0}
+.modal-header h3{font-size:1rem;font-weight:700;color:var(--accent);letter-spacing:.5px}
+.modal-body{padding:16px 18px;overflow-y:auto;flex:1}
+.modal-footer{padding:12px 18px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;flex-shrink:0}
+
+/* ===== MODAL INNER TABS ===== */
+.modal-tabs{display:flex;gap:2px;padding:10px 18px 0;background:var(--bg2);flex-shrink:0}
+.modal-tab-btn{padding:7px 18px;font-weight:600;font-size:.85rem;background:none;border:1px solid transparent;border-bottom:none;color:var(--text-dim);border-radius:4px 4px 0 0;transition:all .18s;cursor:pointer}
+.modal-tab-btn:hover{color:var(--text)}
+.modal-tab-btn.active{color:var(--accent);background:var(--bg1);border-color:var(--border-light)}
+.modal-tab-pane{display:none}
+.modal-tab-pane.active{display:block}
+
+/* ===== FORM ELEMENTS IN MODALS ===== */
+.form-group{margin-bottom:12px}
+.form-group label{display:block;font-size:.78rem;text-transform:uppercase;letter-spacing:.6px;color:var(--text-dim);margin-bottom:5px;font-weight:600}
+.form-input{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:4px;color:var(--text);padding:8px 10px;font-size:.88rem}
+.form-input:focus{outline:none;border-color:var(--accent)}
+.form-textarea{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:4px;color:var(--text);padding:8px 10px;font-size:.88rem;min-height:80px;resize:vertical;line-height:1.45}
+.form-textarea:focus{outline:none;border-color:var(--accent)}
+.radio-group{display:flex;gap:16px}
+.radio-group label{display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.88rem;color:var(--text)}
+.radio-group input[type=radio]{accent-color:var(--accent)}
+
+/* ===== DEV/TRAIT LISTS IN MODALS ===== */
+.mgr-list{max-height:52vh;overflow-y:auto;border:1px solid var(--border);border-radius:4px;background:var(--bg2)}
+.mgr-section-head{padding:6px 10px;font-size:.72rem;text-transform:uppercase;letter-spacing:.8px;color:var(--text-dim);background:var(--bg3);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:2}
+.mgr-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-bottom:1px solid var(--border);font-size:.85rem}
+.mgr-item:last-child{border-bottom:none}
+.mgr-item:hover{background:rgba(0,212,255,0.04)}
+.mgr-item-name{flex:1;color:var(--text)}
+.mgr-item-name.neg-name{color:var(--neg)}
+.lock-icon{color:var(--text-muted);font-size:.9rem;cursor:help;flex-shrink:0}
+.mgr-del-btn{background:none;border:1px solid var(--border);border-radius:4px;color:var(--text-muted);padding:2px 7px;font-size:.85rem;flex-shrink:0;transition:all .15s}
+.mgr-del-btn:hover{background:#7f1d1d;border-color:#ef4444;color:#fca5a5}
+.mgr-search{width:100%;background:var(--bg2);border:1px solid var(--border);border-bottom:2px solid var(--border-light);border-radius:4px 4px 0 0;color:var(--text);padding:8px 10px;font-size:.85rem}
+.mgr-search:focus{outline:none;border-color:var(--accent)}
+.mgr-empty{padding:20px;text-align:center;color:var(--text-muted);font-style:italic;font-size:.85rem}
+
+/* ===== APPLIES-TO CHECKLIST ===== */
+.dev-checklist{max-height:200px;overflow-y:auto;border:1px solid var(--border);border-radius:4px;background:var(--bg2);padding:4px 0}
+.dev-check-item{display:flex;align-items:center;gap:8px;padding:5px 10px;font-size:.85rem;cursor:pointer}
+.dev-check-item:hover{background:rgba(0,212,255,0.06)}
+.dev-check-item input{accent-color:var(--accent);cursor:pointer}
+.dev-check-item.hidden{display:none}
+.all-devs-wrap{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:.88rem;color:var(--text)}
+.all-devs-wrap input{accent-color:var(--accent)}
+
+/* ===== FLASH MESSAGE ===== */
+.flash-msg{font-size:.82rem;padding:6px 0;min-height:24px;color:var(--green);font-weight:600;opacity:0;transition:opacity .3s}
+.flash-msg.show{opacity:1}
+.flash-msg.err{color:var(--neg)}
+
+/* ===== SEARCH IN REMOVE TAB ===== */
+.remove-search-wrap{margin-bottom:8px}
+
+/* ===== CONFIRM MODAL ===== */
+.modal p.modal-msg{font-size:.88rem;color:var(--text-dim);margin-bottom:0;line-height:1.5}
+
+/* ===== FOOTER ===== */
+footer{text-align:center;padding:16px;font-size:.75rem;color:var(--text-muted);border-top:1px solid var(--border);margin-top:20px}
+
+/* ===== TOUCH OPTIMIZATION ===== */
+*{-webkit-tap-highlight-color:transparent}
+input,select,button,textarea{touch-action:manipulation}
+
+/* ===== CARD VIEW (shown only on mobile) ===== */
+.card-container{display:none}
+.deviation-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:10px}
+.card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px}
+.card-top-left{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.card-field-row{display:flex;flex-direction:column;gap:2px}
+.card-field-label{font-size:.65rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.7px}
+.card-select{background:transparent;border:1px solid transparent;border-radius:4px;color:var(--text);width:100%;font-size:1rem;font-weight:600;padding:3px 4px}
+.card-select:focus{border-color:var(--accent);background:var(--bg2);outline:none}
+.card-variant-sel{font-size:.85rem;font-weight:400;color:var(--text-dim)}
+.card-divider{border:none;border-top:1px solid var(--border);margin:8px 0}
+.card-section-label{font-size:.68rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px}
+.card-traits{display:flex;flex-direction:column;gap:4px;margin-bottom:4px}
+.card-trait-cell select{background:transparent;border:1px solid transparent;border-radius:4px;color:var(--text);width:100%;font-size:.85rem;padding:3px 4px}
+.card-trait-cell select:focus{border-color:var(--accent);background:var(--bg2);outline:none}
+.card-trait-cell select.neg-trait{color:var(--neg)}
+.card-stat-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:6px}
+.card-stat{display:flex;align-items:center;gap:6px}
+.card-stat-label{font-size:.7rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.4px}
+.card-stat select{background:transparent;border:1px solid transparent;border-radius:4px;color:var(--text);font-size:.85rem;padding:3px 4px}
+.card-stat select:focus{border-color:var(--accent);background:var(--bg2);outline:none}
+.card-del{min-width:36px;min-height:36px;flex-shrink:0;align-self:flex-start}
+.card-empty{color:var(--text-dim);font-style:italic;font-size:.88rem;padding:20px 0;text-align:center}
+
+/* ===== DESKTOP/MOBILE VISIBILITY ===== */
+/* Make the collapsible wrapper invisible to the flex layout on desktop */
+
+/* ===== TRAIT ASSIGN COUNTER ===== */
+.trait-assign-counter{font-size:.78rem;color:var(--text-dim);margin-top:8px}
+
+/* ===== RESPONSIVE ===== */
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+
+/* ===== SCREENSHOT MODAL ===== */
+#screenshotModal .modal{max-width:680px}
+.ss-drop-zone{
+  border:2px dashed var(--border-light);border-radius:var(--radius);
+  padding:40px 20px;text-align:center;cursor:pointer;
+  transition:all .2s;background:var(--bg0);position:relative;
+}
+.ss-drop-zone:hover,.ss-drop-zone.drag-over{
+  border-color:var(--accent);background:rgba(0,212,255,0.04);
+}
+.ss-drop-zone .ss-icon{font-size:2.4rem;margin-bottom:8px;display:block}
+.ss-drop-zone .ss-label{font-size:.88rem;color:var(--text-dim)}
+.ss-drop-zone .ss-hint{font-size:.72rem;color:var(--text-muted);margin-top:6px}
+.ss-drop-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
+.ss-preview{margin-top:12px;text-align:center}
+.ss-preview img{max-width:100%;max-height:260px;border-radius:var(--radius);border:1px solid var(--border)}
+.ss-preview .ss-remove{margin-top:6px;font-size:.78rem;color:var(--text-dim);cursor:pointer}
+.ss-preview .ss-remove:hover{color:var(--neg)}
+.ss-status{text-align:center;padding:16px;font-size:.88rem;color:var(--text-dim)}
+.ss-status.error{color:var(--neg)}
+.ss-extracted{display:flex;flex-direction:column;gap:10px}
+.ss-field{display:flex;flex-direction:column;gap:3px}
+.ss-field label{font-size:.72rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.6px}
+.ss-field input,.ss-field select,.ss-field textarea{
+  background:var(--bg2);border:1px solid var(--border);border-radius:4px;
+  color:var(--text);padding:6px 8px;font-size:.85rem;font-family:inherit;
+}
+.ss-field input:focus,.ss-field select:focus,.ss-field textarea:focus{outline:none;border-color:var(--accent)}
+.ss-field textarea{resize:vertical;min-height:50px}
+.ss-field-row{display:flex;gap:10px}
+.ss-field-row .ss-field{flex:1}
+.ss-trait-row{display:flex;gap:8px;align-items:center}
+.ss-trait-row select{flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:4px;color:var(--text);padding:5px 8px;font-size:.82rem}
+.ss-trait-row select:focus{outline:none;border-color:var(--accent)}
+.ss-trait-row select.neg-trait{color:var(--neg)}
+/* vision config in settings */
+.vision-config-group{display:flex;flex-direction:column;gap:8px}
+.vision-config-group label{font-size:.72rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.6px}
+.vision-config-group input,.vision-config-group select{
+  background:var(--bg0);border:1px solid var(--border);border-radius:4px;
+  color:var(--text);padding:6px 8px;font-size:.82rem;
+}
+.vision-config-group input:focus,.vision-config-group select:focus{outline:none;border-color:var(--accent)}
+</style>
+</head>
+<body style="margin:0; padding:0; overflow:hidden; height:100vh;">
+<div id="app">
+
+<!-- ======================================================= -->
+<!-- STICKY TOP: header + tabs + deviations filter/toolbar    -->
+<!-- ======================================================= -->
+<div id="sticky-top">
+
+  <!-- HEADER -->
+  <header class="app-header">
+    <div class="app-title">⚡ Once Human <span>/ Deviation Tracker</span></div>
+    <button class="gear-btn" onclick="openSettings()" title="Settings">⚙</button>
+  </header>
+
+  <!-- MAIN TABS -->
+  <nav class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('deviations',this)">⚔ Deviations</button>
+    <button class="tab-btn" onclick="switchTab('fusion',this)">🧪 Fusion Materials</button>
+  </nav>
+
+  <!-- DEVIATIONS: FILTER + TOOLBAR (hidden when Fusion tab is active) -->
+  <div id="deviations-controls">
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+      <button class="filter-toggle-btn btn btn-secondary" onclick="toggleFilterBar()">🔍 Filters <span id="filterToggleArrow">▾</span></button>
+      <div class="filter-bar-inner" id="filterBarInner">
+        <div class="filter-group">
+          <label>Character</label>
+          <select id="fChar" onchange="applyFilters()"><option value="">All</option></select>
+        </div>
+        <div class="filter-group">
+          <label>Variant</label>
+          <select id="fVariant" onchange="applyFilters()"><option value="">All</option></select>
+        </div>
+        <div class="filter-group">
+          <label>Deviation</label>
+          <input id="fDeviation" type="text" placeholder="Search…" oninput="applyFilters()">
+        </div>
+        <div class="filter-group">
+          <label>Fusion</label>
+          <select id="fFusion" onchange="applyFilters()">
+            <option value="">All</option><option value="1">Yes</option><option value="0">No</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Locked</label>
+          <select id="fLocked" onchange="applyFilters()">
+            <option value="">All</option><option value="1">Yes</option><option value="0">No</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Skill Level</label>
+          <select id="fSkill" onchange="applyFilters()">
+            <option value="">All</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Activity Level</label>
+          <select id="fActivity" onchange="applyFilters()">
+            <option value="">All</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
+          </select>
+        </div>
+        <div class="filter-actions">
+          <button class="btn btn-secondary" onclick="clearAllFilters()">Clear Filters</button>
+          <span class="row-count" id="rowCount">Showing 0 of 0 deviations</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="controls-bar">
+      <div class="btn-group">
+        <button class="btn btn-primary" onclick="addDeviationRow()">+ Add Deviation</button>
+        <button class="btn btn-secondary" onclick="openScreenshotModal()">📷 Screenshot</button>
+        <button class="btn btn-secondary" onclick="openManageDeviations()">⚡ Manage Deviations</button>
+        <button class="btn btn-secondary" onclick="openManageTraits()">✨ Manage Traits</button>
+        <button class="btn btn-secondary" onclick="openManageVariants()">🧬 Manage Variants</button>
+              </div>
+      <div class="btn-group">
+                <button class="btn btn-secondary" onclick="saveList()">💾 Save List</button>
+        <button class="btn btn-secondary" onclick="triggerLoadList()">📂 Load List</button>
+        <button class="btn btn-secondary" onclick="saveConfig()">💾 Save Config</button>
+        <button class="btn btn-secondary" onclick="triggerLoadConfig()">📂 Load Config</button>
+        <button class="btn btn-secondary" onclick="exportCSV()">Export CSV</button>
+        <button class="btn btn-danger" onclick="confirmClearAll()">🗑 Clear All Data</button>
+      </div>
+    </div>
+    <input type="file" id="configFileInput" accept=".json" style="display:none" onchange="handleConfigLoad(event)">
+    <input type="file" id="listFileInput"   accept=".json" style="display:none" onchange="handleListLoad(event)">
+
+  </div><!-- /#deviations-controls -->
+
+</div><!-- /#sticky-top -->
+
+<!-- ======================================================= -->
+<!-- SCROLL BODY: all scrollable tab content                  -->
+<!-- ======================================================= -->
+<div id="table-wrapper">
+
+<!-- ======================================================= -->
+<!-- TAB 1: DEVIATIONS (table + cards only)                   -->
+<!-- ======================================================= -->
+<div id="tab-deviations" class="tab-content active">
+
+  <!-- Table -->
+  <div class="table-wrap">
+    <table id="deviationTable">
+      <colgroup>
+        <col style="width:120px"><!-- 1 Character -->
+        <col style="width:200px"><!-- 2 Deviation Name -->
+        <col style="width:170px"><!-- 3 Variant -->
+        <col style="width:155px"><!-- 4 Trait 1 -->
+        <col style="width:155px"><!-- 5 Trait 2 -->
+        <col style="width:155px"><!-- 6 Trait 3 -->
+        <col style="width:155px"><!-- 7 Trait 4 -->
+        <col style="width:155px"><!-- 8 Trait 5 -->
+        <col style="width:55px"> <!-- 9 Skill -->
+        <col style="width:55px"> <!-- 10 Activity -->
+        <col style="width:70px"> <!-- 11 ELand -->
+        <col style="width:70px"> <!-- 12 Fusion -->
+        <col style="width:70px"> <!-- 13 Locked -->
+        <col style="width:45px"> <!-- 14 Del -->
+      </colgroup>
+      <thead id="sticky-thead">
+        <tr>
+          <th data-sort-field="char">Character<span class="sort-indicator">↕</span></th>
+          <th data-sort-field="name">Deviation Name<span class="sort-indicator">↕</span></th>
+          <th data-sort-field="variant">Variant<span class="sort-indicator">↕</span></th>
+          <th data-sort-field="trait1">Trait 1<span class="sort-indicator">↕</span></th>
+          <th data-sort-field="trait2">Trait 2<span class="sort-indicator">↕</span></th>
+          <th data-sort-field="trait3">Trait 3<span class="sort-indicator">↕</span></th>
+          <th data-sort-field="trait4">Trait 4<span class="sort-indicator">↕</span></th>
+          <th data-sort-field="trait5">Trait 5<span class="sort-indicator">↕</span></th>
+          <th data-sort-field="skill">Skill<span class="sort-indicator">↕</span></th>
+          <th data-sort-field="activity">Activity<span class="sort-indicator">↕</span></th>
+          <th data-sort-field="eland">ELand<span class="sort-indicator">↕</span></th>
+          <th data-sort-field="fusion">Fusion<span class="sort-indicator">↕</span></th>
+          <th data-sort-field="locked">Locked<span class="sort-indicator">↕</span></th>
+          <th>Del</th>
+        </tr>
+      </thead>
+      <tbody id="deviationBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ======================================================= -->
+<!-- TAB 2: FUSION MATERIALS                                  -->
+<!-- ======================================================= -->
+<div id="tab-fusion" class="tab-content">
+  <div class="fm-header">
+    <h2>Fusion Pod Materials</h2>
+    <p>Track materials available for Fusion. Add anything useful for upgrading or fusing deviations.</p>
+  </div>
+  <div class="fm-controls">
+    <button class="btn btn-primary" onclick="addMaterial()">+ Add Material</button>
+  </div>
+  <div class="fm-list" id="fmList"></div>
+  <p class="fm-empty" id="fmEmpty" style="display:none">No materials added yet. Click Add Material to get started.</p>
+</div>
+
+<footer>Deviation Tracker v2.0 (Desktop) — Data stored in SQLite</footer>
+
+</div><!-- /#table-wrapper -->
+
+<!-- ======================================================= -->
+<!-- SETTINGS SLIDE-IN                                        -->
+<!-- ======================================================= -->
+<div class="overlay" id="settingsOverlay" onclick="closeSettingsIfBg(event)">
+  <div class="settings-panel">
+    <div class="settings-header">
+      <h2>⚙ Settings</h2>
+      <button class="close-btn" onclick="closeSettings()">✕</button>
+    </div>
+
+    <div class="settings-section">
+      <h3>Contribution</h3>
+      <div class="settings-btn-list">
+        <button class="btn btn-primary" onclick="closeSettings();openContributeConfig()">Contribute Config (PR)</button>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <h3>My Characters</h3>
+      <div class="char-add-row">
+        <input id="charInput" type="text" maxlength="10" placeholder="Character name…" onkeydown="if(event.key==='Enter')addChar()" oninput="document.getElementById('charCounter').textContent=this.value.length+'/10'">
+        <button class="btn btn-primary" onclick="addChar()">Add</button>
+      </div>
+      <div style="font-size:.72rem;color:var(--text-muted);margin-top:-4px;margin-bottom:6px"><span id="charCounter">0/10</span> characters</div>
+      <div class="char-list" id="charList"></div>
+      <p class="char-empty" id="charEmpty">No characters added yet. Add one above.</p>
+    </div>
+
+    <div class="settings-section">
+      <h3>📷 Vision API (Screenshot OCR)</h3>
+      <div class="vision-config-group">
+        <label>Provider</label>
+        <select id="visionProvider" onchange="saveVisionConfig()">
+          <option value="openai">OpenAI (GPT-4o, etc.)</option>
+          <option value="ollama">Ollama (local)</option>
+          <option value="custom">Custom (OpenAI-compatible)</option>
+        </select>
+        <label>API Endpoint</label>
+        <input id="visionEndpoint" type="text" placeholder="https://openrouter.ai/api/v1" oninput="saveVisionConfig()">
+        <label>API Key <span style="color:var(--text-muted)">(not needed for local Ollama)</span></label>
+        <input id="visionApiKey" type="password" placeholder="sk-..." oninput="saveVisionConfig()">
+        <label>Model</label>
+        <input id="visionModel" type="text" placeholder="gpt-4o" oninput="saveVisionConfig()">
+      </div>
+      <p style="font-size:.72rem;color:var(--text-muted);margin-top:8px">
+        <strong>OpenRouter:</strong> endpoint = <code>https://openrouter.ai/api/v1</code>, model = <code>openai/gpt-4o-mini</code>.<br>
+        <strong>Ollama:</strong> endpoint = <code>http://hostname:11434</code>, model = e.g. <code>llama3.2-vision:11b</code>.<br>
+        <strong>⚠ Local Ollama:</strong> requires this site to be served over HTTP (not HTTPS) due to browser mixed-content restrictions.
+      </p>
+    </div>
+
+    <div class="settings-section">
+      <h3>📷 Screenshot Behavior</h3>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <label class="toggle"><input type="checkbox" id="quickAddToggle" onchange="saveQuickAddSetting()"><span class="toggle-slider"></span></label>
+        <span style="font-size:.85rem;color:var(--text)">Quick Add — skip review, add directly</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <label class="toggle"><input type="checkbox" id="autoCreateToggle" onchange="saveAutoCreateSetting()"><span class="toggle-slider"></span></label>
+        <span style="font-size:.85rem;color:var(--text)">Auto-create missing deviations, variants &amp; traits</span>
+      </div>
+      <p style="font-size:.72rem;color:var(--text-muted)">Quick Add: OCR results go straight to tracker (no review). Auto-create: new items are added to your lists automatically.</p>
+    </div>
+
+    <p class="settings-note">Character names max 10 characters; up to 20 characters. Changes reflect immediately in the tracker.<br><br>Custom deviations and traits are stored in your browser and can be exported via 💾 Save Config.</p>
+  </div>
+</div>
+
+<!-- ======================================================= -->
+<!-- MANAGE DEVIATIONS MODAL                                  -->
+<!-- ======================================================= -->
+<div class="modal-overlay" id="manageDevModal" onclick="closeModalIfBg(event,'manageDevModal')">
+  <div class="modal modal-lg" role="dialog" aria-modal="true" aria-labelledby="manageDevTitle">
+    <div class="modal-header">
+      <h3 id="manageDevTitle">⚡ Manage Deviations</h3>
+      <button class="close-btn" onclick="closeModal('manageDevModal')">✕</button>
+    </div>
+    <div class="modal-tabs">
+      <button class="modal-tab-btn active" onclick="switchModalTab('manageDevModal','addDev',this)">Add Deviation</button>
+      <button class="modal-tab-btn" onclick="switchModalTab('manageDevModal','removeDev',this)">Remove Deviation</button>
+      <button class="modal-tab-btn" onclick="switchModalTab('manageDevModal','editDev',this)">Edit Deviation</button>
+    </div>
+    <div class="modal-body">
+      <!-- Add Deviation -->
+      <div class="modal-tab-pane active" data-pane="addDev">
+        <div class="form-group">
+          <label>Deviation Name</label>
+          <input id="newDevName" class="form-input" type="text" placeholder="e.g. Crystal Moth" onkeydown="if(event.key==='Enter')addCustomDeviation()">
+        </div>
+        <div class="form-group">
+          <label>Assign Traits <span style="color:var(--text-muted);font-size:.8em">(optional)</span></label>
+          <input class="form-input" id="addDevTraitSearch" type="text" placeholder="Search traits…" oninput="filterAddDevTraits()" style="margin-bottom:8px">
+          <div class="trait-two-col" style="display:flex;gap:10px">
+            <div style="flex:1;min-width:0">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+                <span style="font-size:.72rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.7px">Positive (<span id="addDevPosCount">0</span> selected)</span>
+                <div style="display:flex;gap:3px">
+                  <button class="btn btn-sm btn-secondary" onclick="selectAllAddDevTraits('pos')">All</button>
+                  <button class="btn btn-sm btn-secondary" onclick="clearAllAddDevTraits('pos')">None</button>
+                </div>
+              </div>
+              <div class="dev-checklist" id="addDevPosTraits" style="max-height:200px"></div>
+            </div>
+            <div style="flex:1;min-width:0">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+                <span style="font-size:.72rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.7px">Negative (<span id="addDevNegCount">0</span> selected)</span>
+                <div style="display:flex;gap:3px">
+                  <button class="btn btn-sm btn-secondary" onclick="selectAllAddDevTraits('neg')">All</button>
+                  <button class="btn btn-sm btn-secondary" onclick="clearAllAddDevTraits('neg')">None</button>
+                </div>
+              </div>
+              <div class="dev-checklist" id="addDevNegTraits" style="max-height:200px"></div>
+            </div>
+          </div>
+        </div>
+        <p class="trait-assign-counter" id="addDevTotalCount">Selected: 0 traits assigned</p>
+        <button class="btn btn-primary" onclick="addCustomDeviation()">Add to List</button>
+        <div class="flash-msg" id="devAddFlash"></div>
+      </div>
+      <!-- Remove Deviation -->
+      <div class="modal-tab-pane" data-pane="removeDev">
+        <div class="remove-search-wrap">
+          <input class="mgr-search" id="devRemoveSearch" type="text" placeholder="🔍  Search deviations…" oninput="filterDevRemoveList()">
+        </div>
+        <div class="mgr-list" id="devRemoveList"></div>
+      </div>
+      <!-- Edit Deviation -->
+      <div class="modal-tab-pane" data-pane="editDev">
+        <div class="form-group">
+          <label>Select Deviation</label>
+          <select id="editDevSelect" class="form-input" onchange="loadEditDeviation()">
+            <option value="">— Select a deviation —</option>
+          </select>
+        </div>
+        <div id="editDevPanel" style="display:none">
+          <p id="editDevBuiltinNote" style="font-size:.8rem;color:var(--text-muted);margin-bottom:10px"></p>
+          <div class="form-group">
+            <label>Assigned Traits</label>
+            <input class="form-input" id="editDevTraitSearch" type="text" placeholder="Search traits…" oninput="filterEditDevTraits()" style="margin-bottom:8px">
+            <div class="trait-two-col" style="display:flex;gap:10px">
+              <div style="flex:1;min-width:0">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+                  <span style="font-size:.72rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.7px">Positive (<span id="editDevPosCount">0</span> selected)</span>
+                  <div style="display:flex;gap:3px">
+                    <button class="btn btn-sm btn-secondary" onclick="selectAllEditDevTraits('pos')">All</button>
+                    <button class="btn btn-sm btn-secondary" onclick="clearAllEditDevTraits('pos')">None</button>
+                  </div>
+                </div>
+                <div class="dev-checklist" id="editDevPosTraits" style="max-height:200px"></div>
+              </div>
+              <div style="flex:1;min-width:0">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+                  <span style="font-size:.72rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.7px">Negative (<span id="editDevNegCount">0</span> selected)</span>
+                  <div style="display:flex;gap:3px">
+                    <button class="btn btn-sm btn-secondary" onclick="selectAllEditDevTraits('neg')">All</button>
+                    <button class="btn btn-sm btn-secondary" onclick="clearAllEditDevTraits('neg')">None</button>
+                  </div>
+                </div>
+                <div class="dev-checklist" id="editDevNegTraits" style="max-height:200px"></div>
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="saveEditDeviation()">Save Changes</button>
+          <div class="flash-msg" id="editDevFlash"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================= -->
+<!-- MANAGE TRAITS MODAL                                      -->
+<!-- ======================================================= -->
+<div class="modal-overlay" id="manageTraitModal" onclick="closeModalIfBg(event,'manageTraitModal')">
+  <div class="modal modal-lg" role="dialog" aria-modal="true" aria-labelledby="manageTraitTitle">
+    <div class="modal-header">
+      <h3 id="manageTraitTitle">✨ Manage Traits</h3>
+      <button class="close-btn" onclick="closeModal('manageTraitModal')">✕</button>
+    </div>
+    <div class="modal-tabs">
+      <button class="modal-tab-btn active" onclick="switchModalTab('manageTraitModal','addTrait',this)">Add Trait</button>
+      <button class="modal-tab-btn" onclick="switchModalTab('manageTraitModal','removeTrait',this)">Remove Trait</button>
+    </div>
+    <div class="modal-body">
+      <!-- Add Trait -->
+      <div class="modal-tab-pane active" data-pane="addTrait">
+        <div class="form-group">
+          <label>Trait Name <span style="color:var(--neg)">*</span></label>
+          <input id="newTraitName" class="form-input" type="text" placeholder="Trait name">
+        </div>
+        <div class="form-group">
+          <label>Effect Description <span style="color:var(--neg)">*</span></label>
+          <textarea id="newTraitEffect" class="form-textarea" placeholder="Describe the trait effect…"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Type</label>
+          <div class="radio-group">
+            <label><input type="radio" name="traitType" value="positive" checked> Positive</label>
+            <label><input type="radio" name="traitType" value="negative"> Negative ⚠</label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Applies To</label>
+          <div class="all-devs-wrap">
+            <input type="checkbox" id="traitAllDevs" checked onchange="toggleTraitAppliesTo()">
+            <span>All Deviations</span>
+          </div>
+          <div id="traitDevSelectWrap" style="display:none;margin-top:8px">
+            <input class="form-input" id="traitDevSearch" type="text" placeholder="Search deviations…" oninput="filterTraitDevChecklist()" style="margin-bottom:6px;border-radius:4px 4px 0 0">
+            <div class="dev-checklist" id="traitDevChecklist"></div>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="addCustomTrait()">Add Trait</button>
+        <div class="flash-msg" id="traitAddFlash"></div>
+      </div>
+      <!-- Remove Trait -->
+      <div class="modal-tab-pane" data-pane="removeTrait">
+        <div class="remove-search-wrap">
+          <input class="mgr-search" id="traitRemoveSearch" type="text" placeholder="🔍  Search traits…" oninput="filterTraitRemoveList()">
+        </div>
+        
+        <div class="mgr-list" id="traitRemoveList"></div>
+        <div id="traitEditPanel" style="display:none;margin-top:10px;border:1px solid var(--border);border-radius:6px;padding:10px;background:var(--bg2)">
+          <div class="form-group">
+            <label>Edit Trait Name</label>
+            <input id="editTraitName" class="form-input" type="text" placeholder="Trait name">
+          </div>
+          <div class="form-group">
+            <label>Edit Effect Description</label>
+            <textarea id="editTraitEffect" class="form-textarea" placeholder="Describe the trait effect…"></textarea>
+          </div>
+          <div style="display:flex;gap:8px;justify-content:flex-end">
+            <button class="btn btn-secondary" onclick="cancelEditTrait()">Cancel</button>
+            <button class="btn btn-primary" onclick="saveEditTrait()">Save</button>
+          </div>
+          <div class="flash-msg" id="traitEditFlash"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================= -->
+<!-- MANAGE VARIANTS MODAL                                    -->
+<!-- ======================================================= -->
+<div class="modal-overlay" id="manageVariantModal" onclick="closeModalIfBg(event,'manageVariantModal')">
+  <div class="modal modal-lg" role="dialog" aria-modal="true" aria-labelledby="manageVariantTitle">
+    <div class="modal-header">
+      <h3 id="manageVariantTitle">🧬 Manage Variants</h3>
+      <button class="close-btn" onclick="closeModal('manageVariantModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Variant Name <span style="color:var(--neg)">*</span></label>
+        <div class="char-add-row" style="margin-bottom:0">
+          <input id="variantInput" class="form-input" type="text" maxlength="30" placeholder="Variant name…" onkeydown="if(event.key==='Enter')addVariant()">
+          <button class="btn btn-primary" onclick="addVariant()">Add</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Description <span style="color:var(--neg)">*</span></label>
+        <textarea id="variantDescInput" class="form-textarea" placeholder="Variant description…" style="min-height:70px"></textarea>
+      </div>
+      <div class="mgr-list" id="variantList"></div>
+      <p class="char-empty" id="variantEmpty">No variants added yet. Add one above.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================= -->
+<!-- CONFIRM MODAL                                            -->
+<!-- ======================================================= -->
+<div class="modal-overlay" id="confirmModal" onclick="closeModalIfBg(event,'confirmModal')">
+  <div class="modal modal-sm" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+    <div class="modal-header">
+      <h3 id="confirmTitle">Confirm</h3>
+      <button class="close-btn" onclick="closeModal('confirmModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p class="modal-msg" id="confirmMsg">Are you sure?</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('confirmModal')">Cancel</button>
+      <button class="btn btn-danger" id="confirmOkBtn">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================= -->
+<!-- CONTRIBUTE CONFIG MODAL                                 -->
+<!-- ======================================================= -->
+<div class="modal-overlay" id="contributeConfigModal" onclick="closeModalIfBg(event,'contributeConfigModal')">
+  <div class="modal modal-sm" role="dialog" aria-modal="true" aria-labelledby="contributeConfigTitle">
+    <div class="modal-header">
+      <h3 id="contributeConfigTitle">Contribute Config (PR)</h3>
+      <button class="close-btn" onclick="closeModal('contributeConfigModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p class="modal-msg">Upload your exported <strong>&lt;name&gt;-config.json</strong>. Maintainers validate and merge it into config.js defaults.</p>
+      <div class="settings-btn-list" style="margin-top:12px">
+        <button class="btn btn-primary" onclick="saveContribConfigNow()">Save Config Now</button>
+        <a class="btn btn-secondary" href="https://github.com/saitoh183/deviation-tracker/tree/dev/contrib/configs" target="_blank" rel="noopener">Upload to GitHub (Create PR)</a>
+      </div>
+      <p class="modal-msg" style="margin-top:12px">
+        1) Add file → Upload files<br>
+        2) Upload <strong>&lt;name&gt;-config.json</strong> into <code>contrib/configs/</code><br>
+        3) Commit changes<br>
+        4) Open PR with base branch <strong>dev</strong>
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================= -->
+<!-- SCREENSHOT TO ENTRY MODAL                                -->
+<!-- ======================================================= -->
+<div class="modal-overlay" id="screenshotModal" onclick="closeModalIfBg(event,'screenshotModal')">
+  <div class="modal modal-lg" role="dialog" aria-modal="true" aria-labelledby="ssModalTitle">
+    <div class="modal-header">
+      <h3 id="ssModalTitle">📷 Add Deviation from Screenshot</h3>
+      <button class="close-btn" onclick="closeScreenshotModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <!-- Step 1: Drop zone -->
+      <div id="ssStep1">
+        <div class="ss-drop-zone" id="ssDropZone">
+          <span class="ss-icon">📸</span>
+          <div class="ss-label">Drop screenshot here, paste (Ctrl+V), or click to browse</div>
+          <div class="ss-hint">Supports PNG, JPG, WebP. Max ~10MB. Select multiple files for batch.</div>
+          <input type="file" id="ssFileInput" accept="image/*" multiple>
+        </div>
+        <div style="text-align:center;margin-top:10px">
+          <button class="btn btn-secondary" onclick="openFileDialogForScreenshots()">📁 Browse Files (Native)</button>
+        </div>
+        <div id="ssPreview" class="ss-preview" style="display:none">
+          <img id="ssPreviewImg" alt="Screenshot preview">
+          <div class="ss-remove" onclick="clearScreenshot()">✕ Remove</div>
+        </div>
+        <div style="text-align:center;margin-top:12px">
+          <button class="btn btn-primary" id="ssAnalyzeBtn" onclick="analyzeScreenshot()" disabled>🔍 Analyze Screenshot</button>
+        </div>
+      </div>
+      <!-- Step 2: Status -->
+      <div id="ssStep2" style="display:none">
+        <div class="ss-status" id="ssStatus">Analyzing screenshot...</div>
+      </div>
+      <!-- Step 3: Review extracted data -->
+      <div id="ssStep3" style="display:none">
+        <div class="ss-extracted">
+          <div class="ss-field-row">
+            <div class="ss-field">
+              <label>Deviation Name</label>
+              <input type="text" id="ssName" list="ssDevList">
+              <datalist id="ssDevList"></datalist>
+            </div>
+            <div class="ss-field">
+              <label>Variant</label>
+              <input type="text" id="ssVariant" list="ssVarList">
+              <datalist id="ssVarList"></datalist>
+            </div>
+          </div>
+          <div class="ss-field">
+            <label>Description</label>
+            <textarea id="ssDesc" rows="2"></textarea>
+          </div>
+          <div class="ss-field" id="ssVariantEffectWrap" style="display:none">
+            <label>Variant Effect</label>
+            <div id="ssVariantEffect" style="font-size:.82rem;color:var(--gold);padding:6px 8px;background:var(--bg2);border:1px solid var(--border);border-radius:4px"></div>
+          </div>
+          <div class="ss-field-row">
+            <div class="ss-field">
+              <label>Skill Rating (1-5)</label>
+              <input type="number" id="ssSkill" min="0" max="5" value="0">
+            </div>
+            <div class="ss-field">
+              <label>Activity Rating (1-5)</label>
+              <input type="number" id="ssActivity" min="0" max="5" value="0">
+            </div>
+          </div>
+          <div class="ss-field-row">
+            <div class="ss-field">
+              <label>Fusion</label>
+              <div style="padding:6px 8px">
+                <label class="toggle"><input type="checkbox" id="ssFusion"><span class="toggle-slider"></span></label>
+              </div>
+            </div>
+          </div>
+          <div class="ss-field">
+            <label>Detected Traits — pick from dropdowns</label>
+            <div id="ssTraitsContainer"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer" id="ssFooter" style="display:none">
+      <button class="btn btn-secondary" onclick="closeScreenshotModal()">Cancel</button>
+      <button class="btn btn-secondary" onclick="resetScreenshotModal()">← Back</button>
+      <button class="btn btn-primary" onclick="applyExtractedData()">✓ Add to Tracker</button>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================= -->
+<!-- SETUP WIZARD (shown on first launch)                    -->
+<!-- ======================================================= -->
+<div class="modal-overlay" id="setupWizard" style="z-index:2000">
+  <div class="modal modal-lg" style="max-width:640px">
+    <div class="modal-header">
+      <h3>⚡ Once Human — Deviation Tracker Setup</h3>
+    </div>
+    <div class="modal-body" id="setupBody">
+
+      <!-- Step 1: Screenshot feature? -->
+      <div id="setupStep1">
+        <h3 style="font-size:1.1rem;color:var(--accent);margin-bottom:16px">Do you want to use the Screenshot OCR feature?</h3>
+        <p style="color:var(--text-dim);margin-bottom:20px;line-height:1.5">
+          The screenshot feature uses AI to extract deviation data from game screenshots automatically.
+          <br><br>
+          Without it, you can still manually add deviations using the Add Deviation button.
+        </p>
+        <div style="display:flex;gap:12px">
+          <button class="btn btn-primary" style="padding:12px 24px" onclick="setupGoTo(2)">Yes, set it up</button>
+          <button class="btn btn-secondary" style="padding:12px 24px" onclick="setupSkip()">No, skip for now</button>
+        </div>
+      </div>
+
+      <!-- Step 2: Local or Cloud -->
+      <div id="setupStep2" style="display:none">
+        <h3 style="font-size:1.1rem;color:var(--accent);margin-bottom:16px">Local LLM or Cloud?</h3>
+        <div style="display:flex;gap:16px;flex-wrap:wrap">
+          <div style="flex:1;min-width:250px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:20px;cursor:pointer" onclick="setupGoTo(3)" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+            <h4 style="color:var(--accent);margin-bottom:8px">🔧 Local LLM</h4>
+            <ul style="font-size:.85rem;color:var(--text-dim);line-height:1.6;padding-left:18px">
+              <li>Free, private, works offline</li>
+              <li>Needs ~4-8GB disk + GPU/RAM</li>
+              <li>Runs on your machine</li>
+              <li>Uses Ollama (auto-install if needed)</li>
+            </ul>
+          </div>
+          <div style="flex:1;min-width:250px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:20px;cursor:pointer" onclick="setupGoTo(5)" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+            <h4 style="color:var(--accent);margin-bottom:8px">☁️ Cloud (OpenRouter)</h4>
+            <ul style="font-size:.85rem;color:var(--text-dim);line-height:1.6;padding-left:18px">
+              <li>No install, fast, ~$0.001/use</li>
+              <li>Requires account at openrouter.ai</li>
+              <li>Minimum $10 credit deposit</li>
+              <li>Recommended: gpt-4o-mini</li>
+            </ul>
+          </div>
+        </div>
+        <button class="btn btn-secondary" style="margin-top:16px" onclick="setupGoTo(1)">← Back</button>
+      </div>
+
+      <!-- Step 3: Local — Detect existing providers -->
+      <div id="setupStep3" style="display:none">
+        <h3 style="font-size:1.1rem;color:var(--accent);margin-bottom:16px">Detecting local LLM providers...</h3>
+        <div id="setupDetectStatus" style="color:var(--text-dim);margin-bottom:16px">Scanning...</div>
+        <div id="setupDetectedList" style="margin-bottom:16px"></div>
+        <button class="btn btn-secondary" onclick="setupGoTo(2)">← Back</button>
+      </div>
+
+      <!-- Step 4: Local — Model selection -->
+      <div id="setupStep4" style="display:none">
+        <h3 style="font-size:1.1rem;color:var(--accent);margin-bottom:16px">Choose a vision model</h3>
+        <p style="font-size:.85rem;color:var(--text-dim);margin-bottom:16px">All models fit within 8GB VRAM:</p>
+        <div id="setupModelList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
+          <label style="display:flex;gap:10px;padding:12px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;cursor:pointer;align-items:flex-start">
+            <input type="radio" name="setupModel" value="llama3.2-vision:11b" checked style="margin-top:4px;accent-color:var(--accent)">
+            <div><strong style="color:var(--text)">llama3.2-vision:11b</strong><br><span style="font-size:.8rem;color:var(--text-dim)">~7GB VRAM (Q4) · Best accuracy · Recommended</span></div>
+          </label>
+          <label style="display:flex;gap:10px;padding:12px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;cursor:pointer;align-items:flex-start">
+            <input type="radio" name="setupModel" value="llava-phi3:3.8b" style="margin-top:4px;accent-color:var(--accent)">
+            <div><strong style="color:var(--text)">llava-phi3:3.8b</strong><br><span style="font-size:.8rem;color:var(--text-dim)">~3GB VRAM · Fastest · Low-end GPU friendly</span></div>
+          </label>
+          <label style="display:flex;gap:10px;padding:12px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;cursor:pointer;align-items:flex-start">
+            <input type="radio" name="setupModel" value="minicpm-v:8b" style="margin-top:4px;accent-color:var(--accent)">
+            <div><strong style="color:var(--text)">minicpm-v:8b</strong><br><span style="font-size:.8rem;color:var(--text-dim)">~5GB VRAM · Good balance of speed and quality</span></div>
+          </label>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-primary" onclick="setupInstallLocal()">Install & Configure</button>
+          <button class="btn btn-secondary" onclick="setupGoTo(2)">← Back</button>
+        </div>
+        <div id="setupInstallProgress" style="margin-top:12px;color:var(--text-dim)"></div>
+      </div>
+
+      <!-- Step 5: Cloud — API key -->
+      <div id="setupStep5" style="display:none">
+        <h3 style="font-size:1.1rem;color:var(--accent);margin-bottom:16px">☁️ Cloud LLM Setup</h3>
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:16px;line-height:1.6;font-size:.88rem;color:var(--text-dim)">
+          <strong style="color:var(--text)">What this requires:</strong><br>
+          1. Sign up at <span style="color:var(--accent)">openrouter.ai</span><br>
+          2. Add a minimum of <strong style="color:var(--text)">$10 credit</strong> (one-time, lasts months of use)<br>
+          3. Create an API key at openrouter.ai/keys<br>
+          4. Paste the key below<br><br>
+          <strong style="color:var(--text)">Recommended model:</strong> <code>openai/gpt-4o-mini</code><br>
+          Cost: ~$0.001 per screenshot (1000 screenshots ≈ $1)
+        </div>
+        <div class="form-group">
+          <label>API Key</label>
+          <input id="setupApiKey" class="form-input" type="password" placeholder="sk-or-v1-...">
+        </div>
+        <div class="form-group">
+          <label>Model</label>
+          <input id="setupModelCloud" class="form-input" type="text" value="openai/gpt-4o-mini">
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-primary" onclick="setupSaveCloud()">Save & Finish</button>
+          <button class="btn btn-secondary" onclick="setupGoTo(2)">← Back</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- SHARED TRAIT TOOLTIP (fixed, body-level, z-index 9999) -->
+<div id="shared-tooltip">
+  <div id="shared-tooltip-header" class="tooltip-header pos"></div>
+  <div id="shared-tooltip-body"   class="tooltip-body"></div>
+</div>
+
+<!-- ======================================================= -->
+<!-- SCRIPTS                                                  -->
+<!-- ======================================================= -->
+<script src="config.js"></script>
+<script>
+'use strict';
+
+// ============================================================
+// ELECTRON API (SQLite backend)
+// ============================================================
+const api = window.electronAPI;
+let serverPort = 18923;
+
+// --- SQLite-backed storage (replaces localStorage) ---
+async function loadAll() {
+  try {
+    const allSettings = await api.settingsGetAll();
+
+    // Load deviations
+    const devResult = await api.dbQuery('SELECT * FROM deviations ORDER BY id');
+    state.deviations = (devResult.data || []).map(r => ({
+      char: r.char_name, name: r.name, variant: r.variant,
+      traits: [r.trait1, r.trait2, r.trait3, r.trait4, r.trait5],
+      skill: r.skill, activity: r.activity, eland: r.eland,
+      fusion: r.fusion, locked: r.locked, id: r.id
+    }));
+
+    // Load materials
+    const matResult = await api.dbQuery('SELECT * FROM materials ORDER BY sort_order, id');
+    state.materials = (matResult.data || []).map(r => ({
+      name: r.name, qty: r.qty, notes: r.notes, id: r.id
+    }));
+
+    // Load settings
+    const chars = allSettings.characters || [];
+    const variants = allSettings.variants || [];
+    state.settings = { characters: chars, variants: variants };
+
+    // Load custom deviations
+    const custDevResult = await api.dbQuery('SELECT name FROM custom_deviations ORDER BY name');
+    state.customDeviations = (custDevResult.data || []).map(r => r.name);
+
+    // Load custom traits
+    const custTraitResult = await api.dbQuery('SELECT * FROM custom_traits ORDER BY name');
+    state.customTraits = (custTraitResult.data || []).map(r => ({
+      name: r.name, effect: r.effect, neg: !!r.neg, deviants: r.deviants === 'ALL' ? 'ALL' : JSON.parse(r.deviants || '[]')
+    }));
+
+    // Load trait assignments
+    const taResult = await api.dbQuery('SELECT * FROM trait_assignments');
+    state.customTraitAssignments = {};
+    (taResult.data || []).forEach(r => {
+      if (!state.customTraitAssignments[r.deviant_name]) state.customTraitAssignments[r.deviant_name] = [];
+      state.customTraitAssignments[r.deviant_name].push(r.trait_name);
+    });
+  } catch (err) {
+    console.error('Failed to load data:', err);
+  }
+}
+
+async function saveToDB(type) {
+  try {
+    if (type === 'deviations') {
+      await api.dbExec('DELETE FROM deviations');
+      for (const d of state.deviations) {
+        await api.dbQuery(
+          'INSERT INTO deviations (char_name, name, variant, trait1, trait2, trait3, trait4, trait5, skill, activity, eland, fusion, locked) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+          [d.char, d.name, d.variant || '', d.traits[0]||'', d.traits[1]||'', d.traits[2]||'', d.traits[3]||'', d.traits[4]||'', d.skill||0, d.activity||0, d.eland||0, d.fusion||0, d.locked||0]
+        );
+      }
+    } else if (type === 'materials') {
+      await api.dbExec('DELETE FROM materials');
+      for (let i = 0; i < state.materials.length; i++) {
+        const m = state.materials[i];
+        await api.dbQuery('INSERT INTO materials (name, qty, notes, sort_order) VALUES (?, ?, ?, ?)',
+          [m.name, m.qty||0, m.notes||'', i]);
+      }
+    } else if (type === 'settings') {
+      await api.settingsSet('characters', state.settings.characters || []);
+      await api.settingsSet('variants', state.settings.variants || []);
+    } else if (type === 'customDeviations') {
+      await api.dbExec('DELETE FROM custom_deviations');
+      for (const name of state.customDeviations) {
+        await api.dbQuery('INSERT INTO custom_deviations (name) VALUES (?)', [name]);
+      }
+    } else if (type === 'customTraits') {
+      await api.dbExec('DELETE FROM custom_traits');
+      for (const t of state.customTraits) {
+        await api.dbQuery('INSERT INTO custom_traits (name, effect, neg, deviants) VALUES (?, ?, ?, ?)',
+          [t.name, t.effect, t.neg ? 1 : 0, t.deviants === 'ALL' ? 'ALL' : JSON.stringify(t.deviants)]);
+      }
+    } else if (type === 'customTraitAssignments') {
+      await api.dbExec('DELETE FROM trait_assignments');
+      for (const [dev, traits] of Object.entries(state.customTraitAssignments)) {
+        for (const trait of traits) {
+          await api.dbQuery('INSERT INTO trait_assignments (deviant_name, trait_name) VALUES (?, ?)', [dev, trait]);
+        }
+      }
+    }
+  } catch (err) {
+    console.error('Failed to save', type, err);
+  }
+}
+
+// Override the old save() function to use SQLite
+const _origSave = typeof save === 'function' ? save : null;
+async function save(type) {
+  await saveToDB(type);
+}
+
+// Override the old load() function
+const _origLoad = typeof load === 'function' ? load : null;
+async function load() {
+  await loadAll();
+}
+
+// ============================================================
+// SETUP WIZARD
+// ============================================================
+let setupSelectedProvider = null;
+
+async function checkSetup() {
+  const isComplete = await api.setupIsComplete();
+  if (isComplete) {
+    document.getElementById('setupWizard').style.display = 'none';
+    await api.getPort().then(p => { serverPort = p; });
+    return true;
+  }
+  document.getElementById('setupWizard').style.display = '';
+  return false;
+}
+
+function setupGoTo(step) {
+  for (let i = 1; i <= 5; i++) {
+    document.getElementById('setupStep' + i).style.display = i === step ? '' : 'none';
+  }
+  if (step === 3) setupDetectProviders();
+}
+
+async function setupSkip() {
+  // No OCR feature, just close wizard
+  await api.setupComplete({ vision: { provider: 'none' } });
+  document.getElementById('setupWizard').style.display = 'none';
+}
+
+async function setupDetectProviders() {
+  document.getElementById('setupDetectStatus').textContent = 'Scanning...';
+  const providers = await api.llmDetect();
+  const container = document.getElementById('setupDetectedList');
+
+  if (providers.length === 0) {
+    document.getElementById('setupDetectStatus').textContent = 'No existing LLM provider detected.';
+    container.innerHTML = `
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:12px">
+        <h4 style="color:var(--accent);margin-bottom:8px">Ollama not found</h4>
+        <p style="font-size:.85rem;color:var(--text-dim);margin-bottom:12px">Ollama will be installed automatically. After install, the selected model will be downloaded.</p>
+      </div>`;
+  } else {
+    document.getElementById('setupDetectStatus').textContent = `Found ${providers.length} provider(s):`;
+    container.innerHTML = providers.map(p => `
+      <div style="background:var(--bg2);border:1px solid var(--accent);border-radius:8px;padding:16px;margin-bottom:8px;cursor:pointer" onclick="setupSelectExisting('${p.endpoint}','${p.provider}')">
+        <h4 style="color:var(--accent);margin-bottom:4px">${p.name} ${p.running ? '✅ Running' : '⚠ Installed but not running'}</h4>
+        <p style="font-size:.8rem;color:var(--text-dim)">Endpoint: ${p.endpoint}<br>Models: ${p.models.length > 0 ? p.models.join(', ') : 'None loaded'}</p>
+      </div>
+    `).join('') + `
+      <div style="margin-top:8px;font-size:.85rem;color:var(--text-dim)">
+        Click a provider to use it, or proceed to model selection to install Ollama fresh.
+      </div>`;
+  }
+
+  // Always offer model selection
+  container.innerHTML += `<button class="btn btn-primary" style="margin-top:12px" onclick="setupGoTo(4)">Continue to model selection →</button>`;
+}
+
+async function setupSelectExisting(endpoint, provider) {
+  setupSelectedProvider = { endpoint, provider, existing: true };
+  // Jump to model selection (user can pick from their existing models)
+  setupGoTo(4);
+}
+
+async function setupInstallLocal() {
+  const model = document.querySelector('input[name="setupModel"]:checked')?.value || 'llama3.2-vision:11b';
+  const progress = document.getElementById('setupInstallProgress');
+
+  try {
+    // Check if Ollama is installed
+    const providers = await api.llmDetect();
+    const hasOllama = providers.some(p => p.provider === 'ollama');
+
+    if (!hasOllama) {
+      progress.textContent = 'Installing Ollama... (this may take a minute)';
+      const result = await api.llmInstallOllama();
+      if (!result.success) {
+        progress.textContent = '❌ ' + result.message;
+        return;
+      }
+    }
+
+    progress.textContent = `Pulling model ${model}... (downloading, may take several minutes)`;
+    await api.llmPullModel(model);
+
+    // Save config
+    await api.setupComplete({
+      vision: {
+        provider: 'ollama',
+        endpoint: setupSelectedProvider?.endpoint || 'http://127.0.0.1:11434',
+        model: model,
+        apiKey: ''
+      }
+    });
+
+    progress.textContent = '✅ Setup complete!';
+    setTimeout(() => {
+      document.getElementById('setupWizard').style.display = 'none';
+    }, 1000);
+  } catch (err) {
+    progress.textContent = '❌ Error: ' + err.message;
+  }
+}
+
+async function setupSaveCloud() {
+  const apiKey = document.getElementById('setupApiKey').value.trim();
+  const model = document.getElementById('setupModelCloud').value.trim() || 'openai/gpt-4o-mini';
+  if (!apiKey) { alert('API key is required.'); return; }
+
+  await api.setupComplete({
+    vision: {
+      provider: 'openai',
+      endpoint: 'https://openrouter.ai/api/v1',
+      apiKey: apiKey,
+      model: model
+    }
+  });
+
+  document.getElementById('setupWizard').style.display = 'none';
+}
+
+// ============================================================
+// VISION API (via local proxy)
+// ============================================================
+async function callVisionAPIProxy(imageDataUrl) {
+  const resp = await fetch(`http://127.0.0.1:${serverPort}/api/vision`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ imageDataUrl })
+  });
+  if (!resp.ok) {
+    const data = await resp.json().catch(() => ({}));
+    throw new Error(data.error || `API error ${resp.status}`);
+  }
+  return resp.json();
+}
+
+// ============================================================
+// SCREENSHOT (native file dialog support)
+// ============================================================
+async function openFileDialogForScreenshots() {
+  const dataUrls = await api.openImages();
+  if (!dataUrls || dataUrls.length === 0) return;
+  if (dataUrls.length === 1) {
+    ssImageDataUrl = dataUrls[0];
+    loadImageFile_dataUrl(dataUrls[0]);
+  } else {
+    // Batch mode
+    ssBatch = dataUrls;
+    ssBatchIndex = 0;
+    ssBatchAdded = 0;
+    ssImageDataUrl = ssBatch[0];
+    analyzeScreenshot();
+  }
+}
+
+function loadImageFile_dataUrl(dataUrl) {
+  ssImageDataUrl = dataUrl;
+  const img = document.getElementById('ssPreviewImg');
+  img.src = dataUrl;
+  document.getElementById('ssPreview').style.display = '';
+  document.getElementById('ssAnalyzeBtn').disabled = false;
+  document.getElementById('ssDropZone').style.display = 'none';
+}
+
+// Override analyzeScreenshot to use proxy
+const _origAnalyzeScreenshot = analyzeScreenshot;
+async function analyzeScreenshot() {
+  if (!ssImageDataUrl) return;
+
+  const isBatch = ssBatch.length > 0;
+  const isQuick = getQuickAdd();
+
+  document.getElementById('ssStep1').style.display = 'none';
+  document.getElementById('ssStep2').style.display = '';
+  document.getElementById('ssStep3').style.display = 'none';
+  document.getElementById('ssFooter').style.display = 'none';
+
+  if (isBatch) {
+    showStatus(`Processing ${ssBatchIndex + 1} of ${ssBatch.length}...`);
+  } else {
+    showStatus('Sending screenshot to vision API...');
+  }
+
+  try {
+    const extracted = await callVisionAPIProxy(ssImageDataUrl);
+    // Normalize to match populateExtractedForm expected format
+    populateExtractedForm(extracted);
+
+    if (isQuick) {
+      applyExtractedData();
+      ssBatchAdded++;
+      if (isBatch && ssBatchIndex < ssBatch.length - 1) {
+        ssBatchIndex++;
+        ssImageDataUrl = ssBatch[ssBatchIndex];
+        document.getElementById('ssStep1').style.display = '';
+        document.getElementById('ssStep2').style.display = 'none';
+        analyzeScreenshot();
+      } else {
+        if (isBatch) {
+          showStatus(`Done! Added ${ssBatchAdded} deviation${ssBatchAdded !== 1 ? 's' : ''}.`);
+          setTimeout(() => closeScreenshotModal(), 1500);
+        } else {
+          closeScreenshotModal();
+        }
+      }
+    } else {
+      document.getElementById('ssStep2').style.display = 'none';
+      document.getElementById('ssStep3').style.display = '';
+      document.getElementById('ssFooter').style.display = '';
+      if (isBatch) {
+        showStatus(`Review — ${ssBatchIndex + 1} of ${ssBatch.length}. Click Add, then next loads.`);
+      }
+    }
+  } catch (err) {
+    showStatus('Error: ' + err.message, true);
+  }
+}
+
+// ============================================================
+// INIT
+// ============================================================
+document.addEventListener('DOMContentLoaded', async () => {
+  // Check setup first
+  const setupDone = await checkSetup();
+  if (!setupDone) return; // Wait for setup to complete
+
+  // Load data from SQLite
+  await loadAll();
+
+  // Continue with normal init
+  migrateData();
+  renderCharList();
+  updateFilterCharDropdown();
+  renderVariantList();
+  updateFilterVariantDropdown();
+  renderView();
+  renderMaterials();
+  initPersistenceListeners();
+});
+
+/* ============================================================
+   STATE & STORAGE
+   ============================================================ */
+const KEYS = {
+  deviations:             'ohdt_deviations',
+  materials:              'ohdt_materials',
+  settings:               'ohdt_settings',
+  addDefaults:            'ohdt_add_defaults',
+  customDeviations:       'ohdt_custom_deviations',
+  customTraits:           'ohdt_custom_traits',
+  customTraitAssignments: 'ohdt_custom_trait_assignments',
+};
+
+let state = {
+  deviations:             [],
+  materials:              [],
+  settings:               { characters: [] },
+  customDeviations:       [],
+  customTraits:           [],
+  customTraitAssignments: {},
+};
+
+let sortCol = null, sortDir = 1;
+let filters = { char:'', deviation:'', fusion:'', locked:'', skill:'', activity:'', variant:'' };
+let dragSrcIdx = null;
+let confirmCallback = null;
+let defaultCharacter = '';
+let defaultDeviationName = '';
+let defaultVariant   = '';
+let defaultSkill     = '';
+let defaultActivity  = '';
+let defaultFusion    = false;
+let defaultEland     = false;
+let variantEditIndex = -1;
+let editingTraitId   = null;
+const IS_OFFICIAL_DEPLOYMENT = (() => {
+  try {
+    return window.location.hostname === 'saitoh183.github.io'
+      && window.location.pathname.startsWith('/deviation-tracker/');
+  } catch (e) {
+    return false;
+  }
+})();
+
+/* ── Migration ── */
+function migrateStorage() {
+  const old = localStorage.getItem('ohdt_deviants');
+  const cur = localStorage.getItem(KEYS.deviations);
+  if (old && !cur) {
+    localStorage.setItem(KEYS.deviations, old);
+    localStorage.removeItem('ohdt_deviants');
+  }
+}
+
+function migrateData() {
+  let custom = [];
+  try { custom = JSON.parse(localStorage.getItem('ohdt_custom_deviations') || '[]'); } catch (e) { custom = []; }
+  custom = custom.map(d => d === 'Pyro' ? 'Pyro Dino' : d);
+  localStorage.setItem('ohdt_custom_deviations', JSON.stringify(custom));
+
+  let rows = [];
+  try { rows = JSON.parse(localStorage.getItem('ohdt_deviations') || '[]'); } catch (e) { rows = []; }
+  rows = rows.map(r => {
+    if (r && r.deviationName === 'Pyro') r.deviationName = 'Pyro Dino';
+    if (r && r.name === 'Pyro') r.name = 'Pyro Dino';
+    return r;
+  });
+  localStorage.setItem('ohdt_deviations', JSON.stringify(rows));
+
+  let assignments = {};
+  try { assignments = JSON.parse(localStorage.getItem('ohdt_custom_trait_assignments') || '{}'); } catch (e) { assignments = {}; }
+  if (assignments['Pyro']) {
+    assignments['Pyro Dino'] = assignments['Pyro'];
+    delete assignments['Pyro'];
+    localStorage.setItem('ohdt_custom_trait_assignments', JSON.stringify(assignments));
+  }
+}
+
+function normalizeDeviationRows(rows) {
+  if (!Array.isArray(rows)) return { rows: [], changed: false };
+  let changed = false;
+  const normalized = rows.map(r => {
+    if (!r || typeof r !== 'object') return r;
+    if (typeof r.eland === 'boolean') return r;
+    changed = true;
+    return { ...r, eland: false };
+  });
+  return { rows: normalized, changed };
+}
+
+function load() {
+  migrateStorage();
+  const parse = (key, def) => { try { return JSON.parse(localStorage.getItem(KEYS[key])) || def; } catch(e) { return def; } };
+  const defaultSettings = mergeSettingsWithDefaults(null);
+  state.deviations             = parse('deviations',             []);
+  state.materials              = parse('materials',              []);
+  state.settings               = parse('settings',               defaultSettings);
+  state.customDeviations       = parse('customDeviations',       []);
+  state.customTraits           = parse('customTraits',           []);
+  state.customTraitAssignments = parse('customTraitAssignments', {});
+  state.settings = mergeSettingsWithDefaults(state.settings);
+  if (!state.customTraitAssignments) state.customTraitAssignments = {};
+  const normalized = normalizeDeviationRows(state.deviations);
+  state.deviations = normalized.rows;
+  if (normalized.changed) save('deviations');
+  normalizeVariantSettings();
+}
+
+function loadAddDefaults() {
+  let saved = {};
+  try { saved = JSON.parse(localStorage.getItem(KEYS.addDefaults) || '{}'); } catch (e) { saved = {}; }
+  defaultCharacter     = typeof saved.character === 'string' ? saved.character : '';
+  defaultDeviationName = typeof saved.name === 'string' ? saved.name : '';
+  defaultVariant       = typeof saved.variant === 'string' ? saved.variant : '';
+  defaultSkill         = saved.skill === '' || typeof saved.skill === 'string' ? saved.skill || '' : '';
+  defaultActivity      = saved.activity === '' || typeof saved.activity === 'string' ? saved.activity || '' : '';
+  defaultFusion        = !!saved.fusion;
+  defaultEland         = !!saved.eland;
+}
+
+function saveAddDefaults() {
+  localStorage.setItem(KEYS.addDefaults, JSON.stringify({
+    character: defaultCharacter || '',
+    name: defaultDeviationName || '',
+    variant: defaultVariant || '',
+    skill: defaultSkill || '',
+    activity: defaultActivity || '',
+    fusion: !!defaultFusion,
+    eland: !!defaultEland,
+  }));
+}
+
+function normalizeVariantSettings() {
+  const src = Array.isArray(state.settings.variants) ? state.settings.variants : [];
+  const out = [];
+  const seen = new Set();
+  src.forEach(v => {
+    let entry = null;
+    if (typeof v === 'string') {
+      const name = v.trim().slice(0, 30);
+      if (!name) return;
+      // Legacy variants had no descriptions; use the name as fallback tooltip text.
+      entry = { name, description: name };
+    } else if (v && typeof v === 'object') {
+      const name = String(v.name || '').trim().slice(0, 30);
+      if (!name) return;
+      const description = String(v.description || '').trim().slice(0, 300) || name;
+      entry = { name, description };
+    }
+    if (!entry) return;
+    const key = entry.name.toLowerCase();
+    if (seen.has(key)) return;
+    seen.add(key);
+    out.push(entry);
+  });
+  const before = JSON.stringify(src);
+  const after = JSON.stringify(out);
+  state.settings.variants = out;
+  if (before !== after) save('settings');
+}
+
+function save(key) {
+  localStorage.setItem(KEYS[key], JSON.stringify(state[key]));
+}
+
+function defaultsAreLocked() {
+  return IS_OFFICIAL_DEPLOYMENT;
+}
+
+function getDefaultVariantEntries() {
+  const src = (typeof DEFAULT_SETTINGS === 'object' && DEFAULT_SETTINGS && Array.isArray(DEFAULT_SETTINGS.variants))
+    ? DEFAULT_SETTINGS.variants
+    : [];
+  return src
+    .map(v => (typeof v === 'string' ? { name: v, description: v } : v))
+    .filter(v => v && typeof v.name === 'string' && v.name.trim())
+    .map(v => ({ name: String(v.name).trim(), description: String(v.description || v.name).trim() || String(v.name).trim() }));
+}
+
+function isDefaultVariantName(name) {
+  const q = String(name || '').toLowerCase();
+  return getDefaultVariantEntries().some(v => v.name.toLowerCase() === q);
+}
+
+function mergeSettingsWithDefaults(settings) {
+  const base = { characters: [], variants: getDefaultVariantEntries(), hiddenDefaultDeviations: [], hiddenDefaultTraits: [] };
+  if (!settings || typeof settings !== 'object') return base;
+  return { ...base, ...settings };
+}
+
+/* ── Data Getters ── */
+function isOfficialDeployment() {
+  const host = window.location && window.location.hostname ? window.location.hostname : '';
+  const path = window.location && window.location.pathname ? window.location.pathname : '';
+  return host === 'saitoh183.github.io' && path.startsWith('/deviation-tracker/');
+}
+
+function getAllDeviations() {
+  const hidden = new Set((state.settings.hiddenDefaultDeviations || []).map(n => String(n).toLowerCase()));
+  const defaults = DEVIANT_LIST.filter(n => !hidden.has(String(n).toLowerCase()));
+  return [...new Set([...defaults, ...state.customDeviations])].sort((a, b) => a.localeCompare(b));
+}
+
+function getAllTraits() {
+  const hidden = new Set((state.settings.hiddenDefaultTraits || []).map(n => String(n).toLowerCase()));
+  const builtins = TRAIT_DATA.filter(t => !hidden.has(String(t.name || '').toLowerCase()));
+  const custom = (state.customTraits || []).map(t => ({
+    name: t.type === 'negative' ? '⚠ ' + t.name : t.name,
+    effect: t.effect,
+    deviants: t.deviations,
+    neg: t.type === 'negative',
+    custom: true,
+    rawName: t.name,
+    id: t.id,
+  }));
+  return [...builtins, ...custom];
+}
+
+function traitsForDeviation(devName) {
+  const all = getAllTraits();
+  if (!devName) return all;
+  const assign    = (state.customTraitAssignments || {})[devName] || {};
+  const addList   = assign.add    || [];
+  const rmList    = assign.remove || [];
+  // Base: naturally applicable traits
+  let result = all.filter(t => t.deviants === 'ALL' || (Array.isArray(t.deviants) && t.deviants.includes(devName)));
+  // Add extra traits explicitly assigned
+  addList.forEach(name => { if (!result.some(t => t.name === name)) { const found = all.find(t => t.name === name); if (found) result.push(found); } });
+  // Remove explicitly removed traits
+  result = result.filter(t => !rmList.includes(t.name));
+  // Sort: positives first, then negatives
+  return result.sort((a, b) => a.neg !== b.neg ? (a.neg ? 1 : -1) : a.name.localeCompare(b.name));
+}
+
+/* ============================================================
+   MAIN TABS
+   ============================================================ */
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-' + id).classList.add('active');
+  // Show/hide deviations-specific filter+toolbar in sticky top
+  const dc = document.getElementById('deviations-controls');
+  if (dc) dc.style.display = id === 'deviations' ? '' : 'none';
+}
+
+/* ============================================================
+   MODAL SYSTEM
+   ============================================================ */
+function openModal(id) {
+  const overlay = document.getElementById(id);
+  overlay.classList.add('open');
+  overlay._lastFocus = document.activeElement;
+  const modal = overlay.querySelector('.modal');
+  requestAnimationFrame(() => {
+    const first = modal.querySelector('button,input,select,textarea,[tabindex]');
+    if (first) first.focus();
+    setupTrapFocus(modal, id);
+  });
+}
+
+function closeModal(id) {
+  const overlay = document.getElementById(id);
+  overlay.classList.remove('open');
+  const modal = overlay.querySelector('.modal');
+  removeTrapFocus(modal);
+  if (overlay._lastFocus) overlay._lastFocus.focus();
+}
+
+function closeModalIfBg(e, id) {
+  if (e.target === document.getElementById(id)) closeModal(id);
+}
+
+function setupTrapFocus(el, modalId) {
+  function handler(e) {
+    if (e.key === 'Escape') { closeModal(modalId); return; }
+    if (e.key !== 'Tab') return;
+    const focusable = Array.from(el.querySelectorAll(
+      'button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'
+    )).filter(n => {
+      let p = n.parentElement;
+      while (p) { if (p.style && (p.style.display === 'none' || p.style.visibility === 'hidden')) return false; p = p.parentElement; }
+      return true;
+    });
+    if (!focusable.length) return;
+    const first = focusable[0], last = focusable[focusable.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  }
+  el._trapHandler = handler;
+  el.addEventListener('keydown', handler);
+}
+
+function removeTrapFocus(el) {
+  if (el._trapHandler) el.removeEventListener('keydown', el._trapHandler);
+}
+
+function switchModalTab(modalId, tabName, btn) {
+  const overlay = document.getElementById(modalId);
+  overlay.querySelectorAll('.modal-tab-btn').forEach(b => b.classList.remove('active'));
+  overlay.querySelectorAll('.modal-tab-pane').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  overlay.querySelector(`[data-pane="${tabName}"]`).classList.add('active');
+  // Lazy-render/populate when specific tabs are opened
+  if (tabName === 'removeDev')   renderDevRemoveList();
+  if (tabName === 'removeTrait') renderTraitRemoveList();
+  if (tabName === 'editDev') {
+    populateEditDevSelect();
+    document.getElementById('editDevSelect').value = '';
+    document.getElementById('editDevPanel').style.display = 'none';
+  }
+}
+
+/* Confirm modal */
+function showConfirm(title, msg, cb) {
+  document.getElementById('confirmTitle').textContent = title;
+  document.getElementById('confirmMsg').textContent   = msg;
+  confirmCallback = cb;
+  openModal('confirmModal');
+}
+
+document.getElementById('confirmOkBtn').addEventListener('click', () => {
+  closeModal('confirmModal');
+  if (confirmCallback) { confirmCallback(); confirmCallback = null; }
+});
+
+/* Flash message */
+let flashTimers = {};
+function showFlash(elId, msg, isErr = false) {
+  const el = document.getElementById(elId);
+  clearTimeout(flashTimers[elId]);
+  el.textContent = msg;
+  el.className = 'flash-msg show' + (isErr ? ' err' : '');
+  flashTimers[elId] = setTimeout(() => { el.classList.remove('show'); }, 2500);
+}
+
+/* ============================================================
+   SETTINGS
+   ============================================================ */
+function openSettings()  { loadVisionConfig(); loadAutoCreateSetting(); loadQuickAddSetting(); document.getElementById('settingsOverlay').classList.add('open'); }
+function closeSettings() { document.getElementById('settingsOverlay').classList.remove('open'); }
+function closeSettingsIfBg(e) { if (e.target === document.getElementById('settingsOverlay')) closeSettings(); }
+
+function renderCharList() {
+  const list  = document.getElementById('charList');
+  const empty = document.getElementById('charEmpty');
+  const chars = state.settings.characters;
+  list.innerHTML = '';
+  if (!chars.length) { empty.style.display = ''; return; }
+  empty.style.display = 'none';
+  chars.forEach((c, i) => {
+    const div = document.createElement('div');
+    div.className = 'char-item';
+    div.innerHTML = `<span>${escHtml(c)}</span><button class="char-del" onclick="delChar(${i})" title="Remove">✕</button>`;
+    list.appendChild(div);
+  });
+  updateAllCharDropdowns();
+}
+
+function addChar() {
+  const inp = document.getElementById('charInput');
+  const val = inp.value.trim().slice(0, 10);
+  if (!val) return;
+  const chars = state.settings.characters;
+  if (chars.includes(val) || chars.length >= 20) { inp.value = ''; return; }
+  chars.push(val);
+  save('settings');
+  renderCharList();
+  updateFilterCharDropdown();
+  inp.value = '';
+}
+
+function delChar(i) {
+  state.settings.characters.splice(i, 1);
+  save('settings');
+  renderCharList();
+  updateFilterCharDropdown();
+}
+
+function updateAllCharDropdowns() {
+  document.querySelectorAll('select.row-char').forEach(sel => {
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">—</option>' +
+      state.settings.characters.map(c => `<option value="${escHtml(c)}"${c===cur?' selected':''}>${escHtml(c)}</option>`).join('');
+  });
+}
+
+function updateFilterCharDropdown() {
+  const sel = document.getElementById('fChar');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">All</option>' +
+    state.settings.characters.map(c => `<option value="${escHtml(c)}"${c===cur?' selected':''}>${escHtml(c)}</option>`).join('');
+}
+
+/* ============================================================
+   VISION API CONFIG (screenshot OCR)
+   ============================================================ */
+const VISION_STORAGE_KEY = 'ohdt_vision_config';
+const SS_MAX_SIZE = 10 * 1024 * 1024; // 10MB
+const SS_AUTOCREATE_KEY = 'ohdt_autocreate';
+const SS_QUICKADD_KEY = 'ohdt_quickadd';
+let ssImageDataUrl = null;  // base64 data URL of current screenshot
+let ssBatch = [];            // queue of image data URLs for batch processing
+let ssBatchIndex = 0;
+let ssBatchAdded = 0;
+
+function loadAutoCreateSetting() {
+  const el = document.getElementById('autoCreateToggle');
+  if (el) el.checked = localStorage.getItem(SS_AUTOCREATE_KEY) === '1';
+}
+function saveAutoCreateSetting() {
+  const el = document.getElementById('autoCreateToggle');
+  if (el) localStorage.setItem(SS_AUTOCREATE_KEY, el.checked ? '1' : '0');
+}
+function getAutoCreate() {
+  return localStorage.getItem(SS_AUTOCREATE_KEY) === '1';
+}
+function loadQuickAddSetting() {
+  const el = document.getElementById('quickAddToggle');
+  if (el) el.checked = localStorage.getItem(SS_QUICKADD_KEY) === '1';
+}
+function saveQuickAddSetting() {
+  const el = document.getElementById('quickAddToggle');
+  if (el) localStorage.setItem(SS_QUICKADD_KEY, el.checked ? '1' : '0');
+}
+function getQuickAdd() {
+  return localStorage.getItem(SS_QUICKADD_KEY) === '1';
+}
+
+function loadVisionConfig() {
+  let cfg = {};
+  try { cfg = JSON.parse(localStorage.getItem(VISION_STORAGE_KEY) || '{}'); } catch(e) { cfg = {}; }
+  document.getElementById('visionProvider').value = cfg.provider || 'openai';
+  document.getElementById('visionEndpoint').value = cfg.endpoint || '';
+  document.getElementById('visionApiKey').value = cfg.apiKey || '';
+  document.getElementById('visionModel').value = cfg.model || 'gpt-4o';
+}
+
+function saveVisionConfig() {
+  const cfg = {
+    provider: document.getElementById('visionProvider').value,
+    endpoint: document.getElementById('visionEndpoint').value.trim(),
+    apiKey:   document.getElementById('visionApiKey').value,
+    model:    document.getElementById('visionModel').value.trim() || 'gpt-4o',
+  };
+  localStorage.setItem(VISION_STORAGE_KEY, JSON.stringify(cfg));
+}
+
+function getVisionConfig() {
+  try { return JSON.parse(localStorage.getItem(VISION_STORAGE_KEY) || '{}'); } catch(e) { return {}; }
+}
+
+/* ============================================================
+   SCREENSHOT TO ENTRY
+   ============================================================ */
+function openScreenshotModal() {
+  loadVisionConfig();
+  resetScreenshotModal();
+  openModal('screenshotModal');
+}
+
+function closeScreenshotModal() {
+  closeModal('screenshotModal');
+  ssImageDataUrl = null;
+  ssBatch = [];
+  ssBatchIndex = 0;
+  ssBatchAdded = 0;
+}
+
+function resetScreenshotModal() {
+  ssImageDataUrl = null;
+  document.getElementById('ssStep1').style.display = '';
+  document.getElementById('ssStep2').style.display = 'none';
+  document.getElementById('ssStep3').style.display = 'none';
+  document.getElementById('ssFooter').style.display = 'none';
+  document.getElementById('ssPreview').style.display = 'none';
+  document.getElementById('ssAnalyzeBtn').disabled = true;
+  document.getElementById('ssStatus').className = 'ss-status';
+  const dz = document.getElementById('ssDropZone');
+  dz.style.display = '';
+}
+
+// --- Image input handlers ---
+(function initScreenshotDropZone() {
+  document.addEventListener('DOMContentLoaded', () => {
+    const dz = document.getElementById('ssDropZone');
+    const fi = document.getElementById('ssFileInput');
+    if (!dz || !fi) return;
+
+    // Drag & drop
+    dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over'); });
+    dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
+    dz.addEventListener('drop', e => {
+      e.preventDefault(); dz.classList.remove('drag-over');
+      const file = e.dataTransfer.files[0];
+      if (file && file.type.startsWith('image/')) loadImageFile(file);
+    });
+
+    // File input (supports multiple files)
+    fi.addEventListener('change', e => {
+      if (e.target.files.length > 0) loadImageFiles(e.target.files);
+      e.target.value = '';
+    });
+
+    // Paste
+    document.addEventListener('paste', e => {
+      const modal = document.getElementById('screenshotModal');
+      if (!modal.classList.contains('open')) return;
+      const items = e.clipboardData?.items;
+      if (!items) return;
+      for (const item of items) {
+        if (item.type.startsWith('image/')) {
+          loadImageFile(item.getAsFile());
+          break;
+        }
+      }
+    });
+  });
+})();
+
+function loadImageFile(file) {
+  if (!file) return;
+  if (file.size > SS_MAX_SIZE) { alert('Image too large. Max 10MB.'); return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    ssImageDataUrl = e.target.result;
+    const img = document.getElementById('ssPreviewImg');
+    img.src = ssImageDataUrl;
+    document.getElementById('ssPreview').style.display = '';
+    document.getElementById('ssAnalyzeBtn').disabled = false;
+    document.getElementById('ssDropZone').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+function loadImageFiles(files) {
+  if (!files || files.length === 0) return;
+  const fileArr = Array.from(files);
+  if (fileArr.length === 1) {
+    loadImageFile(fileArr[0]);
+    return;
+  }
+  // Batch mode: load all files, auto-start analysis
+  ssBatch = [];
+  ssBatchIndex = 0;
+  ssBatchAdded = 0;
+  let loaded = 0;
+  fileArr.forEach(file => {
+    if (file.size > SS_MAX_SIZE) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      ssBatch.push(e.target.result);
+      loaded++;
+      if (loaded === fileArr.length) {
+        ssImageDataUrl = ssBatch[0];
+        analyzeScreenshot();
+      }
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function clearScreenshot() {
+  ssImageDataUrl = null;
+  document.getElementById('ssPreview').style.display = 'none';
+  document.getElementById('ssAnalyzeBtn').disabled = true;
+  document.getElementById('ssDropZone').style.display = '';
+}
+
+// --- Vision API call ---
+async function analyzeScreenshot() {
+  if (!ssImageDataUrl) return;
+  const cfg = getVisionConfig();
+  if (!cfg.endpoint) {
+    showStatus('⚠ Configure the Vision API in Settings (⚙) first.', true);
+    return;
+  }
+
+  const isBatch = ssBatch.length > 0;
+  const isQuick = getQuickAdd();
+
+  // Show processing status
+  document.getElementById('ssStep1').style.display = 'none';
+  document.getElementById('ssStep2').style.display = '';
+  document.getElementById('ssStep3').style.display = 'none';
+  document.getElementById('ssFooter').style.display = 'none';
+
+  if (isBatch) {
+    showStatus(`Processing ${ssBatchIndex + 1} of ${ssBatch.length}...`);
+  } else {
+    showStatus('Sending screenshot to vision API...');
+  }
+
+  try {
+    const extracted = await callVisionAPI(ssImageDataUrl, cfg);
+    populateExtractedForm(extracted);
+
+    if (isQuick) {
+      // Quick Add: apply immediately, no review
+      applyExtractedData();
+      ssBatchAdded++;
+
+      if (isBatch && ssBatchIndex < ssBatch.length - 1) {
+        // Next item in batch
+        ssBatchIndex++;
+        ssImageDataUrl = ssBatch[ssBatchIndex];
+        // Reset to step 1 briefly then re-analyze
+        document.getElementById('ssStep1').style.display = '';
+        document.getElementById('ssStep2').style.display = 'none';
+        analyzeScreenshot();
+      } else {
+        // Done
+        if (isBatch) {
+          showStatus(`Done! Added ${ssBatchAdded} deviation${ssBatchAdded !== 1 ? 's' : ''}.`);
+          setTimeout(() => closeScreenshotModal(), 1500);
+        } else {
+          closeScreenshotModal();
+        }
+      }
+    } else {
+      // Review mode: show form
+      document.getElementById('ssStep2').style.display = 'none';
+      document.getElementById('ssStep3').style.display = '';
+      document.getElementById('ssFooter').style.display = '';
+
+      if (isBatch) {
+        showStatus(`Review — ${ssBatchIndex + 1} of ${ssBatch.length}. Click Add, then next loads.`);
+      }
+    }
+  } catch (err) {
+    showStatus('Error: ' + err.message, true);
+  }
+}
+
+function showStatus(msg, isErr = false) {
+  const el = document.getElementById('ssStatus');
+  el.textContent = msg;
+  el.className = 'ss-status' + (isErr ? ' error' : '');
+}
+
+async function callVisionAPI(imageDataUrl, cfg) {
+  const provider = cfg.provider || 'openai';
+  const base64 = imageDataUrl.split(',')[1];
+  const mime = imageDataUrl.match(/^data:(image\/\w+);/)?.[1] || 'image/png';
+
+  const systemPrompt = `You are a data extraction assistant for a game called Once Human. Analyze the screenshot of a Deviation detail screen and extract the following fields as JSON. Be precise with text extraction.
+
+Output ONLY a JSON object with these fields:
+{
+  "name": "base deviation name (e.g. The Digby Boy, Electric Eel, Butterfly's Emissary)",
+  "variant": "variant/skin name after the dash (e.g. Emerald, Prism, Good Fortune) or empty string if none",
+  "variant_effect": "the gold-colored variant description that starts with 'Appearance changed.' — extract the full text, or empty string if none",
+  "description": "the full description text below the name (NOT the variant effect)",
+  "skill_rating": number 0-5 (from Skill Rating),
+  "activity_rating": number 0-5 (from Activity Rating),
+  "fusion": 0 or 1 (Fusion state: 1 = on/active, 0 = off),
+  "traits": [{"name": "trait name", "is_negative": boolean}]
+}
+
+CRITICAL VARIANT vs TRAIT RULES:
+- The deviation name often has format "Name - Variant". Example: "The Digby Boy - Emerald" → name="The Digby Boy", variant="Emerald"
+- The gold text starting with "Appearance changed." is the VARIANT EFFECT, NOT a trait. Do NOT include it in traits.
+- Only include traits from the TRAITS section of the UI. These are gameplay traits like "Cheer Up 1", "Growing Pains 2", etc.
+- If a trait is negative (starts with ⚠ symbol), set is_negative=true
+- If no traits are visible, traits=[]
+
+Other rules:
+- If no variant is shown, variant="" and variant_effect=""
+- skill_rating and activity_rating are 0 if not visible
+- Be precise with apostrophes, dashes, and special characters`;
+
+  let url, headers, body;
+
+  if (provider === 'ollama') {
+    // Ollama native API
+    const ep = cfg.endpoint.replace(/\/+$/, '');
+    url = `${ep}/api/chat`;
+    headers = { 'Content-Type': 'application/json' };
+    body = JSON.stringify({
+      model: cfg.model || 'llava',
+      stream: false,
+      messages: [{
+        role: 'user',
+        content: systemPrompt + '\n\nAnalyze this screenshot:',
+        images: [base64]
+      }],
+      format: 'json'
+    });
+  } else {
+    // OpenAI-compatible (OpenAI, custom, OpenRouter)
+    const ep = cfg.endpoint.replace(/\/+$/, '');
+    // Smart path: if endpoint already ends with /v1 or /v1/, use /chat/completions only
+    const needsV1 = !/\/v1\/?$/.test(ep);
+    url = `${ep}${needsV1 ? '/v1' : ''}/chat/completions`;
+    headers = {
+      'Content-Type': 'application/json',
+      ...(cfg.apiKey ? { 'Authorization': `Bearer ${cfg.apiKey}` } : {})
+    };
+    body = JSON.stringify({
+      model: cfg.model || 'gpt-4o',
+      messages: [{
+        role: 'user',
+        content: [
+          { type: 'text', text: systemPrompt },
+          { type: 'image_url', image_url: { url: `data:${mime};base64,${base64}` } }
+        ]
+      }],
+      max_tokens: 1000
+    });
+  }
+
+  const resp = await fetch(url, {
+    method: 'POST',
+    headers,
+    body
+  });
+
+  if (!resp.ok) {
+    const errText = await resp.text().catch(() => '');
+    throw new Error(`API ${resp.status}: ${errText.slice(0, 200)}`);
+  }
+
+  const data = await resp.json();
+
+  // Extract content
+  let content = '';
+  if (provider === 'ollama') {
+    content = data.message?.content || '';
+  } else {
+    content = data.choices?.[0]?.message?.content || '';
+  }
+
+  // Parse JSON from content (handle markdown code blocks)
+  const jsonMatch = content.match(/```(?:json)?\s*([\s\S]*?)```/) || [null, content];
+  let parsed;
+  try {
+    parsed = JSON.parse(jsonMatch[1].trim());
+  } catch(e) {
+    throw new Error('Could not parse API response as JSON. Raw: ' + content.slice(0, 300));
+  }
+
+  return {
+    name:         String(parsed.name || '').trim(),
+    variant:      String(parsed.variant || '').trim(),
+    variantEffect: String(parsed.variant_effect || '').trim(),
+    description:  String(parsed.description || '').trim(),
+    skillRating:  Math.min(5, Math.max(0, parseInt(parsed.skill_rating) || 0)),
+    activityRating: Math.min(5, Math.max(0, parseInt(parsed.activity_rating) || 0)),
+    fusion:       parsed.fusion ? 1 : 0,
+    traits:       Array.isArray(parsed.traits) ? parsed.traits.map(t => ({
+      name: String(t.name || '').trim(),
+      isNegative: !!t.is_negative
+    })).filter(t => t.name) : []
+  };
+}
+
+// --- Populate review form ---
+function populateExtractedForm(data) {
+  // Deviation name + variant with autocomplete
+  document.getElementById('ssName').value = data.name;
+  document.getElementById('ssVariant').value = data.variant;
+  document.getElementById('ssDesc').value = data.description;
+  document.getElementById('ssSkill').value = data.skillRating;
+  document.getElementById('ssActivity').value = data.activityRating;
+  document.getElementById('ssFusion').checked = !!data.fusion;
+
+  // Variant effect (read-only, shown if present)
+  const veWrap = document.getElementById('ssVariantEffectWrap');
+  if (data.variantEffect) {
+    document.getElementById('ssVariantEffect').textContent = data.variantEffect;
+    veWrap.style.display = '';
+  } else {
+    veWrap.style.display = 'none';
+  }
+
+  // Populate datalists for autocomplete
+  const devList = document.getElementById('ssDevList');
+  devList.innerHTML = getAllDeviations().map(d => `<option value="${escHtml(d)}">`).join('');
+  const varList = document.getElementById('ssVarList');
+  varList.innerHTML = getAllVariants().map(v => `<option value="${escHtml(v)}">`).join('');
+
+  // Populate trait dropdowns
+  const container = document.getElementById('ssTraitsContainer');
+  container.innerHTML = '';
+  const allTraits = getAllTraits();
+
+  // Show up to 5 trait slots, pre-filled if detected
+  for (let i = 0; i < Math.max(5, data.traits.length); i++) {
+    const detected = data.traits[i];
+    const row = document.createElement('div');
+    row.className = 'ss-trait-row';
+    const select = document.createElement('select');
+    select.innerHTML = '<option value="">—</option>' +
+      allTraits.map(t => {
+        const sel = detected && t.name === findBestTraitMatch(detected.name, allTraits) ? ' selected' : '';
+        return `<option value="${escHtml(t.name)}"${sel}${t.neg?' class="neg-trait"':''}>${escHtml(t.name)}</option>`;
+      }).join('');
+    row.appendChild(select);
+    container.appendChild(row);
+  }
+}
+
+function findBestTraitMatch(detectedName, allTraits) {
+  if (!detectedName) return '';
+  const lower = detectedName.toLowerCase();
+  // Exact match
+  const exact = allTraits.find(t => t.name.toLowerCase() === lower);
+  if (exact) return exact.name;
+  // Partial match
+  const partial = allTraits.find(t => t.name.toLowerCase().includes(lower) || lower.includes(t.name.toLowerCase()));
+  if (partial) return partial.name;
+  return '';
+}
+
+// --- Apply extracted data to tracker ---
+function applyExtractedData() {
+  const name = document.getElementById('ssName').value.trim();
+  if (!name) { alert('Deviation name is required.'); return; }
+
+  const doAutoCreate = getAutoCreate();
+
+  // Check if this deviation exists in our lists, add as custom if not (only when enabled)
+  if (doAutoCreate) {
+    const allDevs = getAllDeviations();
+    if (!allDevs.includes(name)) {
+      if (!state.customDeviations.includes(name)) {
+        state.customDeviations.push(name);
+        save('customDeviations');
+      }
+    }
+  }
+
+  // Auto-create variant if not in list (only when enabled)
+  const variant = document.getElementById('ssVariant').value.trim();
+  if (doAutoCreate && variant) {
+    const allVars = getAllVariants();
+    if (!allVars.includes(variant)) {
+      const variantEffect = document.getElementById('ssVariantEffect')?.textContent?.trim() || '';
+      const vars = state.settings.variants || [];
+      vars.push({ name: variant, description: variantEffect || variant });
+      state.settings.variants = vars;
+      save('settings');
+    }
+  }
+
+  // Collect traits from dropdowns — auto-create custom traits if not found (only when enabled)
+  const traitSelects = document.querySelectorAll('#ssTraitsContainer select');
+  const traits = [];
+  const allTraits = getAllTraits();
+  traitSelects.forEach(sel => {
+    const val = sel.value;
+    if (!val) return;
+    if (doAutoCreate) {
+      const exists = allTraits.find(t => t.name === val);
+      if (!exists) {
+        if (!state.customTraits.find(t => t.name === val)) {
+          state.customTraits.push({
+            name: val,
+            effect: 'Custom trait (extracted from screenshot)',
+            neg: false,
+            deviants: [name]
+          });
+          save('customTraits');
+        }
+      }
+    }
+    traits.push(val);
+  });
+
+  // Create new deviation row
+  const row = newDeviation();
+  row.name = name;
+  row.variant = variant;
+  row.skill = parseInt(document.getElementById('ssSkill').value) || 0;
+  row.activity = parseInt(document.getElementById('ssActivity').value) || 0;
+  row.fusion = document.getElementById('ssFusion').checked ? 1 : 0;
+  for (let i = 0; i < 5 && i < traits.length; i++) {
+    row.traits[i] = traits[i];
+  }
+
+  // Apply defaults if set
+  if (defaultCharacter) row.char = defaultCharacter;
+
+  state.deviations.push(row);
+  save('deviations');
+
+  // Batch review mode: load next item
+  if (ssBatch.length > 0 && ssBatchIndex < ssBatch.length - 1) {
+    ssBatchIndex++;
+    ssBatchAdded++;
+    ssImageDataUrl = ssBatch[ssBatchIndex];
+    document.getElementById('ssStep1').style.display = '';
+    document.getElementById('ssStep2').style.display = 'none';
+    document.getElementById('ssStep3').style.display = 'none';
+    document.getElementById('ssFooter').style.display = 'none';
+    analyzeScreenshot();
+    return;
+  }
+
+  ssBatchAdded++;
+  closeScreenshotModal();
+  renderView();
+}
+
+/* ============================================================
+   VARIANTS
+   ============================================================ */
+function getAllVariants() {
+  return getVariantEntries().map(v => v.name).sort((a, b) => a.localeCompare(b));
+}
+
+function getVariantEntries() {
+  const vars = state.settings.variants || [];
+  return vars
+    .map(v => (typeof v === 'string' ? { name: v, description: v } : v))
+    .filter(v => v && typeof v.name === 'string' && v.name.trim())
+    .map(v => ({ name: String(v.name).trim(), description: String(v.description || v.name).trim() || String(v.name).trim() }));
+}
+
+function getVariantEntryByName(name) {
+  if (!name) return null;
+  const q = String(name).toLowerCase();
+  return getVariantEntries().find(v => v.name.toLowerCase() === q) || null;
+}
+
+function buildVariantOptions(curVal) {
+  const variants = getAllVariants();
+  let opts = `<option value=""${!curVal?' selected':''}>—</option>`;
+  variants.forEach(v => opts += `<option value="${escHtml(v)}"${v===curVal?' selected':''}>${escHtml(v)}</option>`);
+  opts += `<option value="__add__">➕ Add new variant...</option>`;
+  return opts;
+}
+
+function renderVariantSelect(rowId, val, dataField) {
+  const attr = dataField ? ` data-field="${dataField}"` : '';
+  return `<select${attr} class="row-variant" onchange="rowChange('${rowId}','variant',this.value)">${buildVariantOptions(val)}</select>`;
+}
+
+function updateAllVariantDropdowns() {
+  document.querySelectorAll('select.row-variant').forEach(sel => {
+    const container = sel.closest('[data-id]');
+    const rowId = container ? container.dataset.id : null;
+    const row   = rowId ? state.deviations.find(r => String(r.id) === String(rowId)) : null;
+    const cur   = row ? row.variant : '';
+    sel.innerHTML = buildVariantOptions(cur);
+  });
+}
+
+function updateFilterVariantDropdown() {
+  const sel = document.getElementById('fVariant');
+  if (!sel) return;
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">All</option>' +
+    getAllVariants().map(v => `<option value="${escHtml(v)}"${v===cur?' selected':''}>${escHtml(v)}</option>`).join('');
+}
+
+function renderVariantList() {
+  const list  = document.getElementById('variantList');
+  const empty = document.getElementById('variantEmpty');
+  if (!list) return;
+  const variants = getVariantEntries();
+  list.innerHTML = '';
+  if (!variants.length) { empty.style.display = ''; return; }
+  empty.style.display = 'none';
+  variants.forEach((v, i) => {
+    const isBuiltIn = defaultsAreLocked() && isDefaultVariantName(v.name);
+    const div = document.createElement('div');
+    div.className = 'char-item';
+    if (variantEditIndex === i && !isBuiltIn) {
+      div.style.display = 'block';
+      div.innerHTML = `
+        <input id="editVariantName" class="form-input" type="text" maxlength="30" value="${escHtml(v.name)}" style="margin-bottom:6px">
+        <textarea id="editVariantDesc" class="form-textarea" placeholder="Variant description…" style="min-height:64px">${escHtml(v.description)}</textarea>
+        <div style="display:flex;gap:6px;justify-content:flex-end;margin-top:6px">
+          <button class="btn btn-secondary btn-sm" onclick="cancelEditVariant()">Cancel</button>
+          <button class="btn btn-primary btn-sm" onclick="saveEditVariant(${i})">Save</button>
+        </div>
+      `;
+    } else {
+      div.innerHTML = `
+        <span title="${escHtml(v.description)}">${escHtml(v.name)}</span>
+        <div style="display:flex;align-items:center;gap:6px">
+          <button class="char-del" onclick="startEditVariant(${i})" title="Edit">✎</button>
+          <button class="char-del" onclick="delVariant(${i})" title="Remove">✕</button>
+        </div>
+      `;
+      if (isBuiltIn) {
+        const actions = div.querySelector('div[style*="align-items:center"]');
+        if (actions) actions.innerHTML = '<span class="lock-icon" title="Built-in variant — locked on official deployment">🔒</span>';
+      }
+    }
+    list.appendChild(div);
+  });
+}
+
+function addVariant() {
+  const inp = document.getElementById('variantInput');
+  const descInp = document.getElementById('variantDescInput');
+  const val = inp.value.trim().slice(0, 30);
+  const desc = (descInp ? descInp.value : '').trim().slice(0, 300);
+  if (!val || !desc) return;
+  const variants = getVariantEntries();
+  if (variants.some(v => v.name.toLowerCase() === val.toLowerCase())) { inp.value = ''; return; }
+  variants.push({ name: val, description: desc });
+  state.settings.variants = variants;
+  save('settings');
+  renderVariantList();
+  updateAllVariantDropdowns();
+  updateFilterVariantDropdown();
+  inp.value = '';
+  if (descInp) descInp.value = '';
+}
+
+function delVariant(i) {
+  const variants = getVariantEntries();
+  if (variants[i] && defaultsAreLocked() && isDefaultVariantName(variants[i].name)) return;
+  variants.splice(i, 1);
+  state.settings.variants = variants;
+  save('settings');
+  renderVariantList();
+  updateAllVariantDropdowns();
+  updateFilterVariantDropdown();
+}
+
+function startEditVariant(i) {
+  const variants = getVariantEntries();
+  if (variants[i] && defaultsAreLocked() && isDefaultVariantName(variants[i].name)) return;
+  variantEditIndex = i;
+  renderVariantList();
+}
+
+function cancelEditVariant() {
+  variantEditIndex = -1;
+  renderVariantList();
+}
+
+function saveEditVariant(i) {
+  const variants = getVariantEntries();
+  const oldEntry = variants[i];
+  if (!oldEntry) return;
+  if (defaultsAreLocked() && isDefaultVariantName(oldEntry.name)) return;
+  const nameInp = document.getElementById('editVariantName');
+  const descInp = document.getElementById('editVariantDesc');
+  const newName = (nameInp ? nameInp.value : '').trim().slice(0, 30);
+  const newDesc = (descInp ? descInp.value : '').trim().slice(0, 300);
+  if (!newName || !newDesc) return;
+  if (variants.some((v, idx) => idx !== i && v.name.toLowerCase() === newName.toLowerCase())) return;
+  variants[i] = { name: newName, description: newDesc };
+  state.settings.variants = variants;
+  if (oldEntry.name !== newName) {
+    state.deviations.forEach(r => { if (r.variant === oldEntry.name) r.variant = newName; });
+    if (defaultVariant === oldEntry.name) defaultVariant = newName;
+    save('deviations');
+    saveAddDefaults();
+  }
+  save('settings');
+  variantEditIndex = -1;
+  renderVariantList();
+  updateAllVariantDropdowns();
+  updateFilterVariantDropdown();
+  renderView();
+}
+
+function openManageVariants() {
+  const ni = document.getElementById('variantInput');
+  const di = document.getElementById('variantDescInput');
+  if (ni) ni.value = '';
+  if (di) di.value = '';
+  variantEditIndex = -1;
+  renderVariantList();
+  openModal('manageVariantModal');
+}
+
+/* ============================================================
+   MANAGE DEVIATIONS
+   ============================================================ */
+function openManageDeviations() {
+  // Reset add tab
+  document.getElementById('newDevName').value = '';
+  document.getElementById('devAddFlash').className = 'flash-msg';
+  document.getElementById('devRemoveSearch').value = '';
+  document.getElementById('addDevTraitSearch').value = '';
+  renderAddDevTraitLists();
+  // Reset edit tab
+  document.getElementById('editDevSelect').value = '';
+  document.getElementById('editDevPanel').style.display = 'none';
+  document.getElementById('editDevTraitSearch').value = '';
+  populateEditDevSelect();
+  // Reset to Add tab
+  const modal = document.getElementById('manageDevModal');
+  modal.querySelectorAll('.modal-tab-btn').forEach((b,i) => b.classList.toggle('active', i===0));
+  modal.querySelectorAll('.modal-tab-pane').forEach((p,i) => p.classList.toggle('active', i===0));
+  openModal('manageDevModal');
+}
+
+function addCustomDeviation() {
+  const inp = document.getElementById('newDevName');
+  const val = inp.value.trim();
+  if (!val) { showFlash('devAddFlash', '⚠ Please enter a deviation name.', true); return; }
+  const all = getAllDeviations();
+  if (all.some(d => d.toLowerCase() === val.toLowerCase())) {
+    showFlash('devAddFlash', '⚠ That deviation already exists in the list.', true);
+    return;
+  }
+  state.customDeviations.push(val);
+  save('customDeviations');
+  // Save trait assignments if any traits were checked
+  const checkedTraits = getAddDevCheckedTraits();
+  let assignedCount = 0;
+  if (checkedTraits.length > 0) {
+    if (!state.customTraitAssignments) state.customTraitAssignments = {};
+    state.customTraitAssignments[val] = { add: checkedTraits, remove: [] };
+    save('customTraitAssignments');
+    assignedCount = checkedTraits.length;
+  }
+  inp.value = '';
+  renderAddDevTraitLists();
+  const msg = assignedCount > 0
+    ? `✓ ${val} added with ${assignedCount} trait assignment${assignedCount !== 1 ? 's' : ''}!`
+    : '✓ Deviation added!';
+  showFlash('devAddFlash', msg);
+  // Refresh all deviation dropdowns
+  refreshAllDeviationDropdowns();
+}
+
+function renderDevRemoveList() {
+  const search  = (document.getElementById('devRemoveSearch').value || '').toLowerCase();
+  const list    = document.getElementById('devRemoveList');
+  const all     = getAllDeviations();
+  const visible = all.filter(d => !search || d.toLowerCase().includes(search));
+  list.innerHTML = '';
+  if (!visible.length) { list.innerHTML = '<div class="mgr-empty">No deviations found.</div>'; return; }
+  visible.forEach(name => {
+    const isDefaultItem = DEVIANT_LIST.includes(name);
+    const locked = isOfficialDeployment() && isDefaultItem;
+    const div = document.createElement('div');
+    div.className = 'mgr-item';
+    div.innerHTML = `<span class="mgr-item-name">${escHtml(name)}</span>` + (
+      locked
+        ? `<span class="lock-icon" title="Built-in deviation — edit config.js to remove">🔒</span>`
+        : `<button class="mgr-del-btn" onclick="removeCustomDeviation('${escHtml(name).replace(/'/g,"\\'")}')">✕</button>`
+    );
+    list.appendChild(div);
+  });
+}
+
+function filterDevRemoveList() { renderDevRemoveList(); }
+
+function removeCustomDeviation(name) {
+  const isDefaultItem = DEVIANT_LIST.includes(name);
+  const locked = isOfficialDeployment() && isDefaultItem;
+  if (locked) return;
+  showConfirm(
+    'Remove Deviation',
+    `Remove "${name}" from the deviation list? Rows using it will keep the value but it won't appear in future dropdowns.`,
+    () => {
+      state.customDeviations = state.customDeviations.filter(d => d !== name);
+      save('customDeviations');
+      renderDevRemoveList();
+      refreshAllDeviationDropdowns();
+    }
+  );
+}
+
+function refreshAllDeviationDropdowns() {
+  renderView();
+}
+
+/* ============================================================
+   TRAIT ASSIGNMENT EDITOR  (Add tab & Edit Deviation tab)
+   ============================================================ */
+
+/* ── ADD TAB ── */
+function renderAddDevTraitLists() {
+  const allTraits = getAllTraits();
+  const pos = allTraits.filter(t => !t.neg);
+  const neg = allTraits.filter(t =>  t.neg);
+  const makeList = (traits, id) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.innerHTML = traits.map(t =>
+      `<label class="dev-check-item">
+        <input type="checkbox" name="addDevTrait" value="${escHtml(t.name)}" onchange="updateAddDevCounts()">
+        ${escHtml(t.name)}
+      </label>`
+    ).join('');
+  };
+  makeList(pos, 'addDevPosTraits');
+  makeList(neg, 'addDevNegTraits');
+  updateAddDevCounts();
+}
+
+function filterAddDevTraits() {
+  const q = (document.getElementById('addDevTraitSearch').value || '').toLowerCase();
+  ['addDevPosTraits','addDevNegTraits'].forEach(cid => {
+    document.querySelectorAll(`#${cid} .dev-check-item`).forEach(el => {
+      el.classList.toggle('hidden', !!q && !el.textContent.trim().toLowerCase().includes(q));
+    });
+  });
+}
+
+function updateAddDevCounts() {
+  const pos = document.querySelectorAll('#addDevPosTraits input[name="addDevTrait"]:checked').length;
+  const neg = document.querySelectorAll('#addDevNegTraits input[name="addDevTrait"]:checked').length;
+  const pe = document.getElementById('addDevPosCount'); if (pe) pe.textContent = pos;
+  const ne = document.getElementById('addDevNegCount'); if (ne) ne.textContent = neg;
+  const tc = document.getElementById('addDevTotalCount');
+  if (tc) { const n = pos + neg; tc.textContent = `Selected: ${n} trait${n !== 1 ? 's' : ''} assigned`; }
+}
+
+function selectAllAddDevTraits(type) {
+  const cid = type === 'pos' ? 'addDevPosTraits' : 'addDevNegTraits';
+  document.querySelectorAll(`#${cid} .dev-check-item:not(.hidden) input`).forEach(cb => cb.checked = true);
+  updateAddDevCounts();
+}
+
+function clearAllAddDevTraits(type) {
+  const cid = type === 'pos' ? 'addDevPosTraits' : 'addDevNegTraits';
+  document.querySelectorAll(`#${cid} .dev-check-item:not(.hidden) input`).forEach(cb => cb.checked = false);
+  updateAddDevCounts();
+}
+
+function getAddDevCheckedTraits() {
+  return Array.from(document.querySelectorAll('input[name="addDevTrait"]:checked')).map(cb => cb.value);
+}
+
+/* ── EDIT TAB ── */
+function populateEditDevSelect() {
+  const sel = document.getElementById('editDevSelect');
+  if (!sel) return;
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">— Select a deviation —</option>' +
+    getAllDeviations().map(d => `<option value="${escHtml(d)}"${d===cur?' selected':''}>${escHtml(d)}</option>`).join('');
+}
+
+function loadEditDeviation() {
+  const devName = document.getElementById('editDevSelect').value;
+  const panel   = document.getElementById('editDevPanel');
+  if (!devName) { panel.style.display = 'none'; return; }
+  const note = document.getElementById('editDevBuiltinNote');
+  note.textContent = (defaultsAreLocked() && DEVIANT_LIST.includes(devName))
+    ? '🔒 Built-in deviation — changes stored as overrides, config.js is not modified.'
+    : '';
+  panel.style.display = 'block';
+  document.getElementById('editDevTraitSearch').value = '';
+  renderEditDevTraitLists(devName);
+}
+
+function renderEditDevTraitLists(devName) {
+  const currentNames = traitsForDeviation(devName).map(t => t.name);
+  const allTraits = getAllTraits();
+  const pos = allTraits.filter(t => !t.neg);
+  const neg = allTraits.filter(t =>  t.neg);
+  const makeList = (traits, id) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.innerHTML = traits.map(t =>
+      `<label class="dev-check-item">
+        <input type="checkbox" name="editDevTrait" value="${escHtml(t.name)}" ${currentNames.includes(t.name)?'checked':''} onchange="updateEditDevCounts()">
+        ${escHtml(t.name)}
+      </label>`
+    ).join('');
+  };
+  makeList(pos, 'editDevPosTraits');
+  makeList(neg, 'editDevNegTraits');
+  updateEditDevCounts();
+}
+
+function filterEditDevTraits() {
+  const q = (document.getElementById('editDevTraitSearch').value || '').toLowerCase();
+  ['editDevPosTraits','editDevNegTraits'].forEach(cid => {
+    document.querySelectorAll(`#${cid} .dev-check-item`).forEach(el => {
+      el.classList.toggle('hidden', !!q && !el.textContent.trim().toLowerCase().includes(q));
+    });
+  });
+}
+
+function updateEditDevCounts() {
+  const pos = document.querySelectorAll('#editDevPosTraits input[name="editDevTrait"]:checked').length;
+  const neg = document.querySelectorAll('#editDevNegTraits input[name="editDevTrait"]:checked').length;
+  const pe = document.getElementById('editDevPosCount'); if (pe) pe.textContent = pos;
+  const ne = document.getElementById('editDevNegCount'); if (ne) ne.textContent = neg;
+}
+
+function selectAllEditDevTraits(type) {
+  const cid = type === 'pos' ? 'editDevPosTraits' : 'editDevNegTraits';
+  document.querySelectorAll(`#${cid} .dev-check-item:not(.hidden) input`).forEach(cb => cb.checked = true);
+  updateEditDevCounts();
+}
+
+function clearAllEditDevTraits(type) {
+  const cid = type === 'pos' ? 'editDevPosTraits' : 'editDevNegTraits';
+  document.querySelectorAll(`#${cid} .dev-check-item:not(.hidden) input`).forEach(cb => cb.checked = false);
+  updateEditDevCounts();
+}
+
+function getEditDevCheckedTraits() {
+  return Array.from(document.querySelectorAll('input[name="editDevTrait"]:checked')).map(cb => cb.value);
+}
+
+function saveEditDeviation() {
+  const devName = document.getElementById('editDevSelect').value;
+  if (!devName) return;
+  // Baseline: what naturally applies without customTraitAssignments
+  const allTraits  = getAllTraits();
+  const baseline   = allTraits
+    .filter(t => t.deviants === 'ALL' || (Array.isArray(t.deviants) && t.deviants.includes(devName)))
+    .map(t => t.name);
+  const checked    = getEditDevCheckedTraits();
+  const addList    = checked.filter(n => !baseline.includes(n));
+  const removeList = baseline.filter(n => !checked.includes(n));
+  if (!state.customTraitAssignments) state.customTraitAssignments = {};
+  if (addList.length === 0 && removeList.length === 0) {
+    delete state.customTraitAssignments[devName];
+  } else {
+    state.customTraitAssignments[devName] = { add: addList, remove: removeList };
+  }
+  save('customTraitAssignments');
+  refreshTraitDropdownsForDeviation(devName);
+  const label = devName.length > 30 ? devName.slice(0, 27) + '…' : devName;
+  showFlash('editDevFlash', `✓ Trait assignments updated for ${label}`);
+}
+
+function refreshTraitDropdownsForDeviation(devName) {
+  const validNames = traitsForDeviation(devName).map(t => t.name);
+  state.deviations.forEach(row => {
+    if (row.name !== devName) return;
+    let changed = false;
+    for (let i = 0; i < 5; i++) {
+      if (row.traits[i] && !validNames.includes(row.traits[i])) { row.traits[i] = ''; changed = true; }
+    }
+    if (changed) save('deviations');
+    for (let i = 0; i < 5; i++) {
+      renderTraitCell(row.id, i, devName, row.traits[i]);
+      renderCardTraitCell(row.id, i, devName, row.traits[i]);
+    }
+  });
+}
+
+/* ============================================================
+   MANAGE TRAITS
+   ============================================================ */
+function openManageTraits() {
+  // Reset add tab
+  document.getElementById('newTraitName').value   = '';
+  document.getElementById('newTraitEffect').value = '';
+  document.querySelector('input[name="traitType"][value="positive"]').checked = true;
+  document.getElementById('traitAllDevs').checked = true;
+  document.getElementById('traitDevSelectWrap').style.display = 'none';
+  document.getElementById('traitAddFlash').className = 'flash-msg';
+  document.getElementById('traitRemoveSearch').value = '';
+  const ep = document.getElementById('traitEditPanel');
+  if (ep) ep.style.display = 'none';
+  editingTraitId = null;
+  // Reset to Add tab
+  const modal = document.getElementById('manageTraitModal');
+  modal.querySelectorAll('.modal-tab-btn').forEach((b,i) => b.classList.toggle('active', i===0));
+  modal.querySelectorAll('.modal-tab-pane').forEach((p,i) => p.classList.toggle('active', i===0));
+  // Populate dev checklist
+  renderTraitDevChecklist('');
+  openModal('manageTraitModal');
+}
+
+function toggleTraitAppliesTo() {
+  const all  = document.getElementById('traitAllDevs').checked;
+  document.getElementById('traitDevSelectWrap').style.display = all ? 'none' : 'block';
+}
+
+function renderTraitDevChecklist(search) {
+  const cont = document.getElementById('traitDevChecklist');
+  const devs = getAllDeviations();
+  cont.innerHTML = devs.map(d => {
+    const hide = search && !d.toLowerCase().includes(search.toLowerCase());
+    return `<label class="dev-check-item${hide?' hidden':''}">
+      <input type="checkbox" name="traitDevPick" value="${escHtml(d)}">
+      ${escHtml(d)}
+    </label>`;
+  }).join('');
+}
+
+function filterTraitDevChecklist() {
+  const q = document.getElementById('traitDevSearch').value.toLowerCase();
+  document.querySelectorAll('#traitDevChecklist .dev-check-item').forEach(el => {
+    el.classList.toggle('hidden', !!q && !el.textContent.trim().toLowerCase().includes(q));
+  });
+}
+
+function addCustomTrait() {
+  const name   = document.getElementById('newTraitName').value.trim();
+  const effect = document.getElementById('newTraitEffect').value.trim();
+  const type   = document.querySelector('input[name="traitType"]:checked').value;
+  const allDevs = document.getElementById('traitAllDevs').checked;
+
+  if (!name)   { showFlash('traitAddFlash', '⚠ Trait name is required.',         true); return; }
+  if (!effect) { showFlash('traitAddFlash', '⚠ Effect description is required.', true); return; }
+
+  // Check duplicate (compare ignoring ⚠ prefix)
+  const all = getAllTraits();
+  const displayName = type === 'negative' ? '⚠ ' + name : name;
+  if (all.some(t => t.name.toLowerCase() === displayName.toLowerCase())) {
+    showFlash('traitAddFlash', '⚠ A trait with that name already exists.', true);
+    return;
+  }
+
+  let deviations = 'ALL';
+  if (!allDevs) {
+    const checked = Array.from(document.querySelectorAll('input[name="traitDevPick"]:checked')).map(el => el.value);
+    if (!checked.length) { showFlash('traitAddFlash', '⚠ Select at least one deviation, or choose "All Deviations".', true); return; }
+    deviations = checked;
+  }
+
+  state.customTraits.push({ id: Date.now() + Math.random(), name, effect, type, deviations });
+  save('customTraits');
+  document.getElementById('newTraitName').value   = '';
+  document.getElementById('newTraitEffect').value = '';
+  document.querySelector('input[name="traitType"][value="positive"]').checked = true;
+  document.getElementById('traitAllDevs').checked = true;
+  document.getElementById('traitDevSelectWrap').style.display = 'none';
+  showFlash('traitAddFlash', '✓ Trait added!');
+}
+
+function renderTraitRemoveList() {
+  const search = (document.getElementById('traitRemoveSearch').value || '').toLowerCase();
+  const list   = document.getElementById('traitRemoveList');
+  const all    = getAllTraits();
+  const pos    = all.filter(t => !t.neg && (!search || t.name.toLowerCase().includes(search)));
+  const neg    = all.filter(t =>  t.neg && (!search || t.name.toLowerCase().includes(search)));
+  list.innerHTML = '';
+
+  function makeSection(label, traits) {
+    if (!traits.length) return;
+    const head = document.createElement('div');
+    head.className = 'mgr-section-head';
+    head.textContent = label;
+    list.appendChild(head);
+    traits.forEach(t => {
+      const isDefaultItem = TRAIT_DATA.some(bt => bt.name === t.name);
+      const locked = isOfficialDeployment() && isDefaultItem;
+      const div = document.createElement('div');
+      div.className = 'mgr-item';
+      div.innerHTML = `<span class="mgr-item-name${t.neg?' neg-name':''}">${escHtml(t.name)}</span>` + (
+        locked
+          ? `<span class="lock-icon" title="Built-in trait — edit config.js to remove">🔒</span>`
+          : `<div style="display:flex;gap:6px"><button class="mgr-del-btn" onclick="startEditTrait(${JSON.stringify(t.id)})">✎</button><button class="mgr-del-btn" onclick="removeCustomTrait(${JSON.stringify(t.rawName||t.name)},${JSON.stringify(t.id)})">✕</button></div>`
+      );
+      if (!defaultsAreLocked() && isBuiltInDefault) {
+        const controls = div.querySelector('div[style*="display:flex;gap:6px"]');
+        if (controls) controls.innerHTML = `<button class="mgr-del-btn" onclick="removeBuiltInTrait(${JSON.stringify(t.name)})">Remove</button>`;
+      }
+      list.appendChild(div);
+    });
+  }
+
+  makeSection('Positive Traits', pos);
+  makeSection('⚠ Negative Traits', neg);
+  if (!pos.length && !neg.length) list.innerHTML = '<div class="mgr-empty">No traits found.</div>';
+}
+
+function filterTraitRemoveList() { renderTraitRemoveList(); }
+
+function removeCustomTrait(rawName, id) {
+  const displayName = state.customTraits.find(t => t.id === id)?.type === 'negative' ? '⚠ ' + rawName : rawName;
+  showConfirm(
+    'Remove Trait',
+    `Remove "${displayName}"? Rows using it will keep the value but it won't appear in future dropdowns.`,
+    () => {
+      state.customTraits = state.customTraits.filter(t => t.id !== id);
+      save('customTraits');
+      renderTraitRemoveList();
+    }
+  );
+}
+
+function removeBuiltInTrait(name) {
+  if (defaultsAreLocked()) return;
+  showConfirm(
+    'Remove Trait',
+    `Remove "${name}" from the built-in trait list for this environment?`,
+    () => {
+      const hidden = new Set(state.settings.hiddenDefaultTraits || []);
+      hidden.add(name);
+      state.settings.hiddenDefaultTraits = [...hidden];
+      save('settings');
+      renderTraitRemoveList();
+      renderView();
+    }
+  );
+}
+
+function startEditTrait(id) {
+  const trait = (state.customTraits || []).find(t => String(t.id) === String(id));
+  if (!trait) return;
+  editingTraitId = trait.id;
+  const panel = document.getElementById('traitEditPanel');
+  if (!panel) return;
+  panel.style.display = 'block';
+  document.getElementById('editTraitName').value = trait.name || '';
+  document.getElementById('editTraitEffect').value = trait.effect || '';
+}
+
+function cancelEditTrait() {
+  editingTraitId = null;
+  const panel = document.getElementById('traitEditPanel');
+  if (panel) panel.style.display = 'none';
+}
+
+function saveEditTrait() {
+  if (!editingTraitId) return;
+  const idx = (state.customTraits || []).findIndex(t => String(t.id) === String(editingTraitId));
+  if (idx < 0) return;
+  const oldTrait = state.customTraits[idx];
+  const newName = (document.getElementById('editTraitName').value || '').trim();
+  const newEffect = (document.getElementById('editTraitEffect').value || '').trim();
+  if (!newName || !newEffect) {
+    showFlash('traitEditFlash', '⚠ Name and description are required.', true);
+    return;
+  }
+  const oldDisplay = oldTrait.type === 'negative' ? '⚠ ' + oldTrait.name : oldTrait.name;
+  const newDisplay = oldTrait.type === 'negative' ? '⚠ ' + newName : newName;
+  const hasDup = getAllTraits().some(t => t.name.toLowerCase() === newDisplay.toLowerCase() && t.name !== oldDisplay);
+  if (hasDup) {
+    showFlash('traitEditFlash', '⚠ A trait with that name already exists.', true);
+    return;
+  }
+  state.customTraits[idx].name = newName;
+  state.customTraits[idx].effect = newEffect;
+  state.deviations.forEach(r => {
+    for (let i = 0; i < 5; i++) {
+      if (r.traits[i] === oldDisplay) r.traits[i] = newDisplay;
+    }
+  });
+  Object.values(state.customTraitAssignments || {}).forEach(assign => {
+    if (!assign) return;
+    if (Array.isArray(assign.add)) assign.add = [...new Set(assign.add.map(n => n === oldDisplay ? newDisplay : n))];
+    if (Array.isArray(assign.remove)) assign.remove = [...new Set(assign.remove.map(n => n === oldDisplay ? newDisplay : n))];
+  });
+  save('customTraits');
+  save('deviations');
+  save('customTraitAssignments');
+  showFlash('traitEditFlash', '✓ Trait updated.');
+  cancelEditTrait();
+  renderTraitRemoveList();
+  renderView();
+}
+
+/* ============================================================
+   RESPONSIVE VIEW CONTROLLER
+   ============================================================ */
+const isMobile = () => window.matchMedia('(max-width:767px)').matches;
+
+function renderView() {
+  if (isMobile()) {
+    renderCards();
+    document.getElementById('deviationBody').innerHTML = '';
+  } else {
+    renderTable();
+    document.getElementById('cardContainer').innerHTML = '';
+  }
+}
+
+let _resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(_resizeTimer);
+  _resizeTimer = setTimeout(() => { renderView(); }, 150);
+});
+
+function renderCards() {
+  const rows  = getFilteredSorted();
+  const cont  = document.getElementById('cardContainer');
+  const total = state.deviations.length;
+  const word  = total === 1 ? 'deviation' : 'deviations';
+  document.getElementById('rowCount').textContent = `Showing ${rows.length} of ${total} ${word}`;
+  cont.innerHTML = '';
+  if (rows.length === 0) {
+    cont.innerHTML = `<p class="card-empty">${total === 0
+      ? 'No deviations added yet. Tap <strong>+ Add Deviation</strong> to get started.'
+      : 'No deviations match the current filters.'}</p>`;
+    return;
+  }
+  const allDevs = getAllDeviations();
+  rows.forEach(row => {
+    const card = document.createElement('div');
+    card.className = 'deviation-card';
+    card.dataset.id = row.id;
+    const charOpts = '<option value="">—</option>' +
+      state.settings.characters.map(c => `<option value="${escHtml(c)}"${c===row.char?' selected':''}>${escHtml(c)}</option>`).join('');
+    const devOpts = '<option value="">—</option>' +
+      allDevs.map(d => `<option value="${escHtml(d)}"${d===row.name?' selected':''}>${escHtml(d)}</option>`).join('');
+    card.innerHTML = `
+      <div class="card-top">
+        <div class="card-top-left">
+          <div class="card-field-row">
+            <span class="card-field-label">Character</span>
+            <select data-field="character" class="row-char card-select" onchange="rowChange('${row.id}','char',this.value)">${charOpts}</select>
+          </div>
+          <div class="card-field-row">
+            <span class="card-field-label">Deviation</span>
+            <select data-field="name" class="row-name card-select" onchange="rowChange('${row.id}','name',this.value)">${devOpts}</select>
+          </div>
+          <div class="card-field-row">
+            <span class="card-field-label">Variant</span>
+            <select data-field="variant" class="row-variant card-select card-variant-sel" onchange="rowChange('${row.id}','variant',this.value)">${buildVariantOptions(row.variant)}</select>
+          </div>
+        </div>
+        <button class="del-btn card-del" onclick="deleteDeviationRow('${row.id}')">✕</button>
+      </div>
+      <div class="card-divider"></div>
+      <div class="card-section-label">Traits</div>
+      <div class="card-traits">
+        <div class="card-trait-cell" id="cc_${row.id}_0"></div>
+        <div class="card-trait-cell" id="cc_${row.id}_1"></div>
+        <div class="card-trait-cell" id="cc_${row.id}_2"></div>
+        <div class="card-trait-cell" id="cc_${row.id}_3"></div>
+        <div class="card-trait-cell" id="cc_${row.id}_4"></div>
+      </div>
+      <div class="card-divider"></div>
+      <div class="card-stat-row">
+        <div class="card-stat"><span class="card-stat-label">Skill</span>${renderSkillSelect(row.id, row.skill, 'skill')}</div>
+        <div class="card-stat"><span class="card-stat-label">Activity</span>${renderActivitySelect(row.id, row.activity, 'activity')}</div>
+        <div class="card-stat">
+          <span class="card-stat-label">ELand</span>
+          <label class="toggle"><input data-field="eland" type="checkbox" ${row.eland?'checked':''} onchange="rowChange('${row.id}','eland',this.checked)"><span class="toggle-slider"></span></label>
+        </div>
+        <div class="card-stat">
+          <span class="card-stat-label">Fusion</span>
+          <label class="toggle"><input data-field="fusion" type="checkbox" ${row.fusion?'checked':''} onchange="rowChange('${row.id}','fusion',this.checked)"><span class="toggle-slider"></span></label>
+        </div>
+        <div class="card-stat">
+          <span class="card-stat-label">Locked</span>
+          <label class="toggle"><input type="checkbox" ${row.locked?'checked':''} onchange="rowChange('${row.id}','locked',this.checked)"><span class="toggle-slider"></span></label>
+        </div>
+      </div>`;
+    cont.appendChild(card);
+    for (let i = 0; i < 5; i++) renderCardTraitCell(row.id, i, row.name, row.traits[i]);
+    const vsel = card.querySelector('select.row-variant');
+    if (vsel) attachVariantTooltip(vsel);
+  });
+}
+
+function renderCardTraitCell(rowId, slotIdx, devName, curTrait) {
+  const cell = document.getElementById(`cc_${rowId}_${slotIdx}`);
+  if (!cell) return;
+  const avail    = traitsForDeviation(devName);
+  const traitDef = getAllTraits().find(t => t.name === curTrait);
+  const isNeg    = traitDef?.neg || false;
+  let opts = '<option value="">—</option>';
+  avail.forEach(t => opts += `<option value="${escHtml(t.name)}"${t.name===curTrait?' selected':''}>${escHtml(t.name)}</option>`);
+  cell.innerHTML = `<select class="${isNeg?'neg-trait':''}" onchange="traitChange('${rowId}',${slotIdx},this.value)">${opts}</select>`;
+  if (curTrait && traitDef) {
+    const sel = cell.querySelector('select');
+    sel.addEventListener('mouseenter', () => showTraitTooltip(sel, curTrait, traitDef.effect, isNeg));
+    sel.addEventListener('mouseleave', hideTraitTooltip);
+    sel.addEventListener('focus',      () => showTraitTooltip(sel, curTrait, traitDef.effect, isNeg));
+    sel.addEventListener('blur',       hideTraitTooltip);
+  }
+}
+
+/* ============================================================
+   DEVIATIONS TABLE
+   ============================================================ */
+function newDeviation() {
+  return { id: Date.now() + Math.random(), char:'', name:'', variant:'', traits:['','','','',''], skill:0, activity:0, eland:false, fusion:false, locked:false };
+}
+
+function addDeviationRow() {
+  const row = newDeviation();
+  state.deviations.push(row);
+  save('deviations');
+  renderView();
+  const container = isMobile() ? document.getElementById('cardContainer') : document.getElementById('deviationBody');
+  const rowEl = container ? container.querySelector(`[data-id="${row.id}"]`) : null;
+  if (!rowEl) return;
+
+  setSelectValue(rowEl, 'character', defaultCharacter);
+  setSelectValue(rowEl, 'name',      defaultDeviationName);
+  setSelectValue(rowEl, 'variant',   defaultVariant);
+  setSelectValue(rowEl, 'skill',     defaultSkill);
+  setSelectValue(rowEl, 'activity',  defaultActivity);
+  setCheckboxValue(rowEl, 'eland',   defaultEland);
+  setCheckboxValue(rowEl, 'fusion',  defaultFusion);
+
+  const ch = rowEl.querySelector('[data-field="character"]');
+  const nm = rowEl.querySelector('[data-field="name"]');
+  const vr = rowEl.querySelector('[data-field="variant"]');
+  const sk = rowEl.querySelector('[data-field="skill"]');
+  const ac = rowEl.querySelector('[data-field="activity"]');
+  const el = rowEl.querySelector('[data-field="eland"]');
+  const fu = rowEl.querySelector('[data-field="fusion"]');
+  if (ch) rowChange(row.id, 'char', ch.value);
+  if (nm) rowChange(row.id, 'name', nm.value);
+  if (vr) rowChange(row.id, 'variant', vr.value);
+  if (sk) rowChange(row.id, 'skill', sk.value);
+  if (ac) rowChange(row.id, 'activity', ac.value);
+  if (el) rowChange(row.id, 'eland', el.checked);
+  if (fu) rowChange(row.id, 'fusion', fu.checked);
+  save('deviations');
+}
+
+function deleteDeviationRow(id) {
+  showConfirm('Delete Deviation', 'Are you sure you want to delete this row?', () => {
+    state.deviations = state.deviations.filter(d => String(d.id) !== String(id));
+    save('deviations');
+    renderView();
+  });
+}
+
+function getFilteredSorted() {
+  let rows = [...state.deviations];
+  const { char, deviation, fusion, locked, skill, activity, variant } = filters;
+  if (char)      rows = rows.filter(r => r.char === char);
+  if (deviation) rows = rows.filter(r => r.name.toLowerCase().includes(deviation.toLowerCase()));
+  if (fusion  !== '') rows = rows.filter(r => (r.fusion ?'1':'0') === fusion);
+  if (locked  !== '') rows = rows.filter(r => (r.locked ?'1':'0') === locked);
+  if (skill)     rows = rows.filter(r => String(r.skill)    === skill);
+  if (activity)  rows = rows.filter(r => String(r.activity) === activity);
+  if (variant)   rows = rows.filter(r => r.variant === variant);
+  if (sortCol) {
+    const k = { char:'char', name:'name', variant:'variant', skill:'skill', activity:'activity', eland:'eland', fusion:'fusion', locked:'locked' }[sortCol];
+    rows.sort((a, b) => {
+      if (sortCol.startsWith('trait')) {
+        const idx = Number(sortCol.replace('trait', '')) - 1;
+        return compareTraitValues(a.traits[idx], b.traits[idx], sortDir);
+      }
+      if (!k) return 0;
+      let av = a[k], bv = b[k];
+      if (typeof av === 'boolean') av = av ? 1 : 0;
+      if (typeof bv === 'boolean') bv = bv ? 1 : 0;
+      return (typeof av === 'number' ? av - bv : String(av).localeCompare(String(bv), undefined, { sensitivity:'base' })) * sortDir;
+    });
+  }
+  return rows;
+}
+
+function compareTraitValues(a, b, dir) {
+  const av = String(a || '').trim();
+  const bv = String(b || '').trim();
+  const aEmpty = !av || av === '-';
+  const bEmpty = !bv || bv === '-';
+  if (aEmpty || bEmpty) {
+    if (aEmpty && bEmpty) return 0;
+    return dir === 1 ? (aEmpty ? 1 : -1) : (aEmpty ? -1 : 1);
+  }
+  const aNeg = av.startsWith('⚠') || av.startsWith('âš ');
+  const bNeg = bv.startsWith('⚠') || bv.startsWith('âš ');
+  if (aNeg !== bNeg) return dir === 1 ? (aNeg ? 1 : -1) : (aNeg ? -1 : 1);
+  return av.localeCompare(bv, undefined, { sensitivity:'base' }) * dir;
+}
+
+function renderTable() {
+  const rows  = getFilteredSorted();
+  const tbody = document.getElementById('deviationBody');
+  tbody.innerHTML = '';
+  const total = state.deviations.length;
+  const word  = total === 1 ? 'deviation' : 'deviations';
+  document.getElementById('rowCount').textContent = `Showing ${rows.length} of ${total} ${word}`;
+
+  if (rows.length === 0) {
+    const tr = document.createElement('tr');
+    tr.className = 'empty-row';
+    tr.innerHTML = `<td colspan="14">${total === 0 ? 'No deviations added yet. Click <strong>+ Add Deviation</strong> to get started.' : 'No deviations match the current filters.'}</td>`;
+    tbody.appendChild(tr);
+    return;
+  }
+
+  const allDevs = getAllDeviations();
+
+  rows.forEach(row => {
+    const tr = document.createElement('tr');
+    tr.dataset.id = row.id;
+
+    const charOpts = '<option value="">—</option>' + state.settings.characters.map(c => `<option value="${escHtml(c)}"${c===row.char?' selected':''}>${escHtml(c)}</option>`).join('');
+    const devOpts  = '<option value="">—</option>' + allDevs.map(d => `<option value="${escHtml(d)}"${d===row.name?' selected':''}>${escHtml(d)}</option>`).join('');
+
+    tr.innerHTML = `
+      <td><select data-field="character" class="row-char" onchange="rowChange('${row.id}','char',this.value)">${charOpts}</select></td>
+      <td><select data-field="name" class="row-name" onchange="rowChange('${row.id}','name',this.value)">${devOpts}</select></td>
+      <td>${renderVariantSelect(row.id, row.variant, 'variant')}</td>
+      <td class="trait-cell" id="tc_${row.id}_0"></td>
+      <td class="trait-cell" id="tc_${row.id}_1"></td>
+      <td class="trait-cell" id="tc_${row.id}_2"></td>
+      <td class="trait-cell" id="tc_${row.id}_3"></td>
+      <td class="trait-cell" id="tc_${row.id}_4"></td>
+      <td>${renderSkillSelect(row.id, row.skill, 'skill')}</td>
+      <td>${renderActivitySelect(row.id, row.activity, 'activity')}</td>
+      <td class="toggle-wrap"><label class="toggle"><input data-field="eland" type="checkbox" ${row.eland?'checked':''} onchange="rowChange('${row.id}','eland',this.checked)"><span class="toggle-slider"></span></label></td>
+      <td class="toggle-wrap"><label class="toggle"><input data-field="fusion" type="checkbox" ${row.fusion?'checked':''} onchange="rowChange('${row.id}','fusion',this.checked)"><span class="toggle-slider"></span></label></td>
+      <td class="toggle-wrap"><label class="toggle"><input type="checkbox" ${row.locked?'checked':''} onchange="rowChange('${row.id}','locked',this.checked)"><span class="toggle-slider"></span></label></td>
+      <td style="text-align:center"><button class="del-btn" onclick="deleteDeviationRow('${row.id}')">✕</button></td>
+    `;
+    tbody.appendChild(tr);
+
+    for (let i = 0; i < 5; i++) renderTraitCell(row.id, i, row.name, row.traits[i]);
+    const vsel = tr.querySelector('select.row-variant');
+    if (vsel) attachVariantTooltip(vsel);
+  });
+
+  updateSortIndicators();
+}
+
+function renderSkillSelect(rowId, val, dataField) {
+  const v = val ? String(val) : '';
+  const attr = dataField ? ` data-field="${dataField}"` : '';
+  const cls = `score-select${v ? ` skill-${v}` : ''}`;
+  return `<select${attr} class="${cls}" onchange="onScoreChange('${rowId}','skill',this)">
+    <option value=""${!v?' selected':''}>—</option>
+    <option value="1"${v==='1'?' selected':''}>1</option>
+    <option value="2"${v==='2'?' selected':''}>2</option>
+    <option value="3"${v==='3'?' selected':''}>3</option>
+    <option value="4"${v==='4'?' selected':''}>4</option>
+    <option value="5"${v==='5'?' selected':''}>5</option>
+  </select>`;
+}
+
+function renderActivitySelect(rowId, val, dataField) {
+  const v = val ? String(val) : '';
+  const attr = dataField ? ` data-field="${dataField}"` : '';
+  const cls = `score-select${v ? ` activity-${v}` : ''}`;
+  return `<select${attr} class="${cls}" onchange="onScoreChange('${rowId}','activity',this)">
+    <option value=""${!v?' selected':''}>—</option>
+    <option value="1"${v==='1'?' selected':''}>1</option>
+    <option value="2"${v==='2'?' selected':''}>2</option>
+    <option value="3"${v==='3'?' selected':''}>3</option>
+    <option value="4"${v==='4'?' selected':''}>4</option>
+    <option value="5"${v==='5'?' selected':''}>5</option>
+  </select>`;
+}
+
+function renderTraitCell(rowId, slotIdx, devName, curTrait) {
+  const cell = document.getElementById(`tc_${rowId}_${slotIdx}`);
+  if (!cell) return;
+  const avail    = traitsForDeviation(devName);
+  const traitDef = getAllTraits().find(t => t.name === curTrait);
+  const isNeg    = traitDef?.neg || false;
+
+  let opts = '<option value="">—</option>';
+  avail.forEach(t => opts += `<option value="${escHtml(t.name)}"${t.name===curTrait?' selected':''}>${escHtml(t.name)}</option>`);
+
+  cell.innerHTML = `<select class="${isNeg?'neg-trait':''}" onchange="traitChange('${rowId}',${slotIdx},this.value)">${opts}</select>`;
+
+  // Attach tooltip via mouse events if a trait is selected
+  if (curTrait && traitDef) {
+    const sel = cell.querySelector('select');
+    sel.addEventListener('mouseenter', () => showTraitTooltip(sel, curTrait, traitDef.effect, isNeg));
+    sel.addEventListener('mouseleave', hideTraitTooltip);
+    sel.addEventListener('focus',      () => showTraitTooltip(sel, curTrait, traitDef.effect, isNeg));
+    sel.addEventListener('blur',       hideTraitTooltip);
+  }
+}
+
+function rowChange(id, field, val) {
+  const row = state.deviations.find(r => String(r.id) === String(id));
+  if (!row) return;
+  if (field === 'name') {
+    row.name = val;
+    for (let i = 0; i < 5; i++) {
+      if (row.traits[i]) {
+        const td = TRAIT_DATA.find(t => t.name === row.traits[i]);
+        const ct = (state.customTraits || []).find(t => {
+          const dn = t.type==='negative'?'⚠ '+t.name:t.name;
+          return dn === row.traits[i];
+        });
+        const anyDef = td || (ct ? {deviants: ct.deviations} : null);
+        if (anyDef && anyDef.deviants !== 'ALL' && Array.isArray(anyDef.deviants) && !anyDef.deviants.includes(val)) {
+          row.traits[i] = '';
+        }
+      }
+      renderTraitCell(id, i, val, row.traits[i]);
+      renderCardTraitCell(id, i, val, row.traits[i]);
+    }
+  } else if (field === 'char')     row.char     = val;
+  else if (field === 'variant') {
+    if (val === '__add__') {
+      const nv = window.prompt('Enter new variant name:');
+      if (nv && nv.trim()) {
+        const nameTrimmed = nv.trim().slice(0, 30);
+        const nd = window.prompt('Enter variant description:');
+        if (!nd || !nd.trim()) {
+          updateAllVariantDropdowns();
+          return;
+        }
+        const descTrimmed = nd.trim().slice(0, 300);
+        const variants = getVariantEntries();
+        const exists = variants.some(v => v.name.toLowerCase() === nameTrimmed.toLowerCase());
+        if (!exists) {
+          variants.push({ name: nameTrimmed, description: descTrimmed });
+          state.settings.variants = variants;
+          save('settings');
+          renderVariantList();
+          updateFilterVariantDropdown();
+        }
+        row.variant = nameTrimmed;
+        updateAllVariantDropdowns();
+      } else {
+        updateAllVariantDropdowns();
+        return;
+      }
+    } else {
+      row.variant = val;
+    }
+  }
+  else if (field === 'skill')      row.skill    = val ? Number(val) : 0;
+  else if (field === 'activity')   row.activity = val ? Number(val) : 0;
+  else if (field === 'eland')      row.eland    = val;
+  else if (field === 'fusion')     row.fusion   = val;
+  else if (field === 'locked')     row.locked   = val;
+
+  if (field === 'char')     defaultCharacter = row.char || '';
+  if (field === 'name')     defaultDeviationName = row.name || '';
+  if (field === 'variant')  defaultVariant = row.variant || '';
+  if (field === 'skill')    defaultSkill = row.skill ? String(row.skill) : '';
+  if (field === 'activity') defaultActivity = row.activity ? String(row.activity) : '';
+  if (field === 'eland')    defaultEland = !!row.eland;
+  if (field === 'fusion')   defaultFusion = !!row.fusion;
+  if (['char','name','variant','skill','activity','eland','fusion'].includes(field)) saveAddDefaults();
+
+  save('deviations');
+}
+
+function onScoreChange(id, field, sel) {
+  if (!sel) return;
+  for (let i = 1; i <= 5; i++) sel.classList.remove(`${field}-${i}`);
+  if (sel.value >= '1' && sel.value <= '5') sel.classList.add(`${field}-${sel.value}`);
+  rowChange(id, field, sel.value);
+}
+
+function traitChange(rowId, slotIdx, val) {
+  const row = state.deviations.find(r => String(r.id) === String(rowId));
+  if (!row) return;
+  row.traits[slotIdx] = val;
+  save('deviations');
+  renderTraitCell(rowId, slotIdx, row.name, val);
+  renderCardTraitCell(rowId, slotIdx, row.name, val);
+}
+function attachVariantTooltip(sel) {
+  const show = () => {
+    const name = sel.value;
+    const variant = getVariantEntryByName(name);
+    if (!variant || !variant.description || name === "__add__") return;
+    showTraitTooltip(sel, variant.name, variant.description, false);
+  };
+  sel.addEventListener("mouseenter", show);
+  sel.addEventListener("focus", show);
+  sel.addEventListener("change", show);
+  sel.addEventListener("mouseleave", hideTraitTooltip);
+  sel.addEventListener("blur", hideTraitTooltip);
+}
+
+/* ── Trait Tooltip ── */
+function showTraitTooltip(el, name, effect, isNeg) {
+  const tip    = document.getElementById('shared-tooltip');
+  const header = document.getElementById('shared-tooltip-header');
+  const body   = document.getElementById('shared-tooltip-body');
+  header.textContent = name;
+  header.className   = 'tooltip-header ' + (isNeg ? 'neg' : 'pos');
+  body.textContent   = effect;
+  tip.style.display  = 'block';
+  // Measure after making visible
+  const rect = el.getBoundingClientRect();
+  const th   = tip.offsetHeight || 100;
+  const tw   = tip.offsetWidth  || 260;
+  // Left: clamp so it doesn't overflow right edge
+  const left = Math.max(4, Math.min(rect.left, window.innerWidth - tw - 8));
+  tip.style.left = left + 'px';
+  // Vertical: prefer above, fall back to below
+  if (rect.top >= th + 10) {
+    tip.style.top    = (rect.top - th - 8) + 'px';
+  } else {
+    tip.style.top    = Math.min(rect.bottom + 8, window.innerHeight - th - 4) + 'px';
+  }
+}
+
+function hideTraitTooltip() {
+  document.getElementById('shared-tooltip').style.display = 'none';
+}
+
+/* ── Dismiss tooltip on any click outside ── */
+document.addEventListener('click', () => hideTraitTooltip());
+
+/* ── Sort / Filter ── */
+document.querySelectorAll('th[data-sort-field]').forEach(th => {
+  th.addEventListener('click', () => {
+    const col = th.dataset.sortField;
+    if (sortCol !== col) {
+      sortCol = col;
+      sortDir = 1;
+    } else if (sortDir === 1) {
+      sortDir = -1;
+    } else {
+      sortCol = null;
+      sortDir = 1;
+    }
+    renderView();
+  });
+});
+
+function updateSortIndicators() {
+  document.querySelectorAll('th[data-sort-field]').forEach(th => {
+    const indicator = th.querySelector('.sort-indicator');
+    if (!indicator) return;
+    if (th.dataset.sortField !== sortCol) indicator.textContent = '↕';
+    else indicator.textContent = sortDir === 1 ? '↑' : '↓';
+  });
+}
+
+function applyFilters() {
+  filters.char      = document.getElementById('fChar').value;
+  filters.deviation = document.getElementById('fDeviation').value;
+  filters.fusion    = document.getElementById('fFusion').value;
+  filters.locked    = document.getElementById('fLocked').value;
+  filters.skill     = document.getElementById('fSkill').value;
+  filters.activity  = document.getElementById('fActivity').value;
+  filters.variant   = document.getElementById('fVariant').value;
+  renderView();
+}
+
+function clearAllFilters() {
+  ['fChar','fFusion','fLocked','fSkill','fActivity','fVariant'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('fDeviation').value = '';
+  filters = { char:'', deviation:'', fusion:'', locked:'', skill:'', activity:'', variant:'' };
+  renderView();
+}
+
+function clearFilters() {
+  clearAllFilters();
+}
+
+function setSelectValue(row, fieldName, value) {
+  if (!value) return;
+  const sel = row.querySelector('[data-field="' + fieldName + '"]');
+  if (!sel) return;
+  for (let i = 0; i < sel.options.length; i++) {
+    if (sel.options[i].value === value) {
+      sel.selectedIndex = i;
+      break;
+    }
+  }
+}
+
+function setCheckboxValue(row, fieldName, value) {
+  const cb = row.querySelector('[data-field="' + fieldName + '"]');
+  if (!cb) return;
+  cb.checked = !!value;
+}
+
+function initPersistenceListeners() {
+  const fc = document.getElementById('fChar');
+  const fv = document.getElementById('fVariant');
+  const fs = document.getElementById('fSkill');
+  const fa = document.getElementById('fActivity');
+
+  if (fc) fc.addEventListener('change', () => {
+    defaultCharacter = (fc.value && fc.value !== 'All') ? fc.value : '';
+    saveAddDefaults();
+  });
+  if (fv) fv.addEventListener('change', () => {
+    defaultVariant = (fv.value && fv.value !== 'All') ? fv.value : '';
+    saveAddDefaults();
+  });
+  if (fs) fs.addEventListener('change', () => {
+    defaultSkill = (fs.value && fs.value !== 'All') ? fs.value : '';
+    saveAddDefaults();
+  });
+  if (fa) fa.addEventListener('change', () => {
+    defaultActivity = (fa.value && fa.value !== 'All') ? fa.value : '';
+    saveAddDefaults();
+  });
+}
+
+/* ============================================================
+   EXPORT CSV
+   ============================================================ */
+function exportCSV() {
+  const rows   = getFilteredSorted();
+  const header = ['Character','Deviation Name','Variant','Trait 1','Trait 2','Trait 3','Trait 4','Trait 5','Skill Level','Activity Level','ELand','Fusion','Locked'];
+  const lines  = [header.map(csvEsc).join(',')];
+  rows.forEach(r => lines.push([
+    r.char, r.name, r.variant,
+    r.traits[0]||'', r.traits[1]||'', r.traits[2]||'', r.traits[3]||'', r.traits[4]||'',
+    r.skill, r.activity, r.eland?'Yes':'No', r.fusion?'Yes':'No', r.locked?'Yes':'No',
+  ].map(csvEsc).join(',')));
+  const blob = new Blob([lines.join('\n')], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'once-human-deviations.csv';
+  a.click();
+}
+function csvEsc(v) { v = String(v||''); return /[",\n]/.test(v) ? `"${v.replace(/"/g,'""')}"` : v; }
+
+/* ============================================================
+   CLEAR ALL DATA
+   ============================================================ */
+function confirmClearAll() {
+  showConfirm(
+    '🗑 Clear All Data',
+    'This will permanently delete ALL deviation and material data. Custom deviations and traits are kept. This cannot be undone.',
+    () => {
+      state.deviations = []; state.materials = [];
+      save('deviations'); save('materials');
+      renderView(); renderMaterials();
+    }
+  );
+}
+
+/* ============================================================
+   SAVE / LOAD CONFIG
+   ============================================================ */
+function saveConfig() {
+  const data = {
+    version:                2,
+    customDeviations:       state.customDeviations,
+    customTraits:           state.customTraits,
+    settings:               state.settings,
+    customTraitAssignments: state.customTraitAssignments || {},
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'once-human-tracker-config.json';
+  a.click();
+}
+
+function saveContribConfigNow() {
+  const raw = window.prompt('Enter a short name for your contribution file (example: mylatest).');
+  if (raw === null) return;
+  const cleaned = String(raw || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]+/g, '-')
+    .replace(/^-+|-+$/g, '') || 'mylatest';
+  const base = cleaned.endsWith('-config') ? cleaned : `${cleaned}-config`;
+
+  const data = {
+    version:                2,
+    customDeviations:       state.customDeviations,
+    customTraits:           state.customTraits,
+    settings:               state.settings,
+    customTraitAssignments: state.customTraitAssignments || {},
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `${base}.json`;
+  a.click();
+}
+
+function triggerLoadConfig() {
+  document.getElementById('configFileInput').click();
+}
+
+function handleConfigLoad(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (data.customDeviations)       { state.customDeviations       = data.customDeviations;       save('customDeviations'); }
+      if (data.customTraits)           { state.customTraits           = data.customTraits;           save('customTraits'); }
+      if (data.settings)               { state.settings               = mergeSettingsWithDefaults(data.settings); normalizeVariantSettings(); save('settings'); }
+      if (data.customTraitAssignments) { state.customTraitAssignments = data.customTraitAssignments; save('customTraitAssignments'); }
+      renderCharList();
+      updateFilterCharDropdown();
+      renderVariantList();
+      updateFilterVariantDropdown();
+      renderView();
+      alert('Config loaded successfully.');
+    } catch (err) {
+      alert('Invalid config file. Please load a valid JSON config.');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
+/* ============================================================
+   SAVE / LOAD LIST (full data backup)
+   ============================================================ */
+function saveList() {
+  const data = {
+    version:                2,
+    exported:               new Date().toISOString(),
+    deviations:             state.deviations,
+    materials:              state.materials,
+    settings:               state.settings,
+    custom_deviations:      state.customDeviations,
+    custom_traits:          state.customTraits,
+    custom_trait_assignments: state.customTraitAssignments || {},
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'deviant-tracker-backup.json';
+  a.click();
+  // Flash button text
+  const btns = document.querySelectorAll('[onclick*="saveList"]');
+  btns.forEach(btn => {
+    const orig = btn.textContent;
+    btn.textContent = '✓ List saved!';
+    setTimeout(() => { btn.textContent = orig; }, 2000);
+  });
+}
+
+function triggerLoadList() {
+  document.getElementById('listFileInput').click();
+}
+
+function handleListLoad(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (!data.version || !Array.isArray(data.deviations)) {
+        alert('Invalid backup file — no data was changed');
+        return;
+      }
+      if (!confirm('This will replace all current data with the backup. Continue?')) return;
+      if (data.deviations             !== undefined) {
+        const normalized = normalizeDeviationRows(data.deviations);
+        state.deviations = normalized.rows;
+        save('deviations');
+      }
+      if (data.materials              !== undefined) { state.materials              = data.materials;              save('materials'); }
+      if (data.settings               !== undefined) { state.settings               = mergeSettingsWithDefaults(data.settings); normalizeVariantSettings(); save('settings'); }
+      if (data.custom_deviations      !== undefined) { state.customDeviations       = data.custom_deviations;      save('customDeviations'); }
+      if (data.custom_traits          !== undefined) { state.customTraits           = data.custom_traits;          save('customTraits'); }
+      if (data.custom_trait_assignments !== undefined) { state.customTraitAssignments = data.custom_trait_assignments; save('customTraitAssignments'); }
+      renderCharList();
+      updateFilterCharDropdown();
+      renderVariantList();
+      updateFilterVariantDropdown();
+      renderView();
+      renderMaterials();
+    } catch (err) {
+      alert('Invalid backup file — no data was changed');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
+/* ============================================================
+   FILTER BAR & COLUMN TOGGLE
+   ============================================================ */
+function toggleFilterBar() {
+  const inner = document.getElementById('filterBarInner');
+  const arrow = document.getElementById('filterToggleArrow');
+  const collapsed = inner.classList.toggle('collapsed');
+  if (arrow) arrow.textContent = collapsed ? '▸' : '▾';
+}
+
+function toggleExtraCols() {
+  const tbl = document.getElementById('deviationTable');
+  const btn = document.querySelector('.show-all-cols-btn');
+  const showing = tbl.classList.toggle('show-all-traits');
+  if (btn) btn.textContent = showing ? 'Hide Columns' : 'Show All Columns';
+}
+
+/* ============================================================
+   FUSION MATERIALS
+   ============================================================ */
+function moveMaterial(id, dir) {
+  const idx = state.materials.findIndex(m => String(m.id) === String(id));
+  if (idx === -1) return;
+  const newIdx = idx + dir;
+  if (newIdx < 0 || newIdx >= state.materials.length) return;
+  const [item] = state.materials.splice(idx, 1);
+  state.materials.splice(newIdx, 0, item);
+  save('materials');
+  renderMaterials();
+}
+
+function addMaterial() {
+  state.materials.push({ id: Date.now() + Math.random(), name:'', qty:0, notes:'' });
+  save('materials');
+  renderMaterials();
+}
+
+function delMaterial(id) {
+  state.materials = state.materials.filter(m => String(m.id) !== String(id));
+  save('materials');
+  renderMaterials();
+}
+
+function matChange(id, field, val) {
+  const m = state.materials.find(m => String(m.id) === String(id));
+  if (!m) return;
+  m[field] = field === 'qty' ? Math.max(0, Number(val) || 0) : val;
+  save('materials');
+}
+
+function renderMaterials() {
+  const list  = document.getElementById('fmList');
+  const empty = document.getElementById('fmEmpty');
+  list.innerHTML = '';
+  if (!state.materials.length) { empty.style.display = ''; return; }
+  empty.style.display = 'none';
+  state.materials.forEach((m, idx) => {
+    const div = document.createElement('div');
+    div.className = 'fm-row';
+    div.draggable = true;
+    div.dataset.idx = idx;
+    div.innerHTML = `
+      <span class="drag-handle" title="Drag to reorder">⠿</span>
+      <div class="fm-move-btns">
+        <button class="btn btn-sm btn-secondary" onclick="moveMaterial('${m.id}',-1)" title="Move up">↑</button>
+        <button class="btn btn-sm btn-secondary" onclick="moveMaterial('${m.id}',1)" title="Move down">↓</button>
+      </div>
+      <input class="fm-input fm-name"  type="text"   value="${escHtml(m.name)}"  placeholder="Material name…"  oninput="matChange('${m.id}','name',this.value)">
+      <input class="fm-input fm-qty"   type="number" value="${m.qty}"            placeholder="Qty" min="0"     oninput="matChange('${m.id}','qty',this.value)">
+      <input class="fm-input fm-notes" type="text"   value="${escHtml(m.notes)}" placeholder="Notes…"          oninput="matChange('${m.id}','notes',this.value)">
+      <button class="del-btn fm-del" onclick="delMaterial('${m.id}')">✕</button>
+    `;
+    div.addEventListener('dragstart', e => { dragSrcIdx = idx; setTimeout(() => div.classList.add('dragging'), 0); e.dataTransfer.effectAllowed = 'move'; });
+    div.addEventListener('dragend',   () => { div.classList.remove('dragging'); document.querySelectorAll('.fm-row').forEach(r => r.classList.remove('drag-over')); });
+    div.addEventListener('dragover',  e => { e.preventDefault(); div.classList.add('drag-over'); });
+    div.addEventListener('dragleave', () => div.classList.remove('drag-over'));
+    div.addEventListener('drop', e => {
+      e.preventDefault(); div.classList.remove('drag-over');
+      const tgtIdx = Number(div.dataset.idx);
+      if (dragSrcIdx === null || dragSrcIdx === tgtIdx) return;
+      const moved = state.materials.splice(dragSrcIdx, 1)[0];
+      state.materials.splice(tgtIdx, 0, moved);
+      dragSrcIdx = null;
+      save('materials');
+      renderMaterials();
+    });
+    list.appendChild(div);
+  });
+}
+
+/* ============================================================
+   GLOBAL KEYBOARD HANDLER
+   ============================================================ */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    ['manageDevModal','manageTraitModal','manageVariantModal','confirmModal','contributeConfigModal','screenshotModal'].forEach(id => {
+      if (document.getElementById(id).classList.contains('open')) closeModal(id);
+    });
+    if (document.getElementById('settingsOverlay').classList.contains('open')) closeSettings();
+  }
+});
+
+function openContributeConfig() {
+  openModal('contributeConfigModal');
+}
+
+/* ============================================================
+   UTILS
+   ============================================================ */
+function escHtml(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+document.addEventListener('DOMContentLoaded', () => {
+  migrateData();
+  load();
+  loadAddDefaults();
+  renderCharList();
+  updateFilterCharDropdown();
+  renderVariantList();
+  updateFilterVariantDropdown();
+  renderView();
+  renderMaterials();
+  initPersistenceListeners();
+  // Collapse filter bar on mobile by default
+  if (isMobile()) {
+    const fbi = document.getElementById('filterBarInner');
+    const fta = document.getElementById('filterToggleArrow');
+    if (fbi) fbi.classList.add('collapsed');
+    if (fta) fta.textContent = '▸';
+  }
+});
+</script>
+
+</div><!-- /#app -->
+</body>
+</html>
