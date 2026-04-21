@@ -164,7 +164,6 @@ const TRAIT_DATA = [
   {name:"Vegetative Calm",effect:"Syncing grants Max Stamina +15, Movement Speed -5%.",deviants:["Festering Gel","Mini Feaster"],neg:false},
   {name:"Voluntary Overtime",effect:"10% chance that working does not consume Mood.",deviants:["Electric Eel"],neg:false},
   {name:"Voluntary Overtime - Prism",effect:"Appearance changed. When activated and working, 15% chance to not consume Mood.",deviants:["The Digby Boy","Electric Eel"],neg:false},
-  {name:"Energy Recovery - Emerald",effect:"Appearance changed. Gains Energy Recovery Speed +10%.",deviants:["The Digby Boy"],neg:false},
   {name:"Wandering Witch",effect:"Max Deviant Power +10%.",deviants:["Shattered Maiden"],neg:false},
   {name:"Water Dormancy",effect:"When Territory Deviations are resting by water, Vitality Recovery Speed +30%.",deviants:["Electric Eel"],neg:false},
   {name:"Water Dormancy - Heavy Ginger",effect:"Appearance changed. When resting by water, gains Mood Recovery Speed +35%.",deviants:["Extradimensional Cat"],neg:false},

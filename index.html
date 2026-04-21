@@ -925,6 +925,10 @@ input,select,button,textarea{touch-action:manipulation}
             <label>Description</label>
             <textarea id="ssDesc" rows="2"></textarea>
           </div>
+          <div class="ss-field" id="ssVariantEffectWrap" style="display:none">
+            <label>Variant Effect</label>
+            <div id="ssVariantEffect" style="font-size:.82rem;color:var(--gold);padding:6px 8px;background:var(--bg2);border:1px solid var(--border);border-radius:4px"></div>
+          </div>
           <div class="ss-field-row">
             <div class="ss-field">
               <label>Skill Rating (1-5)</label>
@@ -1521,19 +1525,24 @@ async function callVisionAPI(imageDataUrl, cfg) {
 Output ONLY a JSON object with these fields:
 {
   "name": "base deviation name (e.g. The Digby Boy, Electric Eel, Butterfly's Emissary)",
-  "variant": "variant/skin name after the dash (e.g. Emerald, Prism) or empty string if none",
-  "description": "the full description text below the name",
+  "variant": "variant/skin name after the dash (e.g. Emerald, Prism, Good Fortune) or empty string if none",
+  "variant_effect": "the gold-colored variant description that starts with 'Appearance changed.' — extract the full text, or empty string if none",
+  "description": "the full description text below the name (NOT the variant effect)",
   "skill_rating": number 0-5 (from Skill Rating),
   "activity_rating": number 0-5 (from Activity Rating),
   "traits": [{"name": "trait name", "is_negative": boolean}]
 }
 
-Rules:
-- name should NOT include the variant. "The Digby Boy - Emerald" → name="The Digby Boy", variant="Emerald"
-- If no variant is shown, variant=""
+CRITICAL VARIANT vs TRAIT RULES:
+- The deviation name often has format "Name - Variant". Example: "The Digby Boy - Emerald" → name="The Digby Boy", variant="Emerald"
+- The gold text starting with "Appearance changed." is the VARIANT EFFECT, NOT a trait. Do NOT include it in traits.
+- Only include traits from the TRAITS section of the UI. These are gameplay traits like "Cheer Up 1", "Growing Pains 2", etc.
+- If a trait is negative (starts with ⚠ symbol), set is_negative=true
+- If no traits are visible, traits=[]
+
+Other rules:
+- If no variant is shown, variant="" and variant_effect=""
 - skill_rating and activity_rating are 0 if not visible
-- traits: list ALL traits visible in the Traits section. is_negative=true if the trait name starts with ⚠ or is clearly negative
-- If a trait is not in the standard list, still include it with the exact text you see
 - Be precise with apostrophes, dashes, and special characters`;
 
   let url, headers, body;
@@ -1607,6 +1616,7 @@ Rules:
   return {
     name:         String(parsed.name || '').trim(),
     variant:      String(parsed.variant || '').trim(),
+    variantEffect: String(parsed.variant_effect || '').trim(),
     description:  String(parsed.description || '').trim(),
     skillRating:  Math.min(5, Math.max(0, parseInt(parsed.skill_rating) || 0)),
     activityRating: Math.min(5, Math.max(0, parseInt(parsed.activity_rating) || 0)),
@@ -1625,6 +1635,15 @@ function populateExtractedForm(data) {
   document.getElementById('ssDesc').value = data.description;
   document.getElementById('ssSkill').value = data.skillRating;
   document.getElementById('ssActivity').value = data.activityRating;
+
+  // Variant effect (read-only, shown if present)
+  const veWrap = document.getElementById('ssVariantEffectWrap');
+  if (data.variantEffect) {
+    document.getElementById('ssVariantEffect').textContent = data.variantEffect;
+    veWrap.style.display = '';
+  } else {
+    veWrap.style.display = 'none';
+  }
 
   // Populate datalists for autocomplete
   const devList = document.getElementById('ssDevList');
