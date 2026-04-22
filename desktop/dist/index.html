@@ -156,7 +156,7 @@ td select option{background:var(--bg2)}
 /* ===== SETTINGS SLIDE-IN ===== */
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:900;backdrop-filter:blur(2px)}
 .overlay.open{display:flex;align-items:flex-start;justify-content:flex-end}
-.settings-panel{width:340px;min-height:100vh;background:var(--bg1);border-left:1px solid var(--border-light);padding:20px;display:flex;flex-direction:column;gap:16px;animation:slideIn .22s ease;box-shadow:-8px 0 40px rgba(0,0,0,.5);overflow-y:auto}
+.settings-panel{width:min(460px,100vw);min-height:100vh;background:var(--bg1);border-left:1px solid var(--border-light);padding:20px;display:flex;flex-direction:column;gap:16px;animation:slideIn .22s ease;box-shadow:-8px 0 40px rgba(0,0,0,.5);overflow-y:auto}
 @keyframes slideIn{from{transform:translateX(100%)}to{transform:translateX(0)}}
 .settings-header{display:flex;align-items:center;justify-content:space-between}
 .settings-header h2{font-size:1rem;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:1px}
@@ -174,6 +174,17 @@ td select option{background:var(--bg2)}
 .char-empty{color:var(--text-dim);font-style:italic;font-size:.82rem;padding:6px 0}
 .settings-note{font-size:.75rem;color:var(--text-muted);line-height:1.5;border-top:1px solid var(--border);padding-top:10px}
 .settings-btn-list{display:flex;flex-direction:column;gap:6px}
+.settings-subtext{font-size:.78rem;color:var(--text-dim);line-height:1.5;margin-top:2px}
+.settings-actions{display:flex;gap:8px;flex-wrap:wrap}
+.settings-grid{display:grid;grid-template-columns:1fr;gap:10px}
+.settings-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.settings-field{display:flex;flex-direction:column;gap:5px}
+.settings-field label{font-size:.72rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.6px;font-weight:600}
+.settings-field input,.settings-field select{background:var(--bg2);border:1px solid var(--border);border-radius:4px;color:var(--text);padding:8px 10px;font-size:.84rem;font-family:inherit;width:100%}
+.settings-field input:focus,.settings-field select:focus{outline:none;border-color:var(--accent)}
+.settings-status{font-size:.78rem;min-height:18px;color:var(--green);font-weight:600}
+.settings-status.err{color:var(--neg)}
+@media (max-width: 700px){.settings-panel{padding:16px}.settings-row{grid-template-columns:1fr}}
 
 /* ===== MODALS (shared) ===== */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:1000;align-items:center;justify-content:center;padding:16px}
@@ -509,6 +520,41 @@ input,select,button,textarea{touch-action:manipulation}
     </div>
 
     <div class="settings-section">
+      <h3>🤖 AI Config</h3>
+      <p class="settings-subtext">Desktop OCR uses the local proxy and the config saved in SQLite. This is the bit that went missing.</p>
+      <div class="settings-grid">
+        <div class="settings-row">
+          <div class="settings-field">
+            <label for="visionProvider">Provider</label>
+            <select id="visionProvider" onchange="toggleVisionConfigFields()">
+              <option value="none">Disabled</option>
+              <option value="ollama">Ollama</option>
+              <option value="openai">OpenAI / OpenRouter compatible</option>
+              <option value="custom">Custom OpenAI-compatible</option>
+            </select>
+          </div>
+          <div class="settings-field">
+            <label for="visionModel">Model</label>
+            <input id="visionModel" type="text" placeholder="openai/gpt-4o-mini or llama3.2-vision:11b">
+          </div>
+        </div>
+        <div class="settings-field">
+          <label for="visionEndpoint">Endpoint</label>
+          <input id="visionEndpoint" type="text" placeholder="http://127.0.0.1:11434 or https://openrouter.ai/api/v1">
+        </div>
+        <div class="settings-field">
+          <label for="visionApiKey">API Key</label>
+          <input id="visionApiKey" type="password" placeholder="Optional for Ollama, required for cloud providers">
+        </div>
+        <div class="settings-actions">
+          <button class="btn btn-primary" onclick="saveVisionConfig()">Save AI Config</button>
+          <button class="btn btn-secondary" onclick="openSetupWizard()">Run Setup Wizard</button>
+        </div>
+        <div id="visionConfigStatus" class="settings-status"></div>
+      </div>
+    </div>
+
+    <div class="settings-section">
       <h3>My Characters</h3>
       <div class="char-add-row">
         <input id="charInput" type="text" maxlength="10" placeholder="Character name…" onkeydown="if(event.key==='Enter')addChar()" oninput="document.getElementById('charCounter').textContent=this.value.length+'/10'">
@@ -519,7 +565,7 @@ input,select,button,textarea{touch-action:manipulation}
       <p class="char-empty" id="charEmpty">No characters added yet. Add one above.</p>
     </div>
 
-    <p class="settings-note">Character names max 10 characters; up to 20 characters. Changes reflect immediately in the tracker.<br><br>Custom deviations and traits are stored in your browser and can be exported via 💾 Save Config.</p>
+    <p class="settings-note">Character names max 10 characters; up to 20 characters. Changes reflect immediately in the tracker.<br><br>Desktop data is stored in SQLite. Save/Load Config is for import/export, not the main storage layer.</p>
 
     <div class="settings-section">
       <h3>📷 Screenshot Behavior</h3>
@@ -533,8 +579,6 @@ input,select,button,textarea{touch-action:manipulation}
       </div>
       <p style="font-size:.72rem;color:var(--text-muted)">Quick Add: OCR results go straight to tracker (no review). Auto-create: new items are added to your lists automatically.</p>
     </div>
-
-    <p class="settings-note">Character names max 10 characters; up to 20 characters. Changes reflect immediately in the tracker.<br><br>Custom deviations and traits are stored in your browser and can be exported via 💾 Save Config.</p>
   </div>
 </div>
 
@@ -1604,7 +1648,109 @@ function showFlash(elId, msg, isErr = false) {
 /* ============================================================
    SETTINGS
    ============================================================ */
-function openSettings()  { loadAutoCreateSetting(); loadQuickAddSetting(); document.getElementById('settingsOverlay').classList.add('open'); }
+function setVisionConfigStatus(msg = '', isErr = false) {
+  const el = document.getElementById('visionConfigStatus');
+  if (!el) return;
+  el.textContent = msg;
+  el.className = 'settings-status' + (isErr ? ' err' : '');
+}
+
+function normalizeVisionConfig(cfg = {}) {
+  const provider = cfg.provider || 'none';
+  const defaults = {
+    none:   { endpoint: '', apiKey: '', model: '' },
+    ollama: { endpoint: 'http://127.0.0.1:11434', apiKey: '', model: 'llama3.2-vision:11b' },
+    openai: { endpoint: 'https://openrouter.ai/api/v1', apiKey: '', model: 'openai/gpt-4o-mini' },
+    custom: { endpoint: 'https://openrouter.ai/api/v1', apiKey: '', model: 'openai/gpt-4o-mini' }
+  }[provider] || { endpoint: '', apiKey: '', model: '' };
+
+  return {
+    provider,
+    endpoint: String(cfg.endpoint ?? defaults.endpoint).trim(),
+    apiKey: String(cfg.apiKey ?? defaults.apiKey).trim(),
+    model: String(cfg.model ?? defaults.model).trim()
+  };
+}
+
+let visionConfigCache = normalizeVisionConfig();
+
+async function loadVisionConfig() {
+  visionConfigCache = normalizeVisionConfig(await api.settingsGet('vision_config') || {});
+  const providerEl = document.getElementById('visionProvider');
+  const endpointEl = document.getElementById('visionEndpoint');
+  const apiKeyEl = document.getElementById('visionApiKey');
+  const modelEl = document.getElementById('visionModel');
+  if (!providerEl || !endpointEl || !apiKeyEl || !modelEl) return visionConfigCache;
+  providerEl.value = visionConfigCache.provider;
+  endpointEl.value = visionConfigCache.endpoint;
+  apiKeyEl.value = visionConfigCache.apiKey;
+  modelEl.value = visionConfigCache.model;
+  toggleVisionConfigFields();
+  setVisionConfigStatus('');
+  return visionConfigCache;
+}
+
+function getVisionConfig() {
+  return visionConfigCache || normalizeVisionConfig();
+}
+
+function toggleVisionConfigFields() {
+  const provider = document.getElementById('visionProvider')?.value || 'none';
+  const endpointEl = document.getElementById('visionEndpoint');
+  const apiKeyEl = document.getElementById('visionApiKey');
+  const modelEl = document.getElementById('visionModel');
+  if (!endpointEl || !apiKeyEl || !modelEl) return;
+
+  const defaults = normalizeVisionConfig({ provider });
+  if (!endpointEl.value.trim()) endpointEl.value = defaults.endpoint;
+  if (!modelEl.value.trim()) modelEl.value = defaults.model;
+
+  const disabled = provider === 'none';
+  endpointEl.disabled = disabled;
+  apiKeyEl.disabled = disabled || provider === 'ollama';
+  modelEl.disabled = disabled;
+  if (provider === 'ollama') apiKeyEl.value = '';
+}
+
+async function saveVisionConfig() {
+  const provider = document.getElementById('visionProvider')?.value || 'none';
+  const endpoint = (document.getElementById('visionEndpoint')?.value || '').trim();
+  const apiKey = (document.getElementById('visionApiKey')?.value || '').trim();
+  const model = (document.getElementById('visionModel')?.value || '').trim();
+
+  visionConfigCache = normalizeVisionConfig({ provider, endpoint, apiKey, model });
+
+  if (visionConfigCache.provider !== 'none') {
+    if (!visionConfigCache.endpoint) return setVisionConfigStatus('Endpoint is required.', true);
+    if (!visionConfigCache.model) return setVisionConfigStatus('Model is required.', true);
+    if (visionConfigCache.provider !== 'ollama' && !visionConfigCache.apiKey) {
+      return setVisionConfigStatus('API key is required for cloud providers.', true);
+    }
+  }
+
+  await api.settingsSet('vision_config', visionConfigCache);
+  await fetch(`http://127.0.0.1:${serverPort}/api/vision/config`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(visionConfigCache)
+  }).catch(() => null);
+
+  setVisionConfigStatus('AI config saved. Screenshot OCR will use the new settings.');
+}
+
+function openSetupWizard() {
+  closeSettings();
+  setVisionConfigStatus('');
+  document.getElementById('setupWizard').style.display = '';
+  setupGoTo(1);
+}
+
+async function openSettings()  {
+  loadAutoCreateSetting();
+  loadQuickAddSetting();
+  await loadVisionConfig();
+  document.getElementById('settingsOverlay').classList.add('open');
+}
 function closeSettings() { document.getElementById('settingsOverlay').classList.remove('open'); }
 function closeSettingsIfBg(e) { if (e.target === document.getElementById('settingsOverlay')) closeSettings(); }
 

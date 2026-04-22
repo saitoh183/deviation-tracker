@@ -5,6 +5,8 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
+    "rebuild": "electron-builder install-app-deps",
+    "postinstall": "npm run rebuild",
     "pack": "electron-builder --dir",
     "dist": "electron-builder"
   },
