@@ -191,6 +191,8 @@ td select option{background:var(--bg2)}
 .settings-field input:focus,.settings-field select:focus{outline:none;border-color:var(--accent)}
 .settings-status{font-size:.78rem;min-height:18px;color:var(--green);font-weight:600}
 .settings-status.err{color:var(--neg)}
+.lock-indicator{display:none;margin-left:6px;color:var(--text-muted);font-size:.85em;vertical-align:middle}
+.lock-indicator.show{display:inline}
 @media (max-width: 700px){.settings-panel{padding:16px}.settings-row{grid-template-columns:1fr}}
 
 /* ===== MODALS (shared) ===== */
@@ -542,7 +544,7 @@ input,select,button,textarea{touch-action:manipulation}
             </select>
           </div>
           <div class="settings-field">
-            <label for="visionModel">Model</label>
+            <label for="visionModel">Model <span id="visionModelLock" class="lock-indicator" title="Locked for cloud provider">🔒</span></label>
             <input id="visionModel" type="text" placeholder="openai/gpt-4o-mini or llama3.2-vision:11b">
           </div>
         </div>
@@ -1095,8 +1097,10 @@ async function loadAll() {
     const taResult = await api.dbQuery('SELECT * FROM trait_assignments');
     state.customTraitAssignments = {};
     (taResult.data || []).forEach(r => {
-      if (!state.customTraitAssignments[r.deviant_name]) state.customTraitAssignments[r.deviant_name] = [];
-      state.customTraitAssignments[r.deviant_name].push(r.trait_name);
+      if (!state.customTraitAssignments[r.deviant_name]) {
+        state.customTraitAssignments[r.deviant_name] = { add: [], remove: [] };
+      }
+      state.customTraitAssignments[r.deviant_name].add.push(r.trait_name);
     });
   } catch (err) {
     console.error('Failed to load data:', err);
@@ -1136,8 +1140,9 @@ async function saveToDB(type) {
       }
     } else if (type === 'customTraitAssignments') {
       await api.dbExec('DELETE FROM trait_assignments');
-      for (const [dev, traits] of Object.entries(state.customTraitAssignments)) {
-        for (const trait of traits) {
+      for (const [dev, assign] of Object.entries(state.customTraitAssignments)) {
+        const addList = Array.isArray(assign) ? assign : (assign?.add || []);
+        for (const trait of addList) {
           await api.dbQuery('INSERT INTO trait_assignments (deviant_name, trait_name) VALUES (?, ?)', [dev, trait]);
         }
       }
@@ -1413,8 +1418,6 @@ function migrateData() { /* no-op: SQLite handles everything */ }
 function normalizeDeviationRows(rows) { return { rows: rows || [], changed: false }; }
 
 const KEYS = {};
-function load() { /* no-op: async loadAll() handles this */ }
-function save(type) { /* no-op: async saveToDB() handles this */ }
 function loadAddDefaults() { /* no-op */ }
 function initPersistenceListeners() { /* no-op */ }
 
@@ -1707,17 +1710,35 @@ function toggleVisionConfigFields() {
   const endpointEl = document.getElementById('visionEndpoint');
   const apiKeyEl = document.getElementById('visionApiKey');
   const modelEl = document.getElementById('visionModel');
+  const modelLockEl = document.getElementById('visionModelLock');
   if (!endpointEl || !apiKeyEl || !modelEl) return;
 
   const defaults = normalizeVisionConfig({ provider });
-  if (!endpointEl.value.trim()) endpointEl.value = defaults.endpoint;
-  if (!modelEl.value.trim()) modelEl.value = defaults.model;
-
   const disabled = provider === 'none';
+  const cloudLocked = provider === 'openai';
+
+  if (disabled) {
+    endpointEl.value = '';
+    apiKeyEl.value = '';
+    modelEl.value = '';
+  } else if (provider === 'ollama') {
+    if (!endpointEl.value.trim() || endpointEl.disabled) endpointEl.value = defaults.endpoint;
+    if (!modelEl.value.trim() || modelEl.disabled) modelEl.value = defaults.model;
+    apiKeyEl.value = '';
+  } else if (provider === 'openai') {
+    endpointEl.value = defaults.endpoint;
+    modelEl.value = defaults.model;
+  } else {
+    if (!endpointEl.value.trim() || endpointEl.disabled) endpointEl.value = defaults.endpoint;
+    if (!modelEl.value.trim() || modelEl.disabled) modelEl.value = defaults.model;
+  }
+
   endpointEl.disabled = disabled;
   apiKeyEl.disabled = disabled || provider === 'ollama';
   modelEl.disabled = disabled;
-  if (provider === 'ollama') apiKeyEl.value = '';
+  modelEl.readOnly = cloudLocked;
+  modelEl.title = cloudLocked ? 'Cloud model is locked for this provider.' : '';
+  if (modelLockEl) modelLockEl.classList.toggle('show', cloudLocked);
 }
 
 async function saveVisionConfig() {
@@ -2938,7 +2959,18 @@ function newDeviation() {
 }
 
 function addDeviationRow() {
+  if (filters.char || filters.deviation || filters.fusion !== '' || filters.locked !== '' || filters.skill || filters.activity || filters.variant) {
+    clearAllFilters();
+  }
+
   const row = newDeviation();
+  row.char = defaultCharacter || row.char;
+  row.name = defaultDeviationName || row.name;
+  row.variant = defaultVariant || row.variant;
+  row.skill = defaultSkill ? Number(defaultSkill) : row.skill;
+  row.activity = defaultActivity ? Number(defaultActivity) : row.activity;
+  row.eland = !!defaultEland;
+  row.fusion = !!defaultFusion;
   state.deviations.push(row);
   save('deviations');
   renderView();
