@@ -58,8 +58,11 @@ button{cursor:pointer}
 .tab-content.active{display:block}
 
 /* ===== FILTER BAR ===== */
-.filter-bar{background:var(--bg1);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;margin-bottom:12px;display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px}
-.filter-group{display:flex;flex-direction:column;gap:4px;min-width:120px;flex:1}
+.filter-bar{background:var(--bg1);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;margin-bottom:12px;display:flex;flex-wrap:wrap;align-items:flex-start;gap:10px}
+.filter-toggle-btn{flex:0 0 auto;align-self:flex-start}
+.filter-bar-inner{display:flex;flex:1 1 900px;flex-wrap:wrap;align-items:flex-end;gap:10px;min-width:0}
+.filter-bar-inner.collapsed{display:none}
+.filter-group{display:flex;flex-direction:column;gap:4px;min-width:120px;flex:1 1 130px}
 /* Character (1st) and Deviation (3rd) groups slightly wider */
 #filterBarInner .filter-group:nth-child(1),
 #filterBarInner .filter-group:nth-child(3){min-width:150px}
@@ -69,6 +72,10 @@ button{cursor:pointer}
 .filter-actions{display:flex;gap:8px;align-items:flex-end;margin-left:auto;flex-wrap:wrap}
 .row-count{font-size:.78rem;color:var(--text-dim);align-self:center;white-space:nowrap}
 #fSkill,#fActivity{max-width:80px}
+@media (max-width: 1180px){
+  .filter-bar-inner{flex-basis:100%}
+  .filter-actions{margin-left:0;width:100%;justify-content:space-between}
+}
 
 /* ===== BUTTONS ===== */
 .btn{padding:6px 14px;border-radius:var(--radius);border:none;font-weight:600;font-size:.82rem;letter-spacing:.5px;transition:all .2s;cursor:pointer;white-space:nowrap}
@@ -155,8 +162,8 @@ td select option{background:var(--bg2)}
 
 /* ===== SETTINGS SLIDE-IN ===== */
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:900;backdrop-filter:blur(2px)}
-.overlay.open{display:flex;align-items:flex-start;justify-content:flex-end}
-.settings-panel{width:min(460px,100vw);min-height:100vh;background:var(--bg1);border-left:1px solid var(--border-light);padding:20px;display:flex;flex-direction:column;gap:16px;animation:slideIn .22s ease;box-shadow:-8px 0 40px rgba(0,0,0,.5);overflow-y:auto}
+.overlay.open{display:flex;align-items:stretch;justify-content:flex-end;overflow:auto}
+.settings-panel{width:min(460px,100vw);height:100vh;max-height:100vh;min-height:100vh;background:var(--bg1);border-left:1px solid var(--border-light);padding:20px;display:flex;flex-direction:column;gap:16px;animation:slideIn .22s ease;box-shadow:-8px 0 40px rgba(0,0,0,.5);overflow-y:auto;overflow-x:hidden}
 @keyframes slideIn{from{transform:translateX(100%)}to{transform:translateX(0)}}
 .settings-header{display:flex;align-items:center;justify-content:space-between}
 .settings-header h2{font-size:1rem;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:1px}
@@ -481,6 +488,7 @@ input,select,button,textarea{touch-action:manipulation}
       <tbody id="deviationBody"></tbody>
     </table>
   </div>
+  <div id="cardContainer" class="card-container"></div>
 </div>
 
 <!-- ======================================================= -->
@@ -1981,7 +1989,7 @@ async function analyzeScreenshot() {
   }
 
   try {
-    const extracted = await callVisionAPI(ssImageDataUrl, cfg);
+    const extracted = await callVisionAPIProxy(ssImageDataUrl);
     populateExtractedForm(extracted);
 
     if (isQuick) {
@@ -2821,7 +2829,8 @@ function saveEditTrait() {
    ============================================================ */
 function renderView() {
   renderTable();
-  document.getElementById('cardContainer').innerHTML = '';
+  const cardContainer = document.getElementById('cardContainer');
+  if (cardContainer) cardContainer.innerHTML = '';
 }
 
 let _resizeTimer;
