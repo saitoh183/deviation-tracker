@@ -1154,16 +1154,22 @@ async function load() {
 // SETUP WIZARD
 // ============================================================
 let setupSelectedProvider = null;
+let setupWizardManualOpen = false;
+let setupWizardPreviousVisionConfig = null;
 
 async function checkSetup() {
   const isComplete = await api.setupIsComplete();
   const setupWizard = document.getElementById('setupWizard');
   if (isComplete) {
+    setupWizardManualOpen = false;
+    setupWizardPreviousVisionConfig = null;
     setupWizard.classList.remove('open');
     setupWizard.style.display = 'none';
     await api.getPort().then(p => { serverPort = p; });
     return true;
   }
+  setupWizardManualOpen = false;
+  setupWizardPreviousVisionConfig = null;
   setupWizard.style.display = '';
   setupWizard.classList.add('open');
   setupGoTo(1);
@@ -1178,9 +1184,23 @@ function setupGoTo(step) {
 }
 
 async function setupSkip() {
-  // No OCR feature, just close wizard
-  await api.setupComplete({ vision: { provider: 'none' } });
   const setupWizard = document.getElementById('setupWizard');
+
+  if (setupWizardManualOpen) {
+    if (setupWizardPreviousVisionConfig) {
+      const result = await api.visionConfigure(setupWizardPreviousVisionConfig);
+      if (result?.port) serverPort = result.port;
+      visionConfigCache = normalizeVisionConfig(setupWizardPreviousVisionConfig);
+    }
+    setupWizardManualOpen = false;
+    setupWizardPreviousVisionConfig = null;
+    setupWizard.classList.remove('open');
+    setupWizard.style.display = 'none';
+    return;
+  }
+
+  // No OCR feature on first launch, just complete setup without changing anything else later
+  await api.setupComplete({ vision: { provider: 'none' } });
   setupWizard.classList.remove('open');
   setupWizard.style.display = 'none';
 }
@@ -1252,6 +1272,8 @@ async function setupInstallLocal() {
     });
 
     progress.textContent = '✅ Setup complete!';
+    setupWizardManualOpen = false;
+    setupWizardPreviousVisionConfig = null;
     setTimeout(() => {
       const setupWizard = document.getElementById('setupWizard');
       setupWizard.classList.remove('open');
@@ -1276,6 +1298,8 @@ async function setupSaveCloud() {
     }
   });
 
+  setupWizardManualOpen = false;
+  setupWizardPreviousVisionConfig = null;
   const setupWizard = document.getElementById('setupWizard');
   setupWizard.classList.remove('open');
   setupWizard.style.display = 'none';
@@ -1770,6 +1794,8 @@ async function saveVisionConfig() {
 function openSetupWizard() {
   closeSettings();
   setVisionConfigStatus('');
+  setupWizardManualOpen = true;
+  setupWizardPreviousVisionConfig = normalizeVisionConfig(getVisionConfig());
   const setupWizard = document.getElementById('setupWizard');
   setupWizard.style.display = '';
   setupWizard.classList.add('open');
