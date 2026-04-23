@@ -1757,14 +1757,14 @@ async function saveVisionConfig() {
     }
   }
 
-  await api.settingsSet('vision_config', visionConfigCache);
-  await fetch(`http://127.0.0.1:${serverPort}/api/vision/config`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(visionConfigCache)
-  }).catch(() => null);
+  const result = await api.visionConfigure(visionConfigCache);
+  if (result?.port) serverPort = result.port;
 
-  setVisionConfigStatus('AI config saved. Screenshot OCR will use the new settings.');
+  setVisionConfigStatus(
+    visionConfigCache.provider === 'none'
+      ? 'AI config disabled. Local vision proxy stopped.'
+      : 'AI config saved. Screenshot OCR will use the new settings.'
+  );
 }
 
 function openSetupWizard() {

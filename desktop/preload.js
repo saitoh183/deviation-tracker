@@ -9,6 +9,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   settingsGet: (key) => ipcRenderer.invoke('settings:get', key),
   settingsSet: (key, value) => ipcRenderer.invoke('settings:set', key, value),
   settingsGetAll: () => ipcRenderer.invoke('settings:getAll'),
+  visionConfigure: (config) => ipcRenderer.invoke('vision:configure', config),
 
   // File dialogs
   openImages: () => ipcRenderer.invoke('dialog:openImages'),

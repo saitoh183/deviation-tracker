@@ -68,6 +68,20 @@ ipcMain.handle('settings:getAll', () => {
   return settings;
 });
 
+ipcMain.handle('vision:configure', (_, visionConfig) => {
+  const db = getDB();
+  db.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)').run('vision_config', JSON.stringify(visionConfig));
+  db.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)').run('setup_complete', JSON.stringify(true));
+
+  if (!visionConfig || visionConfig.provider === 'none' || !visionConfig.endpoint) {
+    stopServer();
+    return { success: true, port: PORT, running: false };
+  }
+
+  startServer(visionConfig, PORT);
+  return { success: true, port: PORT, running: true };
+});
+
 // File dialogs
 ipcMain.handle('dialog:openImages', async () => {
   const result = await dialog.showOpenDialog(mainWindow, {
