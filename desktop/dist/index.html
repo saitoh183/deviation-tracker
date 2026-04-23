@@ -85,6 +85,7 @@ button{cursor:pointer}
 .btn-secondary:hover{color:var(--text);border-color:var(--accent)}
 .btn-danger{background:#7f1d1d;border:1px solid #991b1b;color:#fca5a5}
 .btn-danger:hover{background:#991b1b}
+.btn:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
 .btn-sm{padding:4px 10px;font-size:.76rem}
 
 /* ===== TOOLBAR ===== */
@@ -102,8 +103,13 @@ th:hover{color:#fff;background:rgba(0,212,255,0.06)}
 tbody tr{border-bottom:1px solid var(--border);transition:background .15s}
 tbody tr:nth-child(even){background:var(--row-alt)}
 tbody tr:hover{background:rgba(0,212,255,0.07)}
+tbody tr.row-selected{background:rgba(0,212,255,0.13)}
 td{padding:5px 6px;vertical-align:middle;overflow:hidden}
 .empty-row td{text-align:center;color:var(--text-dim);padding:30px;font-style:italic;overflow:visible}
+.row-select-cell,.row-select-head{width:42px;text-align:center;padding-left:8px;padding-right:8px}
+.row-select-head{cursor:default}
+.row-select-input{width:16px;height:16px;accent-color:var(--accent);cursor:pointer}
+.selection-count{font-size:.78rem;color:var(--text-dim);min-width:80px;text-align:right}
 
 /* ===== TABLE INPUTS ===== */
 td select,td input[type=text]{background:transparent;border:1px solid transparent;border-radius:4px;color:var(--text);padding:3px 5px;width:100%;display:block;box-sizing:border-box}
@@ -425,9 +431,11 @@ input,select,button,textarea{touch-action:manipulation}
         <button class="btn btn-secondary" onclick="openManageVariants()">🧬 Manage Variants</button>
               </div>
       <div class="btn-group">
-                <button class="btn btn-secondary" onclick="saveList()" title="Save a full backup of your tracker data, characters, variants, custom deviations, traits, and assignments.">💾 Save</button>
+        <button class="btn btn-secondary" onclick="saveList()" title="Save a full backup of your tracker data, characters, variants, custom deviations, traits, and assignments.">💾 Save</button>
         <button class="btn btn-secondary" onclick="triggerLoadList()" title="Load a backup. Deviation/material rows are restored, while config-style data is merged without overwriting matching entries you already have.">📂 Load</button>
         <button class="btn btn-secondary" onclick="exportCSV()">Export CSV</button>
+        <button class="btn btn-danger" id="deleteSelectedBtn" onclick="deleteSelectedDeviations()" disabled>🗑 Delete Selected</button>
+        <span class="selection-count" id="selectionCount">0 selected</span>
         <button class="btn btn-danger" onclick="confirmClearAll()">🗑 Clear All Data</button>
       </div>
     </div>
@@ -451,6 +459,7 @@ input,select,button,textarea{touch-action:manipulation}
   <div class="table-wrap">
     <table id="deviationTable">
       <colgroup>
+        <col style="width:42px"><!-- 0 Select -->
         <col style="width:120px"><!-- 1 Character -->
         <col style="width:200px"><!-- 2 Deviation Name -->
         <col style="width:170px"><!-- 3 Variant -->
@@ -468,6 +477,7 @@ input,select,button,textarea{touch-action:manipulation}
       </colgroup>
       <thead id="sticky-thead">
         <tr>
+          <th class="row-select-head"><input id="selectAllRows" class="row-select-input" type="checkbox" onchange="toggleSelectAllVisible(this.checked)" title="Select all visible rows"></th>
           <th data-sort-field="char">Character<span class="sort-indicator">↕</span></th>
           <th data-sort-field="name">Deviation Name<span class="sort-indicator">↕</span></th>
           <th data-sort-field="variant">Variant<span class="sort-indicator">↕</span></th>
@@ -1452,6 +1462,7 @@ let state = {
 
 let sortCol = null, sortDir = 1;
 let filters = { char:'', deviation:'', fusion:'', locked:'', skill:'', activity:'', variant:'' };
+let selectedDeviationIds = new Set();
 let dragSrcIdx = null;
 let confirmCallback = null;
 let defaultCharacter = '';
@@ -3033,7 +3044,61 @@ function addDeviationRow() {
 
 function deleteDeviationRow(id) {
   showConfirm('Delete Deviation', 'Are you sure you want to delete this row?', () => {
+    selectedDeviationIds.delete(String(id));
     state.deviations = state.deviations.filter(d => String(d.id) !== String(id));
+    save('deviations');
+    renderView();
+  });
+}
+
+function getVisibleDeviationIds() {
+  return getFilteredSorted().map(row => String(row.id));
+}
+
+function updateDeviationSelectionUi(visibleIds = getVisibleDeviationIds()) {
+  const selectedCount = selectedDeviationIds.size;
+  const countEl = document.getElementById('selectionCount');
+  if (countEl) countEl.textContent = `${selectedCount} selected`;
+
+  const deleteBtn = document.getElementById('deleteSelectedBtn');
+  if (deleteBtn) deleteBtn.disabled = selectedCount === 0;
+
+  const selectAll = document.getElementById('selectAllRows');
+  if (selectAll) {
+    const visibleCount = visibleIds.length;
+    const selectedVisibleCount = visibleIds.filter(id => selectedDeviationIds.has(id)).length;
+    selectAll.checked = visibleCount > 0 && selectedVisibleCount === visibleCount;
+    selectAll.indeterminate = selectedVisibleCount > 0 && selectedVisibleCount < visibleCount;
+    selectAll.disabled = visibleCount === 0;
+  }
+}
+
+function toggleDeviationSelection(id, checked) {
+  const key = String(id);
+  if (checked) selectedDeviationIds.add(key);
+  else selectedDeviationIds.delete(key);
+  const row = document.querySelector(`tr[data-id="${CSS.escape(key)}"]`);
+  if (row) row.classList.toggle('row-selected', checked);
+  updateDeviationSelectionUi();
+}
+
+function toggleSelectAllVisible(checked) {
+  const visibleIds = getVisibleDeviationIds();
+  visibleIds.forEach(id => {
+    if (checked) selectedDeviationIds.add(id);
+    else selectedDeviationIds.delete(id);
+  });
+  renderTable();
+}
+
+function deleteSelectedDeviations() {
+  const ids = [...selectedDeviationIds];
+  if (!ids.length) return;
+  const rowWord = ids.length === 1 ? 'row' : 'rows';
+  showConfirm('Delete Selected Deviations', `Are you sure you want to delete ${ids.length} selected ${rowWord}?`, () => {
+    const idSet = new Set(ids);
+    state.deviations = state.deviations.filter(d => !idSet.has(String(d.id)));
+    selectedDeviationIds.clear();
     save('deviations');
     renderView();
   });
@@ -3085,6 +3150,8 @@ function renderTable() {
   const rows  = getFilteredSorted();
   const tbody = document.getElementById('deviationBody');
   tbody.innerHTML = '';
+  const liveIds = new Set(state.deviations.map(row => String(row.id)));
+  selectedDeviationIds = new Set([...selectedDeviationIds].filter(id => liveIds.has(id)));
   const total = state.deviations.length;
   const word  = total === 1 ? 'deviation' : 'deviations';
   document.getElementById('rowCount').textContent = `Showing ${rows.length} of ${total} ${word}`;
@@ -3092,8 +3159,9 @@ function renderTable() {
   if (rows.length === 0) {
     const tr = document.createElement('tr');
     tr.className = 'empty-row';
-    tr.innerHTML = `<td colspan="14">${total === 0 ? 'No deviations added yet. Click <strong>+ Add Deviation</strong> to get started.' : 'No deviations match the current filters.'}</td>`;
+    tr.innerHTML = `<td colspan="15">${total === 0 ? 'No deviations added yet. Click <strong>+ Add Deviation</strong> to get started.' : 'No deviations match the current filters.'}</td>`;
     tbody.appendChild(tr);
+    updateDeviationSelectionUi([]);
     return;
   }
 
@@ -3102,11 +3170,14 @@ function renderTable() {
   rows.forEach(row => {
     const tr = document.createElement('tr');
     tr.dataset.id = row.id;
+    const isSelected = selectedDeviationIds.has(String(row.id));
+    if (isSelected) tr.classList.add('row-selected');
 
     const charOpts = '<option value="">—</option>' + state.settings.characters.map(c => `<option value="${escHtml(c)}"${c===row.char?' selected':''}>${escHtml(c)}</option>`).join('');
     const devOpts  = '<option value="">—</option>' + allDevs.map(d => `<option value="${escHtml(d)}"${d===row.name?' selected':''}>${escHtml(d)}</option>`).join('');
 
     tr.innerHTML = `
+      <td class="row-select-cell"><input class="row-select-input" type="checkbox" ${isSelected?'checked':''} onchange="toggleDeviationSelection('${row.id}', this.checked)" title="Select row"></td>
       <td><select data-field="character" class="row-char" onchange="rowChange('${row.id}','char',this.value)">${charOpts}</select></td>
       <td><select data-field="name" class="row-name" onchange="rowChange('${row.id}','name',this.value)">${devOpts}</select></td>
       <td>${renderVariantSelect(row.id, row.variant, 'variant')}</td>
@@ -3129,6 +3200,7 @@ function renderTable() {
     if (vsel) attachVariantTooltip(vsel);
   });
 
+  updateDeviationSelectionUi(rows.map(row => String(row.id)));
   updateSortIndicators();
 }
 
