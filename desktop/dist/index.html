@@ -1213,6 +1213,7 @@ async function setupSkip() {
   await api.setupComplete({ vision: { provider: 'none' } });
   setupWizard.classList.remove('open');
   setupWizard.style.display = 'none';
+  await initializeApp();
 }
 
 async function setupDetectProviders() {
@@ -1284,10 +1285,11 @@ async function setupInstallLocal() {
     progress.textContent = '✅ Setup complete!';
     setupWizardManualOpen = false;
     setupWizardPreviousVisionConfig = null;
-    setTimeout(() => {
+    setTimeout(async () => {
       const setupWizard = document.getElementById('setupWizard');
       setupWizard.classList.remove('open');
       setupWizard.style.display = 'none';
+      await initializeApp();
     }, 1000);
   } catch (err) {
     progress.textContent = '❌ Error: ' + err.message;
@@ -1313,6 +1315,7 @@ async function setupSaveCloud() {
   const setupWizard = document.getElementById('setupWizard');
   setupWizard.classList.remove('open');
   setupWizard.style.display = 'none';
+  await initializeApp();
 }
 
 // ============================================================
@@ -1416,15 +1419,12 @@ async function analyzeScreenshot() {
 // ============================================================
 // INIT
 // ============================================================
-document.addEventListener('DOMContentLoaded', async () => {
-  // Check setup first
-  const setupDone = await checkSetup();
-  if (!setupDone) return; // Wait for setup to complete
+let appInitialized = false;
 
-  // Load data from SQLite
+async function initializeApp() {
+  if (appInitialized) return;
+  await api.getPort().then(p => { serverPort = p; });
   await loadAll();
-
-  // Continue with normal init
   migrateData();
   renderCharList();
   updateFilterCharDropdown();
@@ -1433,6 +1433,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   renderView();
   renderMaterials();
   initPersistenceListeners();
+  appInitialized = true;
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  const setupDone = await checkSetup();
+  if (!setupDone) return;
+  await initializeApp();
 });
 
 // ============================================================
