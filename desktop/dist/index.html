@@ -425,15 +425,12 @@ input,select,button,textarea{touch-action:manipulation}
         <button class="btn btn-secondary" onclick="openManageVariants()">🧬 Manage Variants</button>
               </div>
       <div class="btn-group">
-                <button class="btn btn-secondary" onclick="saveList()">💾 Save List</button>
-        <button class="btn btn-secondary" onclick="triggerLoadList()">📂 Load List</button>
-        <button class="btn btn-secondary" onclick="saveConfig()">💾 Save Config</button>
-        <button class="btn btn-secondary" onclick="triggerLoadConfig()">📂 Load Config</button>
+                <button class="btn btn-secondary" onclick="saveList()" title="Save a full backup of your tracker data, characters, variants, custom deviations, traits, and assignments.">💾 Save</button>
+        <button class="btn btn-secondary" onclick="triggerLoadList()" title="Load a backup. Deviation/material rows are restored, while config-style data is merged without overwriting matching entries you already have.">📂 Load</button>
         <button class="btn btn-secondary" onclick="exportCSV()">Export CSV</button>
         <button class="btn btn-danger" onclick="confirmClearAll()">🗑 Clear All Data</button>
       </div>
     </div>
-    <input type="file" id="configFileInput" accept=".json" style="display:none" onchange="handleConfigLoad(event)">
     <input type="file" id="listFileInput"   accept=".json" style="display:none" onchange="handleListLoad(event)">
 
   </div><!-- /#deviations-controls -->
@@ -3414,22 +3411,130 @@ function confirmClearAll() {
 }
 
 /* ============================================================
-   SAVE / LOAD CONFIG
+   SAVE / LOAD BACKUPS
    ============================================================ */
-function saveConfig() {
-  const data = {
-    version:                2,
-    customDeviations:       state.customDeviations,
-    customTraits:           state.customTraits,
-    settings:               state.settings,
-    customTraitAssignments: state.customTraitAssignments || {},
-  };
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'once-human-tracker-config.json';
-  a.click();
+function normalizeImportedSettings(settings) {
+  const merged = mergeSettingsWithDefaults(settings || {});
+  normalizeVariantSettings.call({});
+  return merged;
 }
+
+function mergeUniqueStrings(existing, incoming) {
+  const out = [...(existing || [])];
+  const seen = new Set(out.map(v => String(v).toLowerCase()));
+  for (const item of incoming || []) {
+    const text = String(item || '').trim();
+    if (!text) continue;
+    const key = text.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(text);
+  }
+  return out;
+}
+
+function mergeVariantEntries(existing, incoming) {
+  const map = new Map();
+  for (const entry of getDefaultVariantEntries()) map.set(entry.name.toLowerCase(), { ...entry });
+  for (const entry of (existing || [])) {
+    if (!entry || !entry.name) continue;
+    map.set(String(entry.name).toLowerCase(), {
+      name: String(entry.name).trim(),
+      description: String(entry.description || entry.name).trim() || String(entry.name).trim()
+    });
+  }
+  for (const entry of (incoming || [])) {
+    if (!entry) continue;
+    const name = String((typeof entry === 'string' ? entry : entry.name) || '').trim();
+    if (!name) continue;
+    const key = name.toLowerCase();
+    if (map.has(key)) continue;
+    map.set(key, {
+      name,
+      description: String((typeof entry === 'string' ? entry : entry.description) || name).trim() || name
+    });
+  }
+  return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
+}
+
+function mergeCustomTraits(existing, incoming) {
+  const out = [];
+  const seen = new Set();
+  const addTrait = (trait) => {
+    if (!trait) return;
+    const rawName = String(trait.rawName || trait.name || '').replace(/^⚠\s*/, '').trim();
+    if (!rawName) return;
+    const key = rawName.toLowerCase();
+    if (seen.has(key)) return;
+    seen.add(key);
+    out.push({
+      name: rawName,
+      rawName,
+      effect: String(trait.effect || '').trim(),
+      neg: !!(trait.neg || trait.type === 'negative'),
+      deviants: trait.deviants ?? trait.deviations ?? 'ALL'
+    });
+  };
+  (existing || []).forEach(addTrait);
+  (incoming || []).forEach(addTrait);
+  return out;
+}
+
+function normalizeAssignmentMap(assignments) {
+  const out = {};
+  for (const [dev, assign] of Object.entries(assignments || {})) {
+    out[dev] = Array.isArray(assign)
+      ? { add: [...assign], remove: [] }
+      : { add: [...(assign?.add || [])], remove: [...(assign?.remove || [])] };
+  }
+  return out;
+}
+
+function mergeAssignmentMaps(existing, incoming) {
+  const out = normalizeAssignmentMap(existing);
+  const next = normalizeAssignmentMap(incoming);
+  for (const [dev, assign] of Object.entries(next)) {
+    if (!out[dev]) {
+      out[dev] = assign;
+      continue;
+    }
+    out[dev].add = mergeUniqueStrings(out[dev].add, assign.add);
+    out[dev].remove = mergeUniqueStrings(out[dev].remove, assign.remove);
+  }
+  return out;
+}
+
+function mergeConfigPayloadIntoState(data) {
+  if (!data) return;
+  if (data.settings) {
+    const incomingSettings = mergeSettingsWithDefaults(data.settings);
+    state.settings = {
+      ...mergeSettingsWithDefaults(state.settings),
+      ...incomingSettings,
+      characters: mergeUniqueStrings(state.settings?.characters, incomingSettings.characters),
+      hiddenDefaultDeviations: mergeUniqueStrings(state.settings?.hiddenDefaultDeviations, incomingSettings.hiddenDefaultDeviations),
+      hiddenDefaultTraits: mergeUniqueStrings(state.settings?.hiddenDefaultTraits, incomingSettings.hiddenDefaultTraits),
+      variants: mergeVariantEntries(state.settings?.variants, incomingSettings.variants)
+    };
+  }
+  if (data.customDeviations || data.custom_deviations) {
+    state.customDeviations = mergeUniqueStrings(state.customDeviations, data.customDeviations || data.custom_deviations);
+  }
+  if (data.customTraits || data.custom_traits) {
+    state.customTraits = mergeCustomTraits(state.customTraits, data.customTraits || data.custom_traits);
+  }
+  if (data.customTraitAssignments || data.custom_trait_assignments) {
+    state.customTraitAssignments = mergeAssignmentMaps(
+      state.customTraitAssignments,
+      data.customTraitAssignments || data.custom_trait_assignments
+    );
+  }
+  normalizeVariantSettings();
+}
+
+function saveConfig() { return saveList(); }
+function triggerLoadConfig() { return triggerLoadList(); }
+function handleConfigLoad(e) { return handleListLoad(e); }
 
 function saveContribConfigNow() {
   const raw = window.prompt('Enter a short name for your contribution file (example: mylatest).');
@@ -3455,47 +3560,18 @@ function saveContribConfigNow() {
   a.click();
 }
 
-function triggerLoadConfig() {
-  document.getElementById('configFileInput').click();
-}
-
-function handleConfigLoad(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = ev => {
-    try {
-      const data = JSON.parse(ev.target.result);
-      if (data.customDeviations)       { state.customDeviations       = data.customDeviations;       save('customDeviations'); }
-      if (data.customTraits)           { state.customTraits           = data.customTraits;           save('customTraits'); }
-      if (data.settings)               { state.settings               = mergeSettingsWithDefaults(data.settings); normalizeVariantSettings(); save('settings'); }
-      if (data.customTraitAssignments) { state.customTraitAssignments = data.customTraitAssignments; save('customTraitAssignments'); }
-      renderCharList();
-      updateFilterCharDropdown();
-      renderVariantList();
-      updateFilterVariantDropdown();
-      renderView();
-      alert('Config loaded successfully.');
-    } catch (err) {
-      alert('Invalid config file. Please load a valid JSON config.');
-    }
-  };
-  reader.readAsText(file);
-  e.target.value = '';
-}
-
-/* ============================================================
-   SAVE / LOAD LIST (full data backup)
-   ============================================================ */
 function saveList() {
   const data = {
-    version:                2,
-    exported:               new Date().toISOString(),
-    deviations:             state.deviations,
-    materials:              state.materials,
-    settings:               state.settings,
-    custom_deviations:      state.customDeviations,
-    custom_traits:          state.customTraits,
+    version:                  2,
+    exported:                 new Date().toISOString(),
+    deviations:               state.deviations,
+    materials:                state.materials,
+    settings:                 state.settings,
+    customDeviations:         state.customDeviations,
+    customTraits:             state.customTraits,
+    customTraitAssignments:   state.customTraitAssignments || {},
+    custom_deviations:        state.customDeviations,
+    custom_traits:            state.customTraits,
     custom_trait_assignments: state.customTraitAssignments || {},
   };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -3503,11 +3579,10 @@ function saveList() {
   a.href = URL.createObjectURL(blob);
   a.download = 'deviant-tracker-backup.json';
   a.click();
-  // Flash button text
   const btns = document.querySelectorAll('[onclick*="saveList"]');
   btns.forEach(btn => {
     const orig = btn.textContent;
-    btn.textContent = '✓ List saved!';
+    btn.textContent = '✓ Saved!';
     setTimeout(() => { btn.textContent = orig; }, 2000);
   });
 }
@@ -3527,23 +3602,23 @@ function handleListLoad(e) {
         alert('Invalid backup file — no data was changed');
         return;
       }
-      if (!confirm('This will replace all current data with the backup. Continue?')) return;
-      if (data.deviations             !== undefined) {
+      if (!confirm('This will replace deviation/material rows from the backup and merge any saved config data without overwriting matching entries you already have. Continue?')) return;
+      if (data.deviations !== undefined) {
         const normalized = normalizeDeviationRows(data.deviations);
         state.deviations = normalized.rows;
-        save('deviations');
       }
-      if (data.materials              !== undefined) { state.materials              = data.materials;              save('materials'); }
-      if (data.settings               !== undefined) { state.settings               = mergeSettingsWithDefaults(data.settings); normalizeVariantSettings(); save('settings'); }
-      if (data.custom_deviations      !== undefined) { state.customDeviations       = data.custom_deviations;      save('customDeviations'); }
-      if (data.custom_traits          !== undefined) { state.customTraits           = data.custom_traits;          save('customTraits'); }
-      if (data.custom_trait_assignments !== undefined) { state.customTraitAssignments = data.custom_trait_assignments; save('customTraitAssignments'); }
+      if (data.materials !== undefined) {
+        state.materials = data.materials;
+      }
+      mergeConfigPayloadIntoState(data);
+      save('deviations');
       renderCharList();
       updateFilterCharDropdown();
       renderVariantList();
       updateFilterVariantDropdown();
       renderView();
       renderMaterials();
+      alert('Backup loaded successfully.');
     } catch (err) {
       alert('Invalid backup file — no data was changed');
     }
