@@ -1595,6 +1595,25 @@ function traitsForDeviation(devName) {
   return result.sort((a, b) => a.neg !== b.neg ? (a.neg ? 1 : -1) : a.name.localeCompare(b.name));
 }
 
+function ensureTraitAssignmentsForDeviation(devName, traitNames) {
+  if (!devName || !Array.isArray(traitNames) || traitNames.length === 0) return false;
+  const allTraits = getAllTraits();
+  const baseline = allTraits
+    .filter(t => t.deviants === 'ALL' || (Array.isArray(t.deviants) && t.deviants.includes(devName)))
+    .map(t => t.name);
+  const normalized = [...new Set(traitNames.filter(Boolean))];
+  const neededAdds = normalized.filter(name => !baseline.includes(name));
+  if (neededAdds.length === 0) return false;
+
+  if (!state.customTraitAssignments) state.customTraitAssignments = {};
+  const existing = state.customTraitAssignments[devName] || { add: [], remove: [] };
+  const add = [...new Set([...(existing.add || []), ...neededAdds])];
+  const remove = (existing.remove || []).filter(name => !add.includes(name));
+  state.customTraitAssignments[devName] = { add, remove };
+  save('customTraitAssignments');
+  return true;
+}
+
 /* ============================================================
    MAIN TABS
    ============================================================ */
@@ -2206,7 +2225,7 @@ function applyExtractedData() {
             name: val,
             effect: 'Custom trait (extracted from screenshot)',
             neg: false,
-            deviants: [name]
+            deviations: [name]
           });
           save('customTraits');
         }
@@ -2214,6 +2233,8 @@ function applyExtractedData() {
     }
     traits.push(val);
   });
+
+  ensureTraitAssignmentsForDeviation(name, traits);
 
   // Create new deviation row
   const row = newDeviation();
@@ -2982,11 +3003,16 @@ function renderCards() {
 function renderCardTraitCell(rowId, slotIdx, devName, curTrait) {
   const cell = document.getElementById(`cc_${rowId}_${slotIdx}`);
   if (!cell) return;
-  const avail    = traitsForDeviation(devName);
+  const avail = traitsForDeviation(devName);
   const traitDef = getAllTraits().find(t => t.name === curTrait);
-  const isNeg    = traitDef?.neg || false;
+  const isNeg = traitDef?.neg || false;
+  const visibleTraits = avail.slice();
+  if (curTrait && traitDef && !visibleTraits.some(t => t.name === curTrait)) {
+    visibleTraits.push(traitDef);
+    visibleTraits.sort((a, b) => a.neg !== b.neg ? (a.neg ? 1 : -1) : a.name.localeCompare(b.name));
+  }
   let opts = '<option value="">—</option>';
-  avail.forEach(t => opts += `<option value="${escHtml(t.name)}"${t.name===curTrait?' selected':''}>${escHtml(t.name)}</option>`);
+  visibleTraits.forEach(t => opts += `<option value="${escHtml(t.name)}"${t.name===curTrait?' selected':''}>${escHtml(t.name)}</option>`);
   cell.innerHTML = `<select class="${isNeg?'neg-trait':''}" onchange="traitChange('${rowId}',${slotIdx},this.value)">${opts}</select>`;
   if (curTrait && traitDef) {
     const sel = cell.querySelector('select');
@@ -3242,12 +3268,17 @@ function renderActivitySelect(rowId, val, dataField) {
 function renderTraitCell(rowId, slotIdx, devName, curTrait) {
   const cell = document.getElementById(`tc_${rowId}_${slotIdx}`);
   if (!cell) return;
-  const avail    = traitsForDeviation(devName);
+  const avail = traitsForDeviation(devName);
   const traitDef = getAllTraits().find(t => t.name === curTrait);
-  const isNeg    = traitDef?.neg || false;
+  const isNeg = traitDef?.neg || false;
+  const visibleTraits = avail.slice();
+  if (curTrait && traitDef && !visibleTraits.some(t => t.name === curTrait)) {
+    visibleTraits.push(traitDef);
+    visibleTraits.sort((a, b) => a.neg !== b.neg ? (a.neg ? 1 : -1) : a.name.localeCompare(b.name));
+  }
 
   let opts = '<option value="">—</option>';
-  avail.forEach(t => opts += `<option value="${escHtml(t.name)}"${t.name===curTrait?' selected':''}>${escHtml(t.name)}</option>`);
+  visibleTraits.forEach(t => opts += `<option value="${escHtml(t.name)}"${t.name===curTrait?' selected':''}>${escHtml(t.name)}</option>`);
 
   cell.innerHTML = `<select class="${isNeg?'neg-trait':''}" onchange="traitChange('${rowId}',${slotIdx},this.value)">${opts}</select>`;
 
