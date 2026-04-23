@@ -82,6 +82,46 @@ ipcMain.handle('vision:configure', (_, visionConfig) => {
   return { success: true, port: PORT, running: true };
 });
 
+ipcMain.handle('state:save', (_, snapshot) => {
+  const db = getDB();
+  const saveAll = db.transaction((data) => {
+    db.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)').run('characters', JSON.stringify(data.settings?.characters || []));
+    db.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)').run('variants', JSON.stringify(data.settings?.variants || []));
+    db.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)').run('hiddenDefaultDeviations', JSON.stringify(data.settings?.hiddenDefaultDeviations || []));
+    db.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)').run('hiddenDefaultTraits', JSON.stringify(data.settings?.hiddenDefaultTraits || []));
+
+    db.exec('DELETE FROM deviations');
+    const insertDeviation = db.prepare('INSERT INTO deviations (char_name, name, variant, trait1, trait2, trait3, trait4, trait5, skill, activity, eland, fusion, locked) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+    for (const d of data.deviations || []) {
+      insertDeviation.run(d.char || '', d.name || '', d.variant || '', d.traits?.[0] || '', d.traits?.[1] || '', d.traits?.[2] || '', d.traits?.[3] || '', d.traits?.[4] || '', d.skill || 0, d.activity || 0, d.eland ? 1 : 0, d.fusion ? 1 : 0, d.locked ? 1 : 0);
+    }
+
+    db.exec('DELETE FROM materials');
+    const insertMaterial = db.prepare('INSERT INTO materials (name, qty, notes, sort_order) VALUES (?, ?, ?, ?)');
+    (data.materials || []).forEach((m, i) => insertMaterial.run(m.name || '', m.qty || 0, m.notes || '', i));
+
+    db.exec('DELETE FROM custom_deviations');
+    const insertCustomDeviation = db.prepare('INSERT INTO custom_deviations (name) VALUES (?)');
+    for (const name of data.customDeviations || []) insertCustomDeviation.run(name);
+
+    db.exec('DELETE FROM custom_traits');
+    const insertCustomTrait = db.prepare('INSERT INTO custom_traits (name, effect, neg, deviants) VALUES (?, ?, ?, ?)');
+    for (const t of data.customTraits || []) {
+      const deviants = t.deviants === 'ALL' ? 'ALL' : JSON.stringify(t.deviants || []);
+      insertCustomTrait.run(t.name || '', t.effect || '', t.neg ? 1 : 0, deviants);
+    }
+
+    db.exec('DELETE FROM trait_assignments');
+    const insertAssignment = db.prepare('INSERT INTO trait_assignments (deviant_name, trait_name) VALUES (?, ?)');
+    for (const [dev, assign] of Object.entries(data.customTraitAssignments || {})) {
+      for (const trait of assign?.add || []) insertAssignment.run(dev, trait);
+    }
+  });
+
+  saveAll(snapshot || {});
+  return { success: true };
+});
+
 // File dialogs
 ipcMain.handle('dialog:openImages', async () => {
   const result = await dialog.showOpenDialog(mainWindow, {

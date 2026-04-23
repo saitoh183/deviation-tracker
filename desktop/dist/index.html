@@ -1109,44 +1109,33 @@ async function loadAll() {
 
 async function saveToDB(type) {
   try {
-    if (type === 'deviations') {
-      await api.dbExec('DELETE FROM deviations');
-      for (const d of state.deviations) {
-        await api.dbQuery(
-          'INSERT INTO deviations (char_name, name, variant, trait1, trait2, trait3, trait4, trait5, skill, activity, eland, fusion, locked) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-          [d.char, d.name, d.variant || '', d.traits[0]||'', d.traits[1]||'', d.traits[2]||'', d.traits[3]||'', d.traits[4]||'', d.skill||0, d.activity||0, d.eland||0, d.fusion||0, d.locked||0]
-        );
-      }
-    } else if (type === 'materials') {
-      await api.dbExec('DELETE FROM materials');
-      for (let i = 0; i < state.materials.length; i++) {
-        const m = state.materials[i];
-        await api.dbQuery('INSERT INTO materials (name, qty, notes, sort_order) VALUES (?, ?, ?, ?)',
-          [m.name, m.qty||0, m.notes||'', i]);
-      }
-    } else if (type === 'settings') {
-      await api.settingsSet('characters', state.settings.characters || []);
-      await api.settingsSet('variants', state.settings.variants || []);
-    } else if (type === 'customDeviations') {
-      await api.dbExec('DELETE FROM custom_deviations');
-      for (const name of state.customDeviations) {
-        await api.dbQuery('INSERT INTO custom_deviations (name) VALUES (?)', [name]);
-      }
-    } else if (type === 'customTraits') {
-      await api.dbExec('DELETE FROM custom_traits');
-      for (const t of state.customTraits) {
-        await api.dbQuery('INSERT INTO custom_traits (name, effect, neg, deviants) VALUES (?, ?, ?, ?)',
-          [t.name, t.effect, t.neg ? 1 : 0, t.deviants === 'ALL' ? 'ALL' : JSON.stringify(t.deviants)]);
-      }
-    } else if (type === 'customTraitAssignments') {
-      await api.dbExec('DELETE FROM trait_assignments');
-      for (const [dev, assign] of Object.entries(state.customTraitAssignments)) {
-        const addList = Array.isArray(assign) ? assign : (assign?.add || []);
-        for (const trait of addList) {
-          await api.dbQuery('INSERT INTO trait_assignments (deviant_name, trait_name) VALUES (?, ?)', [dev, trait]);
-        }
+    const normalizedCustomTraits = (state.customTraits || []).map(t => ({
+      name: t.rawName || t.name || '',
+      effect: t.effect || '',
+      neg: !!(t.neg || t.type === 'negative'),
+      deviants: t.deviants ?? t.deviations ?? 'ALL'
+    }));
+
+    const normalizedAssignments = {};
+    for (const [dev, assign] of Object.entries(state.customTraitAssignments || {})) {
+      if (Array.isArray(assign)) {
+        normalizedAssignments[dev] = { add: assign, remove: [] };
+      } else {
+        normalizedAssignments[dev] = {
+          add: Array.isArray(assign?.add) ? assign.add : [],
+          remove: Array.isArray(assign?.remove) ? assign.remove : []
+        };
       }
     }
+
+    await api.saveState({
+      deviations: state.deviations || [],
+      materials: state.materials || [],
+      settings: state.settings || {},
+      customDeviations: state.customDeviations || [],
+      customTraits: normalizedCustomTraits,
+      customTraitAssignments: normalizedAssignments
+    });
   } catch (err) {
     console.error('Failed to save', type, err);
   }
@@ -1171,12 +1160,16 @@ let setupSelectedProvider = null;
 
 async function checkSetup() {
   const isComplete = await api.setupIsComplete();
+  const setupWizard = document.getElementById('setupWizard');
   if (isComplete) {
-    document.getElementById('setupWizard').style.display = 'none';
+    setupWizard.classList.remove('open');
+    setupWizard.style.display = 'none';
     await api.getPort().then(p => { serverPort = p; });
     return true;
   }
-  document.getElementById('setupWizard').style.display = '';
+  setupWizard.style.display = '';
+  setupWizard.classList.add('open');
+  setupGoTo(1);
   return false;
 }
 
@@ -1190,7 +1183,9 @@ function setupGoTo(step) {
 async function setupSkip() {
   // No OCR feature, just close wizard
   await api.setupComplete({ vision: { provider: 'none' } });
-  document.getElementById('setupWizard').style.display = 'none';
+  const setupWizard = document.getElementById('setupWizard');
+  setupWizard.classList.remove('open');
+  setupWizard.style.display = 'none';
 }
 
 async function setupDetectProviders() {
@@ -1261,7 +1256,9 @@ async function setupInstallLocal() {
 
     progress.textContent = '✅ Setup complete!';
     setTimeout(() => {
-      document.getElementById('setupWizard').style.display = 'none';
+      const setupWizard = document.getElementById('setupWizard');
+      setupWizard.classList.remove('open');
+      setupWizard.style.display = 'none';
     }, 1000);
   } catch (err) {
     progress.textContent = '❌ Error: ' + err.message;
@@ -1282,7 +1279,9 @@ async function setupSaveCloud() {
     }
   });
 
-  document.getElementById('setupWizard').style.display = 'none';
+  const setupWizard = document.getElementById('setupWizard');
+  setupWizard.classList.remove('open');
+  setupWizard.style.display = 'none';
 }
 
 // ============================================================
@@ -1525,15 +1524,19 @@ function getAllDeviations() {
 function getAllTraits() {
   const hidden = new Set((state.settings.hiddenDefaultTraits || []).map(n => String(n).toLowerCase()));
   const builtins = TRAIT_DATA.filter(t => !hidden.has(String(t.name || '').toLowerCase()));
-  const custom = (state.customTraits || []).map(t => ({
-    name: t.type === 'negative' ? '⚠ ' + t.name : t.name,
-    effect: t.effect,
-    deviants: t.deviations,
-    neg: t.type === 'negative',
-    custom: true,
-    rawName: t.name,
-    id: t.id,
-  }));
+  const custom = (state.customTraits || []).map(t => {
+    const rawName = t.rawName || t.name || '';
+    const isNeg = !!(t.neg || t.type === 'negative');
+    return {
+      name: isNeg && !String(rawName).startsWith('⚠ ') ? '⚠ ' + rawName : rawName,
+      effect: t.effect,
+      deviants: t.deviants ?? t.deviations ?? 'ALL',
+      neg: isNeg,
+      custom: true,
+      rawName,
+      id: t.id,
+    };
+  });
   return [...builtins, ...custom];
 }
 
@@ -1770,7 +1773,9 @@ async function saveVisionConfig() {
 function openSetupWizard() {
   closeSettings();
   setVisionConfigStatus('');
-  document.getElementById('setupWizard').style.display = '';
+  const setupWizard = document.getElementById('setupWizard');
+  setupWizard.style.display = '';
+  setupWizard.classList.add('open');
   setupGoTo(1);
 }
 
