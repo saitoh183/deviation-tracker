@@ -1486,6 +1486,10 @@ async function initializeApp() {
   if (appInitialized) return;
   await api.getPort().then(p => { serverPort = p; });
   await loadAll();
+  await loadVisionConfig();
+  const configuredVision = getVisionConfig();
+  const visionResult = await api.visionConfigure(configuredVision);
+  if (visionResult?.port) serverPort = visionResult.port;
   migrateData();
   renderCharList();
   updateFilterCharDropdown();
