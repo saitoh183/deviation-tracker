@@ -8,14 +8,16 @@
     "rebuild": "electron-builder install-app-deps",
     "postinstall": "npm run rebuild",
     "pack": "electron-builder --dir",
-    "dist": "electron-builder"
+    "dist": "electron-builder",
+    "dist:win": "electron-builder --win nsis"
   },
   "build": {
     "appId": "com.saitoh183.deviation-tracker",
     "productName": "Deviation Tracker",
     "win": {
       "target": ["nsis"],
-      "icon": "assets/icon.png"
+      "icon": "assets/icon.ico",
+      "artifactName": "${productName} Setup.${ext}"
     },
     "nsis": {
       "oneClick": false,
