@@ -93,13 +93,19 @@ button{cursor:pointer}
 .btn-group{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 
 /* ===== TABLE ===== */
-.table-wrap{display:block;width:max-content;min-width:100%;overflow:hidden;border:1px solid var(--border);border-radius:var(--radius)}
+.table-wrap{display:block;width:max-content;min-width:100%;overflow:visible;border:1px solid var(--border);border-radius:var(--radius)}
 table{table-layout:fixed;width:max-content;min-width:100%;border-collapse:collapse;font-size:.83rem}
 thead tr{background:var(--bg2)}
 th{padding:9px 8px;text-align:left;font-weight:600;color:var(--accent);font-size:.75rem;text-transform:uppercase;letter-spacing:.7px;white-space:nowrap;border-bottom:2px solid var(--border-light);cursor:pointer;user-select:none;overflow:hidden}
 th:hover{color:#fff;background:rgba(0,212,255,0.06)}
 .sort-indicator{opacity:.8;margin-left:6px}
-#sticky-thead th{position:sticky;top:0;z-index:100;background:var(--bg2)}
+#sticky-thead th{position:sticky;top:0;z-index:100;background:var(--bg2);box-shadow:0 2px 0 var(--border-light)}
+.batch-edit-bar{display:none;align-items:flex-end;gap:10px;flex-wrap:wrap;margin:0 0 12px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);background:rgba(0,212,255,0.05)}
+.batch-edit-bar.visible{display:flex}
+.batch-edit-field{display:flex;flex-direction:column;gap:4px;min-width:110px}
+.batch-edit-field label{font-size:.72rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.7px}
+.batch-edit-field select{min-width:110px}
+.batch-edit-summary{font-size:.82rem;color:var(--text-dim);margin-right:6px}
 tbody tr{border-bottom:1px solid var(--border);transition:background .15s}
 tbody tr:nth-child(even){background:var(--row-alt)}
 tbody tr:hover{background:rgba(0,212,255,0.07)}
@@ -440,6 +446,40 @@ input,select,button,textarea{touch-action:manipulation}
       </div>
     </div>
     <input type="file" id="listFileInput"   accept=".json" style="display:none" onchange="handleListLoad(event)">
+
+    <div class="batch-edit-bar" id="batchEditBar">
+      <span class="batch-edit-summary" id="batchEditSummary">0 selected</span>
+      <div class="batch-edit-field">
+        <label>Character</label>
+        <select id="batchChar"></select>
+      </div>
+      <div class="batch-edit-field">
+        <label>Variant</label>
+        <select id="batchVariant"></select>
+      </div>
+      <div class="batch-edit-field">
+        <label>Skill</label>
+        <select id="batchSkill"></select>
+      </div>
+      <div class="batch-edit-field">
+        <label>Activity</label>
+        <select id="batchActivity"></select>
+      </div>
+      <div class="batch-edit-field">
+        <label>ELand</label>
+        <select id="batchEland"></select>
+      </div>
+      <div class="batch-edit-field">
+        <label>Fusion</label>
+        <select id="batchFusion"></select>
+      </div>
+      <div class="batch-edit-field">
+        <label>Locked</label>
+        <select id="batchLocked"></select>
+      </div>
+      <button class="btn btn-primary" onclick="applyBatchEditSelected()">Apply to Selected</button>
+      <button class="btn btn-secondary" onclick="resetBatchEditForm()">Reset</button>
+    </div>
 
   </div><!-- /#deviations-controls -->
 
@@ -3135,6 +3175,67 @@ function getVisibleDeviationIds() {
   return getFilteredSorted().map(row => String(row.id));
 }
 
+function getBatchBooleanOptions() {
+  return '<option value="">No change</option><option value="1">On</option><option value="0">Off</option>';
+}
+
+function populateBatchEditOptions() {
+  const setOptions = (id, options, value = '') => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.innerHTML = options;
+    el.value = value;
+  };
+
+  const chars = Array.isArray(state.settings?.characters) ? state.settings.characters.filter(Boolean) : [];
+  const variants = getAllVariants();
+  setOptions('batchChar', '<option value="">No change</option>' + chars.map(name => `<option value="${escHtml(name)}">${escHtml(name)}</option>`).join(''));
+  setOptions('batchVariant', '<option value="">No change</option>' + variants.map(name => `<option value="${escHtml(name)}">${escHtml(name)}</option>`).join(''));
+  setOptions('batchSkill', '<option value="">No change</option><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option>');
+  setOptions('batchActivity', '<option value="">No change</option><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option>');
+  setOptions('batchEland', getBatchBooleanOptions());
+  setOptions('batchFusion', getBatchBooleanOptions());
+  setOptions('batchLocked', getBatchBooleanOptions());
+}
+
+function resetBatchEditForm() {
+  ['batchChar','batchVariant','batchSkill','batchActivity','batchEland','batchFusion','batchLocked'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+}
+
+function applyBatchEditSelected() {
+  const ids = [...selectedDeviationIds];
+  if (ids.length < 2) return;
+  const idSet = new Set(ids);
+  const batch = {
+    char: document.getElementById('batchChar')?.value ?? '',
+    variant: document.getElementById('batchVariant')?.value ?? '',
+    skill: document.getElementById('batchSkill')?.value ?? '',
+    activity: document.getElementById('batchActivity')?.value ?? '',
+    eland: document.getElementById('batchEland')?.value ?? '',
+    fusion: document.getElementById('batchFusion')?.value ?? '',
+    locked: document.getElementById('batchLocked')?.value ?? '',
+  };
+  const hasChanges = Object.values(batch).some(value => value !== '');
+  if (!hasChanges) return;
+
+  state.deviations.forEach(row => {
+    if (!idSet.has(String(row.id))) return;
+    if (batch.char !== '') row.char = batch.char;
+    if (batch.variant !== '') row.variant = batch.variant;
+    if (batch.skill !== '') row.skill = Number(batch.skill);
+    if (batch.activity !== '') row.activity = Number(batch.activity);
+    if (batch.eland !== '') row.eland = batch.eland === '1';
+    if (batch.fusion !== '') row.fusion = batch.fusion === '1';
+    if (batch.locked !== '') row.locked = batch.locked === '1';
+  });
+
+  save('deviations');
+  renderView();
+}
+
 function updateDeviationSelectionUi(visibleIds = getVisibleDeviationIds()) {
   const selectedCount = selectedDeviationIds.size;
   const countEl = document.getElementById('selectionCount');
@@ -3142,6 +3243,13 @@ function updateDeviationSelectionUi(visibleIds = getVisibleDeviationIds()) {
 
   const deleteBtn = document.getElementById('deleteSelectedBtn');
   if (deleteBtn) deleteBtn.disabled = selectedCount === 0;
+
+  const batchBar = document.getElementById('batchEditBar');
+  const batchSummary = document.getElementById('batchEditSummary');
+  if (batchBar) batchBar.classList.toggle('visible', selectedCount > 1);
+  if (batchSummary) batchSummary.textContent = `${selectedCount} selected`;
+  if (selectedCount > 1) populateBatchEditOptions();
+  else resetBatchEditForm();
 
   const selectAll = document.getElementById('selectAllRows');
   if (selectAll) {
@@ -3869,7 +3977,6 @@ function renderMaterials() {
   state.materials.forEach((m, idx) => {
     const div = document.createElement('div');
     div.className = 'fm-row';
-    div.draggable = true;
     div.dataset.idx = idx;
     div.innerHTML = `
       <span class="drag-handle" title="Drag to reorder">⠿</span>
@@ -3882,8 +3989,19 @@ function renderMaterials() {
       <input class="fm-input fm-notes" type="text"   value="${escHtml(m.notes)}" placeholder="Notes…"          oninput="matChange('${m.id}','notes',this.value)">
       <button class="del-btn fm-del" onclick="delMaterial('${m.id}')">✕</button>
     `;
-    div.addEventListener('dragstart', e => { dragSrcIdx = idx; setTimeout(() => div.classList.add('dragging'), 0); e.dataTransfer.effectAllowed = 'move'; });
-    div.addEventListener('dragend',   () => { div.classList.remove('dragging'); document.querySelectorAll('.fm-row').forEach(r => r.classList.remove('drag-over')); });
+    const handle = div.querySelector('.drag-handle');
+    if (handle) {
+      handle.draggable = true;
+      handle.addEventListener('dragstart', e => {
+        dragSrcIdx = idx;
+        setTimeout(() => div.classList.add('dragging'), 0);
+        e.dataTransfer.effectAllowed = 'move';
+      });
+      handle.addEventListener('dragend', () => {
+        div.classList.remove('dragging');
+        document.querySelectorAll('.fm-row').forEach(r => r.classList.remove('drag-over'));
+      });
+    }
     div.addEventListener('dragover',  e => { e.preventDefault(); div.classList.add('drag-over'); });
     div.addEventListener('dragleave', () => div.classList.remove('drag-over'));
     div.addEventListener('drop', e => {
