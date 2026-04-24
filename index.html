@@ -901,6 +901,27 @@ input,select,button,textarea{touch-action:manipulation}
       <button class="close-btn" onclick="closeScreenshotModal()">✕</button>
     </div>
     <div class="modal-body">
+      <div class="ss-extracted" style="margin-bottom:12px">
+        <div class="ss-field-row">
+          <div class="ss-field">
+            <label>Character</label>
+            <select id="ssCharacter"></select>
+          </div>
+          <div class="ss-field">
+            <label>ELand</label>
+            <div style="padding:6px 8px">
+              <label class="toggle"><input type="checkbox" id="ssEland"><span class="toggle-slider"></span></label>
+            </div>
+          </div>
+          <div class="ss-field">
+            <label>Locked</label>
+            <div style="padding:6px 8px">
+              <label class="toggle"><input type="checkbox" id="ssLocked"><span class="toggle-slider"></span></label>
+            </div>
+          </div>
+        </div>
+        <div style="font-size:.75rem;color:var(--text-muted)">Applies to every screenshot added in this batch.</div>
+      </div>
       <!-- Step 1: Drop zone -->
       <div id="ssStep1">
         <div class="ss-drop-zone" id="ssDropZone">
@@ -1467,8 +1488,27 @@ function getVisionConfig() {
    ============================================================ */
 function openScreenshotModal() {
   loadVisionConfig();
+  populateScreenshotImportOptions();
   resetScreenshotModal();
   openModal('screenshotModal');
+}
+
+function populateScreenshotImportOptions() {
+  const select = document.getElementById('ssCharacter');
+  if (select) {
+    const chars = Array.isArray(state.settings?.characters) ? state.settings.characters.filter(Boolean) : [];
+    const options = ['<option value="">— None —</option>'];
+    chars.forEach(name => options.push(`<option value="${escHtml(name)}">${escHtml(name)}</option>`));
+    if (defaultCharacter && !chars.includes(defaultCharacter)) {
+      options.push(`<option value="${escHtml(defaultCharacter)}">${escHtml(defaultCharacter)}</option>`);
+    }
+    select.innerHTML = options.join('');
+    select.value = defaultCharacter || '';
+  }
+  const eland = document.getElementById('ssEland');
+  if (eland) eland.checked = !!defaultEland;
+  const locked = document.getElementById('ssLocked');
+  if (locked) locked.checked = false;
 }
 
 function closeScreenshotModal() {
@@ -1881,6 +1921,10 @@ function applyExtractedData() {
 
   ensureTraitAssignmentsForDeviation(name, traits);
 
+  const selectedCharacter = document.getElementById('ssCharacter')?.value || '';
+  const importEland = !!document.getElementById('ssEland')?.checked;
+  const importLocked = !!document.getElementById('ssLocked')?.checked;
+
   // Create new deviation row
   const row = newDeviation();
   row.name = name;
@@ -1888,12 +1932,15 @@ function applyExtractedData() {
   row.skill = parseInt(document.getElementById('ssSkill').value) || 0;
   row.activity = parseInt(document.getElementById('ssActivity').value) || 0;
   row.fusion = document.getElementById('ssFusion').checked ? 1 : 0;
+  row.eland = importEland;
+  row.locked = importLocked;
   for (let i = 0; i < 5 && i < traits.length; i++) {
     row.traits[i] = traits[i];
   }
 
   // Apply defaults if set
-  if (defaultCharacter) row.char = defaultCharacter;
+  if (selectedCharacter) row.char = selectedCharacter;
+  else if (defaultCharacter) row.char = defaultCharacter;
 
   state.deviations.push(row);
   save('deviations');
