@@ -1,0 +1,13 @@
+# Dependencies
+node_modules/
+
+# Electron build output
+desktop/dist/*
+!desktop/dist/index.html
+!desktop/dist/config.js
+
+# Local OS/editor noise
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
