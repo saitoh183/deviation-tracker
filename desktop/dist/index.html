@@ -355,6 +355,13 @@ input,select,button,textarea{touch-action:manipulation}
   color:var(--text);padding:6px 8px;font-size:.82rem;
 }
 .vision-config-group input:focus,.vision-config-group select:focus{outline:none;border-color:var(--accent)}
+.app-logo{width:28px;height:28px;border-radius:8px;object-fit:cover;box-shadow:0 0 18px rgba(255,63,48,.35);vertical-align:middle;flex:0 0 auto}
+.app-title{display:flex;align-items:center;gap:10px}
+.legal-links{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;font-size:.75rem}
+.legal-links a{color:var(--accent);text-decoration:none}
+.legal-links a:hover{text-decoration:underline}
+.setup-title{display:flex;align-items:center;gap:10px}
+.setup-title .app-logo{width:34px;height:34px}
 </style>
 </head>
 <body style="margin:0; padding:0; overflow:hidden; height:100vh;">
@@ -367,7 +374,7 @@ input,select,button,textarea{touch-action:manipulation}
 
   <!-- HEADER -->
   <header class="app-header">
-    <div class="app-title">⚡ Once Human <span>/ Deviation Tracker</span></div>
+    <div class="app-title"><img class="app-logo" src="assets/app-icon.png" alt=""> Once Human <span>/ Deviation Tracker</span></div>
     <button class="gear-btn" onclick="openSettings()" title="Settings">⚙</button>
   </header>
 
@@ -617,6 +624,7 @@ input,select,button,textarea{touch-action:manipulation}
     </div>
 
     <p class="settings-note">Character names max 10 characters; up to 20 characters. Changes reflect immediately in the tracker.<br><br>Desktop data is stored in SQLite. Save/Load Config is for import/export, not the main storage layer.</p>
+    <div class="legal-links"><a href="terms.html" target="_blank" rel="noopener">Terms of Service</a><span>•</span><a href="privacy.html" target="_blank" rel="noopener">Privacy Policy</a></div>
 
     <div class="settings-section">
       <h3>📷 Screenshot Behavior</h3>
@@ -902,7 +910,7 @@ input,select,button,textarea{touch-action:manipulation}
 <div class="modal-overlay" id="setupWizard" style="z-index:2000">
   <div class="modal modal-lg" style="max-width:640px">
     <div class="modal-header">
-      <h3>⚡ Once Human — Deviation Tracker Setup</h3>
+      <h3 class="setup-title"><img class="app-logo" src="assets/app-icon.png" alt=""> Once Human — Deviation Tracker Setup</h3>
     </div>
     <div class="modal-body" id="setupBody">
 

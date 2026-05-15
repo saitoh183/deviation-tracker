@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Privacy Policy — Once Human Deviation Tracker</title>
+  <link rel="icon" type="image/png" href="assets/app-icon.png">
+  <style>
+    :root{color-scheme:dark;background:#0b0d10;color:#f4f4f5;font-family:Inter,Segoe UI,Roboto,Arial,sans-serif;line-height:1.55}
+    body{margin:0;background:radial-gradient(circle at top,#2a0c0c 0,#0b0d10 42rem);padding:32px 18px}
+    main{max-width:860px;margin:0 auto;background:rgba(20,22,27,.92);border:1px solid #3a2020;border-radius:16px;padding:28px;box-shadow:0 18px 60px rgba(0,0,0,.35)}
+    h1{display:flex;align-items:center;gap:12px;margin-top:0} h1 img{width:42px;height:42px;border-radius:10px}
+    h2{margin-top:28px;color:#ffb3a8} a{color:#ff8b7b} .muted{color:#b7a9a9}.back{display:inline-block;margin-bottom:18px}
+  </style>
+</head>
+<body><main>
+  <a class="back" href="index.html">← Back to tracker</a>
+  <h1><img src="assets/app-icon.png" alt=""> Privacy Policy</h1>
+  <p class="muted">Last updated: May 15, 2026</p>
+
+  <h2>Summary</h2>
+  <p>The tracker is designed as a local-first tool. It does not require an account and does not intentionally collect analytics, tracking identifiers, or personal information.</p>
+
+  <h2>Data stored by the app</h2>
+  <p>The web version stores your tracker data in your browser using localStorage. The desktop version stores your tracker data locally in a SQLite database on your machine.</p>
+  <p>This can include characters, deviation rows, variants, traits, materials, OCR settings, and app preferences.</p>
+
+  <h2>Screenshot OCR / AI providers</h2>
+  <p>If you enable OCR or screenshot analysis, the app sends the selected screenshot and prompt data to the provider you configure. That provider may process and retain data according to its own privacy policy.</p>
+  <p>If you choose a local provider such as Ollama/LM Studio/llama.cpp, processing can stay on your own machine or network, depending on your setup.</p>
+
+  <h2>What is not collected by this app</h2>
+  <ul>
+    <li>No user accounts are created by the tracker.</li>
+    <li>No built-in analytics are collected by the tracker.</li>
+    <li>No tracker database is uploaded by default.</li>
+    <li>No API keys are intentionally transmitted anywhere except the provider endpoint you configure for OCR.</li>
+  </ul>
+
+  <h2>Exports and backups</h2>
+  <p>If you export or share backup/config files, those files may contain your tracker data and configured lists. Treat exported files as your responsibility.</p>
+
+  <h2>Third-party hosting</h2>
+  <p>The web version may be served through GitHub Pages. GitHub may receive normal web server request data such as IP address, browser user agent, and requested URLs according to GitHub’s own policies.</p>
+
+  <h2>Deleting data</h2>
+  <p>In the web version, clear site data for the tracker domain or use the app’s clear/export options. In the desktop version, remove app data from the local application data folder or use the app’s data management options where available.</p>
+
+  <h2>Contact</h2>
+  <p>Issues and feedback can be submitted through the project repository: <a href="https://github.com/saitoh183/deviation-tracker">github.com/saitoh183/deviation-tracker</a>.</p>
+</main></body></html>

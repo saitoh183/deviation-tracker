@@ -12,3 +12,7 @@ desktop/dist/*
 Thumbs.db
 .vscode/
 .idea/
+!desktop/dist/assets/
+!desktop/dist/assets/app-icon.png
+!desktop/dist/terms.html
+!desktop/dist/privacy.html
