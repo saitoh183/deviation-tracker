@@ -569,12 +569,6 @@ input,select,button,textarea{touch-action:manipulation}
       <button class="close-btn" onclick="closeSettings()">✕</button>
     </div>
 
-    <div class="settings-section">
-      <h3>Contribution</h3>
-      <div class="settings-btn-list">
-        <button class="btn btn-primary" onclick="closeSettings();openContributeConfig()">Contribute Config (PR)</button>
-      </div>
-    </div>
 
     <div class="settings-section">
       <h3>🤖 AI Config</h3>
@@ -651,7 +645,6 @@ input,select,button,textarea{touch-action:manipulation}
     <div class="modal-tabs">
       <button class="modal-tab-btn active" onclick="switchModalTab('manageDevModal','addDev',this)">Add Deviation</button>
       <button class="modal-tab-btn" onclick="switchModalTab('manageDevModal','removeDev',this)">Remove Deviation</button>
-      <button class="modal-tab-btn" onclick="switchModalTab('manageDevModal','editDev',this)">Edit Deviation</button>
     </div>
     <div class="modal-body">
       <!-- Add Deviation -->
@@ -660,33 +653,7 @@ input,select,button,textarea{touch-action:manipulation}
           <label>Deviation Name</label>
           <input id="newDevName" class="form-input" type="text" placeholder="e.g. Crystal Moth" onkeydown="if(event.key==='Enter')addCustomDeviation()">
         </div>
-        <div class="form-group">
-          <label>Assign Traits <span style="color:var(--text-muted);font-size:.8em">(optional)</span></label>
-          <input class="form-input" id="addDevTraitSearch" type="text" placeholder="Search traits…" oninput="filterAddDevTraits()" style="margin-bottom:8px">
-          <div class="trait-two-col" style="display:flex;gap:10px">
-            <div style="flex:1;min-width:0">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-                <span style="font-size:.72rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.7px">Positive (<span id="addDevPosCount">0</span> selected)</span>
-                <div style="display:flex;gap:3px">
-                  <button class="btn btn-sm btn-secondary" onclick="selectAllAddDevTraits('pos')">All</button>
-                  <button class="btn btn-sm btn-secondary" onclick="clearAllAddDevTraits('pos')">None</button>
-                </div>
-              </div>
-              <div class="dev-checklist" id="addDevPosTraits" style="max-height:200px"></div>
-            </div>
-            <div style="flex:1;min-width:0">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-                <span style="font-size:.72rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.7px">Negative (<span id="addDevNegCount">0</span> selected)</span>
-                <div style="display:flex;gap:3px">
-                  <button class="btn btn-sm btn-secondary" onclick="selectAllAddDevTraits('neg')">All</button>
-                  <button class="btn btn-sm btn-secondary" onclick="clearAllAddDevTraits('neg')">None</button>
-                </div>
-              </div>
-              <div class="dev-checklist" id="addDevNegTraits" style="max-height:200px"></div>
-            </div>
-          </div>
-        </div>
-        <p class="trait-assign-counter" id="addDevTotalCount">Selected: 0 traits assigned</p>
+        <p class="settings-subtext">New deviations use the full trait list by default.</p>
         <button class="btn btn-primary" onclick="addCustomDeviation()">Add to List</button>
         <div class="flash-msg" id="devAddFlash"></div>
       </div>
@@ -696,46 +663,6 @@ input,select,button,textarea{touch-action:manipulation}
           <input class="mgr-search" id="devRemoveSearch" type="text" placeholder="🔍  Search deviations…" oninput="filterDevRemoveList()">
         </div>
         <div class="mgr-list" id="devRemoveList"></div>
-      </div>
-      <!-- Edit Deviation -->
-      <div class="modal-tab-pane" data-pane="editDev">
-        <div class="form-group">
-          <label>Select Deviation</label>
-          <select id="editDevSelect" class="form-input" onchange="loadEditDeviation()">
-            <option value="">— Select a deviation —</option>
-          </select>
-        </div>
-        <div id="editDevPanel" style="display:none">
-          <p id="editDevBuiltinNote" style="font-size:.8rem;color:var(--text-muted);margin-bottom:10px"></p>
-          <div class="form-group">
-            <label>Assigned Traits</label>
-            <input class="form-input" id="editDevTraitSearch" type="text" placeholder="Search traits…" oninput="filterEditDevTraits()" style="margin-bottom:8px">
-            <div class="trait-two-col" style="display:flex;gap:10px">
-              <div style="flex:1;min-width:0">
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-                  <span style="font-size:.72rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.7px">Positive (<span id="editDevPosCount">0</span> selected)</span>
-                  <div style="display:flex;gap:3px">
-                    <button class="btn btn-sm btn-secondary" onclick="selectAllEditDevTraits('pos')">All</button>
-                    <button class="btn btn-sm btn-secondary" onclick="clearAllEditDevTraits('pos')">None</button>
-                  </div>
-                </div>
-                <div class="dev-checklist" id="editDevPosTraits" style="max-height:200px"></div>
-              </div>
-              <div style="flex:1;min-width:0">
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-                  <span style="font-size:.72rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.7px">Negative (<span id="editDevNegCount">0</span> selected)</span>
-                  <div style="display:flex;gap:3px">
-                    <button class="btn btn-sm btn-secondary" onclick="selectAllEditDevTraits('neg')">All</button>
-                    <button class="btn btn-sm btn-secondary" onclick="clearAllEditDevTraits('neg')">None</button>
-                  </div>
-                </div>
-                <div class="dev-checklist" id="editDevNegTraits" style="max-height:200px"></div>
-              </div>
-            </div>
-          </div>
-          <button class="btn btn-primary" onclick="saveEditDeviation()">Save Changes</button>
-          <div class="flash-msg" id="editDevFlash"></div>
-        </div>
       </div>
     </div>
   </div>
@@ -855,31 +782,6 @@ input,select,button,textarea{touch-action:manipulation}
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeModal('confirmModal')">Cancel</button>
       <button class="btn btn-danger" id="confirmOkBtn">Confirm</button>
-    </div>
-  </div>
-</div>
-
-<!-- ======================================================= -->
-<!-- CONTRIBUTE CONFIG MODAL                                 -->
-<!-- ======================================================= -->
-<div class="modal-overlay" id="contributeConfigModal" onclick="closeModalIfBg(event,'contributeConfigModal')">
-  <div class="modal modal-sm" role="dialog" aria-modal="true" aria-labelledby="contributeConfigTitle">
-    <div class="modal-header">
-      <h3 id="contributeConfigTitle">Contribute Config (PR)</h3>
-      <button class="close-btn" onclick="closeModal('contributeConfigModal')">✕</button>
-    </div>
-    <div class="modal-body">
-      <p class="modal-msg">Upload your exported <strong>&lt;name&gt;-config.json</strong>. Maintainers validate and merge it into config.js defaults.</p>
-      <div class="settings-btn-list" style="margin-top:12px">
-        <button class="btn btn-primary" onclick="saveContribConfigNow()">Save Config Now</button>
-        <a class="btn btn-secondary" href="https://github.com/saitoh183/deviation-tracker/tree/dev/contrib/configs" target="_blank" rel="noopener">Upload to GitHub (Create PR)</a>
-      </div>
-      <p class="modal-msg" style="margin-top:12px">
-        1) Add file → Upload files<br>
-        2) Upload <strong>&lt;name&gt;-config.json</strong> into <code>contrib/configs/</code><br>
-        3) Commit changes<br>
-        4) Open PR with base branch <strong>dev</strong>
-      </p>
     </div>
   </div>
 </div>
@@ -1146,10 +1048,8 @@ async function loadAll() {
       name: r.name, qty: r.qty, notes: r.notes, id: r.id
     }));
 
-    // Load settings
-    const chars = allSettings.characters || [];
-    const variants = allSettings.variants || [];
-    state.settings = { characters: chars, variants: variants };
+    // Load settings, merging shipped defaults such as built-in variants.
+    state.settings = mergeSettingsWithDefaults(allSettings || {});
 
     // Load custom deviations
     const custDevResult = await api.dbQuery('SELECT name FROM custom_deviations ORDER BY name');
@@ -1550,7 +1450,7 @@ const IS_OFFICIAL_DEPLOYMENT = false; // Desktop app, not a web deployment
 
 // State defaults and helpers (these still need to exist for the rest of the code)
 function mergeSettingsWithDefaults(s) {
-  const defaults = { characters: [], variants: [] };
+  const defaults = { characters: [], variants: getDefaultVariantEntries(), hiddenDefaultDeviations: [], hiddenDefaultTraits: [] };
   if (!s || typeof s !== 'object') return { ...defaults };
   return { ...defaults, ...s };
 }
@@ -1609,7 +1509,24 @@ function isDefaultVariantName(name) {
 function mergeSettingsWithDefaults(settings) {
   const base = { characters: [], variants: getDefaultVariantEntries(), hiddenDefaultDeviations: [], hiddenDefaultTraits: [] };
   if (!settings || typeof settings !== 'object') return base;
-  return { ...base, ...settings };
+  const savedVariants = Array.isArray(settings.variants) ? settings.variants : [];
+  const variants = mergeVariantEntries(base.variants, savedVariants);
+  return { ...base, ...settings, variants };
+}
+
+function mergeVariantEntries(defaults, saved) {
+  const out = [];
+  const seen = new Set();
+  [...(defaults || []), ...(saved || [])].forEach(v => {
+    const entry = typeof v === 'string' ? { name: v, description: v } : v;
+    const name = String(entry?.name || '').trim();
+    if (!name) return;
+    const key = name.toLowerCase();
+    if (seen.has(key)) return;
+    seen.add(key);
+    out.push({ name, description: String(entry?.description || name).trim() || name });
+  });
+  return out;
 }
 
 /* ── Data Getters ── */
@@ -1645,19 +1562,11 @@ function getAllTraits() {
 }
 
 function traitsForDeviation(devName) {
+  // All deviations can use all traits by default. Per-deviation assignment
+  // added noise without adding value, so filtering now happens only at the
+  // global trait list level via hidden defaults/custom trait management.
   const all = getAllTraits();
-  if (!devName) return all;
-  const assign    = (state.customTraitAssignments || {})[devName] || {};
-  const addList   = assign.add    || [];
-  const rmList    = assign.remove || [];
-  // Base: naturally applicable traits
-  let result = all.filter(t => t.deviants === 'ALL' || (Array.isArray(t.deviants) && t.deviants.includes(devName)));
-  // Add extra traits explicitly assigned
-  addList.forEach(name => { if (!result.some(t => t.name === name)) { const found = all.find(t => t.name === name); if (found) result.push(found); } });
-  // Remove explicitly removed traits
-  result = result.filter(t => !rmList.includes(t.name));
-  // Sort: positives first, then negatives
-  return result.sort((a, b) => a.neg !== b.neg ? (a.neg ? 1 : -1) : a.name.localeCompare(b.name));
+  return all.sort((a, b) => a.neg !== b.neg ? (a.neg ? 1 : -1) : a.name.localeCompare(b.name));
 }
 
 function ensureTraitAssignmentsForDeviation(devName, traitNames) {
@@ -1754,8 +1663,10 @@ function switchModalTab(modalId, tabName, btn) {
   if (tabName === 'removeTrait') renderTraitRemoveList();
   if (tabName === 'editDev') {
     populateEditDevSelect();
-    document.getElementById('editDevSelect').value = '';
-    document.getElementById('editDevPanel').style.display = 'none';
+    const editSelect = document.getElementById('editDevSelect');
+    const editPanel = document.getElementById('editDevPanel');
+    if (editSelect) editSelect.value = '';
+    if (editPanel) editPanel.style.display = 'none';
   }
 }
 
@@ -2539,13 +2450,6 @@ function openManageDeviations() {
   document.getElementById('newDevName').value = '';
   document.getElementById('devAddFlash').className = 'flash-msg';
   document.getElementById('devRemoveSearch').value = '';
-  document.getElementById('addDevTraitSearch').value = '';
-  renderAddDevTraitLists();
-  // Reset edit tab
-  document.getElementById('editDevSelect').value = '';
-  document.getElementById('editDevPanel').style.display = 'none';
-  document.getElementById('editDevTraitSearch').value = '';
-  populateEditDevSelect();
   // Reset to Add tab
   const modal = document.getElementById('manageDevModal');
   modal.querySelectorAll('.modal-tab-btn').forEach((b,i) => b.classList.toggle('active', i===0));
@@ -2564,21 +2468,8 @@ function addCustomDeviation() {
   }
   state.customDeviations.push(val);
   save('customDeviations');
-  // Save trait assignments if any traits were checked
-  const checkedTraits = getAddDevCheckedTraits();
-  let assignedCount = 0;
-  if (checkedTraits.length > 0) {
-    if (!state.customTraitAssignments) state.customTraitAssignments = {};
-    state.customTraitAssignments[val] = { add: checkedTraits, remove: [] };
-    save('customTraitAssignments');
-    assignedCount = checkedTraits.length;
-  }
   inp.value = '';
-  renderAddDevTraitLists();
-  const msg = assignedCount > 0
-    ? `✓ ${val} added with ${assignedCount} trait assignment${assignedCount !== 1 ? 's' : ''}!`
-    : '✓ Deviation added!';
-  showFlash('devAddFlash', msg);
+  showFlash('devAddFlash', '✓ Deviation added with all traits available by default!');
   // Refresh all deviation dropdowns
   refreshAllDeviationDropdowns();
 }
@@ -2651,7 +2542,9 @@ function renderAddDevTraitLists() {
 }
 
 function filterAddDevTraits() {
-  const q = (document.getElementById('addDevTraitSearch').value || '').toLowerCase();
+  const searchEl = document.getElementById('addDevTraitSearch');
+  if (!searchEl) return;
+  const q = (searchEl.value || '').toLowerCase();
   ['addDevPosTraits','addDevNegTraits'].forEach(cid => {
     document.querySelectorAll(`#${cid} .dev-check-item`).forEach(el => {
       el.classList.toggle('hidden', !!q && !el.textContent.trim().toLowerCase().includes(q));
@@ -3831,30 +3724,6 @@ function saveConfig() { return saveList(); }
 function triggerLoadConfig() { return triggerLoadList(); }
 function handleConfigLoad(e) { return handleListLoad(e); }
 
-function saveContribConfigNow() {
-  const raw = window.prompt('Enter a short name for your contribution file (example: mylatest).');
-  if (raw === null) return;
-  const cleaned = String(raw || '')
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9_-]+/g, '-')
-    .replace(/^-+|-+$/g, '') || 'mylatest';
-  const base = cleaned.endsWith('-config') ? cleaned : `${cleaned}-config`;
-
-  const data = {
-    version:                2,
-    customDeviations:       state.customDeviations,
-    customTraits:           state.customTraits,
-    settings:               state.settings,
-    customTraitAssignments: state.customTraitAssignments || {},
-  };
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `${base}.json`;
-  a.click();
-}
-
 function saveList() {
   const data = {
     version:                  2,
@@ -4027,16 +3896,13 @@ function renderMaterials() {
    ============================================================ */
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
-    ['manageDevModal','manageTraitModal','manageVariantModal','confirmModal','contributeConfigModal','screenshotModal'].forEach(id => {
+    ['manageDevModal','manageTraitModal','manageVariantModal','confirmModal','screenshotModal'].forEach(id => {
       if (document.getElementById(id).classList.contains('open')) closeModal(id);
     });
     if (document.getElementById('settingsOverlay').classList.contains('open')) closeSettings();
   }
 });
 
-function openContributeConfig() {
-  openModal('contributeConfigModal');
-}
 
 /* ============================================================
    UTILS

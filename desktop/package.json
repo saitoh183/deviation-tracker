@@ -1,6 +1,6 @@
 {
   "name": "deviation-tracker",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Once Human — Deviation Tracker (Desktop)",
   "main": "main.js",
   "scripts": {
