@@ -2406,7 +2406,7 @@ function renderTraitRemoveList() {
           ? `<span class="lock-icon" title="Built-in trait — edit config.js to remove">🔒</span>`
           : `<div style="display:flex;gap:6px"><button class="mgr-del-btn" onclick="startEditTrait(${JSON.stringify(t.id)})">✎</button><button class="mgr-del-btn" onclick="removeCustomTrait(${JSON.stringify(t.rawName||t.name)},${JSON.stringify(t.id)})">✕</button></div>`
       );
-      if (!defaultsAreLocked() && isBuiltInDefault) {
+      if (!defaultsAreLocked() && isDefaultItem) {
         const controls = div.querySelector('div[style*="display:flex;gap:6px"]');
         if (controls) controls.innerHTML = `<button class="mgr-del-btn" onclick="removeBuiltInTrait(${JSON.stringify(t.name)})">Remove</button>`;
       }
