@@ -1,6 +1,6 @@
 {
   "name": "deviation-tracker",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Once Human — Deviation Tracker (Desktop)",
   "main": "main.js",
   "scripts": {
@@ -15,7 +15,9 @@
     "appId": "com.saitoh183.deviation-tracker",
     "productName": "Deviation Tracker",
     "win": {
-      "target": ["nsis"],
+      "target": [
+        "nsis"
+      ],
       "icon": "assets/icon.ico",
       "artifactName": "${productName} Setup.${ext}"
     },
@@ -26,7 +28,10 @@
     "files": [
       "**/*",
       "!node_modules/.cache"
-    ]
+    ],
+    "directories": {
+      "output": "release"
+    }
   },
   "dependencies": {
     "better-sqlite3": "^12.9.0",

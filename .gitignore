@@ -2,6 +2,7 @@
 node_modules/
 
 # Electron build output
+desktop/release/
 desktop/dist/*
 !desktop/dist/index.html
 !desktop/dist/config.js
