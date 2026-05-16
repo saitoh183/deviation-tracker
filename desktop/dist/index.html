@@ -50,14 +50,27 @@ body[data-theme="light"] .score-select.skill-4,body[data-theme="light"] .score-s
 body[data-theme="light"] .score-select.skill-5,body[data-theme="light"] .score-select.activity-5{color:#171107;background:#a88a35;border-color:#786125}
 body[data-theme="light"] .tooltip-header.pos{background:#799a7c;color:#0f3d22;border-bottom:1px solid #557a5a}
 body[data-theme="light"] .tooltip-header.neg{background:#af8061;color:#5e1c08;border-bottom:1px solid #8a5b40}
+body[data-theme="light"] .form-input,body[data-theme="light"] .form-textarea,body[data-theme="light"] .mgr-search{background:#8a7b62;color:#120f0a;border-color:#5f5441}
+body[data-theme="light"] .form-input::placeholder,body[data-theme="light"] .form-textarea::placeholder,body[data-theme="light"] .mgr-search::placeholder{color:#3b3328;opacity:1}
 .theme-toggle-row{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px}
 .theme-toggle-row span{font-size:.85rem;color:var(--text)}
-.dev-select-wrap{position:relative;display:flex;align-items:center;width:100%}
-.dev-select-wrap select{padding-left:30px!important;min-height:28px}
-.dev-avatar{position:absolute;left:7px;z-index:1;width:20px;height:20px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:700;color:#071018;background:linear-gradient(135deg,var(--accent),var(--gold));box-shadow:0 0 0 1px var(--border-light);pointer-events:none;text-transform:uppercase;overflow:hidden}
+.dev-select-wrap{position:relative;display:flex;align-items:center;width:100%;min-width:0}
+.dev-select-wrap select{padding-left:38px!important;min-height:34px}
+.dev-avatar{width:28px;height:28px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:800;color:#071018;background:linear-gradient(135deg,var(--accent),var(--gold));box-shadow:0 0 0 1px var(--border-light);pointer-events:none;text-transform:uppercase;overflow:hidden;flex:0 0 28px}
 .dev-avatar img{width:100%;height:100%;object-fit:cover;display:block}
-.dev-avatar.empty{opacity:.42;background:var(--bg3);color:var(--text-dim)}
-td select,td input[type=text]{min-height:28px}
+.dev-avatar.empty{opacity:.5;background:var(--bg3);color:var(--text-dim)}
+.custom-dev-select .dev-avatar{position:static;margin-right:8px}
+.dev-select-button{width:100%;min-height:38px;display:flex;align-items:center;gap:0;background:transparent;border:1px solid transparent;border-radius:5px;color:var(--text);padding:4px 30px 4px 7px;text-align:left;font:inherit;box-sizing:border-box}
+.dev-select-button:hover,.dev-select-wrap.open .dev-select-button{border-color:var(--border-light);background:var(--bg2)}
+.dev-select-button::after{content:'▾';position:absolute;right:9px;color:var(--text-dim);font-size:.8rem}
+.dev-select-label{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700;font-size:.94rem}
+.dev-option-list{display:none;position:absolute;left:0;right:auto;top:calc(100% + 3px);z-index:5000;min-width:280px;max-height:340px;overflow:auto;background:var(--bg1);border:1px solid var(--accent);border-radius:6px;box-shadow:var(--shadow);padding:4px}
+.dev-select-wrap.open .dev-option-list{display:block}
+.dev-option{width:100%;display:flex;align-items:center;gap:9px;background:transparent;border:0;color:var(--text);padding:7px 9px;border-radius:4px;text-align:left;font:inherit;min-height:42px}
+.dev-option:hover,.dev-option.selected{background:var(--accent-dim);color:#fff}
+.dev-option .dev-avatar{width:30px;height:30px;flex-basis:30px;margin:0}
+.dev-option-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:700}
+td select,td input[type=text]{min-height:34px}
 td select option{background:var(--bg2);color:var(--text)}
 td select option.neg-option,.card-trait-cell select option.neg-option,.ss-trait-row select option.neg-option{color:var(--neg)}
 td select option.pos-option,.card-trait-cell select option.pos-option,.ss-trait-row select option.pos-option{color:var(--text)}
@@ -138,7 +151,7 @@ button{cursor:pointer}
 
 /* ===== TABLE ===== */
 .table-wrap{display:block;width:max-content;min-width:100%;overflow:visible;border:1px solid var(--border);border-radius:var(--radius)}
-table{table-layout:fixed;width:max-content;min-width:100%;border-collapse:collapse;font-size:.83rem}
+table{table-layout:fixed;width:max-content;min-width:100%;border-collapse:collapse;font-size:.92rem}
 thead tr{background:var(--bg2)}
 th{padding:9px 8px;text-align:left;font-weight:600;color:var(--accent);font-size:.75rem;text-transform:uppercase;letter-spacing:.7px;white-space:nowrap;border-bottom:2px solid var(--border-light);cursor:pointer;user-select:none;overflow:hidden}
 th:hover{color:#fff;background:rgba(0,212,255,0.06)}
@@ -154,7 +167,7 @@ tbody tr{border-bottom:1px solid var(--border);transition:background .15s}
 tbody tr:nth-child(even){background:var(--row-alt)}
 tbody tr:hover{background:rgba(0,212,255,0.07)}
 tbody tr.row-selected{background:rgba(0,212,255,0.13)}
-td{padding:5px 6px;vertical-align:middle;overflow:hidden}
+td{padding:8px 8px;vertical-align:middle;overflow:hidden}
 .empty-row td{text-align:center;color:var(--text-dim);padding:30px;font-style:italic;overflow:visible}
 .row-select-cell,.row-select-head{width:42px;text-align:center;padding-left:8px;padding-right:8px}
 .row-select-head{cursor:default}
@@ -166,9 +179,10 @@ td select,td input[type=text]{background:transparent;border:1px solid transparen
 td select:focus,td input[type=text]:focus{outline:none;border-color:var(--accent);background:var(--bg2)}
 td select:hover,td input[type=text]:hover{border-color:var(--border-light)}
 td select option{background:var(--bg2)}
+td.dev-name-cell{overflow:visible}
 
 /* ===== TRAIT CELLS ===== */
-.trait-cell select{font-size:.78rem;color:var(--text)}
+.trait-cell select{font-size:.86rem;color:var(--text)}
 .trait-cell select.neg-trait{color:var(--neg)}
 .score-select{font-weight:700;text-align:center;min-width:44px}
 .score-select.skill-1,.score-select.activity-1{color:#fecaca;background:rgba(220,38,38,.22);border-color:rgba(248,113,113,.45)}
@@ -182,7 +196,7 @@ td select option{background:var(--bg2)}
 .tooltip-header{padding:8px 10px;font-weight:700;font-size:.82rem;border-radius:var(--radius) var(--radius) 0 0}
 .tooltip-header.pos{background:linear-gradient(90deg,#064e3b,#065f46);color:var(--green);border-bottom:1px solid #065f46}
 .tooltip-header.neg{background:linear-gradient(90deg,#7c2d12,#9a3412);color:var(--neg);border-bottom:1px solid #9a3412}
-.tooltip-body{padding:8px 10px;font-size:.78rem;color:var(--text);line-height:1.45}
+.tooltip-body{padding:9px 11px;font-size:.86rem;color:var(--text);line-height:1.5;font-weight:500}
 
 /* ===== TOGGLE ===== */
 .toggle-wrap{text-align:center;padding:3px 0}
@@ -200,7 +214,7 @@ td select option{background:var(--bg2)}
 /* ===== FUSION MATERIALS ===== */
 .fm-header{margin-bottom:4px}
 .fm-header h2{font-size:1.1rem;font-weight:700;color:var(--accent);letter-spacing:1px;text-transform:uppercase}
-.fm-header p{font-size:.82rem;color:var(--text-dim);margin-top:2px}
+.fm-header p{font-size:.88rem;color:var(--text);margin-top:2px}
 .fm-controls{display:flex;gap:8px;margin:12px 0}
 .fm-list{display:flex;flex-direction:column;gap:6px}
 .fm-empty{color:var(--text-dim);font-style:italic;font-size:.88rem;padding:20px 0}
@@ -234,10 +248,10 @@ td select option{background:var(--bg2)}
 .char-item{display:flex;align-items:center;justify-content:space-between;background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:6px 10px;font-size:.88rem}
 .char-del{background:none;border:none;color:var(--text-muted);font-size:1rem;padding:0 4px}
 .char-del:hover{color:var(--neg)}
-.char-empty{color:var(--text-dim);font-style:italic;font-size:.82rem;padding:6px 0}
-.settings-note{font-size:.75rem;color:var(--text-muted);line-height:1.5;border-top:1px solid var(--border);padding-top:10px}
+.char-empty{color:var(--text);font-style:italic;font-size:.86rem;padding:6px 0}
+.settings-note{font-size:.82rem;color:var(--text-dim);line-height:1.55;border-top:1px solid var(--border);padding-top:10px}
 .settings-btn-list{display:flex;flex-direction:column;gap:6px}
-.settings-subtext{font-size:.78rem;color:var(--text-dim);line-height:1.5;margin-top:2px}
+.settings-subtext{font-size:.84rem;color:var(--text);line-height:1.55;margin-top:2px}
 .settings-actions{display:flex;gap:8px;flex-wrap:wrap}
 .settings-grid{display:grid;grid-template-columns:1fr;gap:10px}
 .settings-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -367,14 +381,14 @@ input,select,button,textarea{touch-action:manipulation}
   border-color:var(--accent);background:rgba(0,212,255,0.04);
 }
 .ss-drop-zone .ss-icon{font-size:2.4rem;margin-bottom:8px;display:block}
-.ss-drop-zone .ss-label{font-size:.88rem;color:var(--text-dim)}
-.ss-drop-zone .ss-hint{font-size:.72rem;color:var(--text-muted);margin-top:6px}
+.ss-drop-zone .ss-label{font-size:.92rem;color:var(--text)}
+.ss-drop-zone .ss-hint{font-size:.78rem;color:var(--text-dim);margin-top:6px}
 .ss-drop-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
 .ss-preview{margin-top:12px;text-align:center}
 .ss-preview img{max-width:100%;max-height:260px;border-radius:var(--radius);border:1px solid var(--border)}
 .ss-preview .ss-remove{margin-top:6px;font-size:.78rem;color:var(--text-dim);cursor:pointer}
 .ss-preview .ss-remove:hover{color:var(--neg)}
-.ss-status{text-align:center;padding:16px;font-size:.88rem;color:var(--text-dim)}
+.ss-status{text-align:center;padding:16px;font-size:.92rem;color:var(--text)}
 .ss-status.error{color:var(--neg)}
 .ss-extracted{display:flex;flex-direction:column;gap:10px}
 .ss-field{display:flex;flex-direction:column;gap:3px}
@@ -552,13 +566,13 @@ input,select,button,textarea{touch-action:manipulation}
       <colgroup>
         <col style="width:42px"><!-- 0 Select -->
         <col style="width:120px"><!-- 1 Character -->
-        <col style="width:230px"><!-- 2 Deviation Name -->
+        <col style="width:285px"><!-- 2 Deviation Name -->
         <col style="width:175px"><!-- 3 Variant -->
-        <col style="width:165px"><!-- 4 Trait 1 -->
-        <col style="width:165px"><!-- 5 Trait 2 -->
-        <col style="width:165px"><!-- 6 Trait 3 -->
-        <col style="width:165px"><!-- 7 Trait 4 -->
-        <col style="width:165px"><!-- 8 Trait 5 -->
+        <col style="width:185px"><!-- 4 Trait 1 -->
+        <col style="width:185px"><!-- 5 Trait 2 -->
+        <col style="width:185px"><!-- 6 Trait 3 -->
+        <col style="width:185px"><!-- 7 Trait 4 -->
+        <col style="width:185px"><!-- 8 Trait 5 -->
         <col style="width:55px"> <!-- 9 Skill -->
         <col style="width:55px"> <!-- 10 Activity -->
         <col style="width:70px"> <!-- 11 ELand -->
@@ -606,7 +620,7 @@ input,select,button,textarea{touch-action:manipulation}
   <p class="fm-empty" id="fmEmpty" style="display:none">No materials added yet. Click Add Material to get started.</p>
 </div>
 
-<footer>Deviation Tracker v2.0.6 (Desktop) — Data stored in SQLite</footer>
+<footer>Deviation Tracker v2.0.7 (Desktop) — Data stored in SQLite</footer>
 
 </div><!-- /#table-wrapper -->
 
@@ -1649,12 +1663,58 @@ function renderDeviationAvatar(name) {
   return `<span class="dev-avatar${emptyClass}">${escHtml(avatar)}</span>`;
 }
 
+function renderDeviationOption(name, curVal) {
+  const selected = name === curVal;
+  return `<button type="button" class="dev-option${selected?' selected':''}" data-value="${escHtml(name)}" onclick="selectDeviationOptionFromButton(event,this)">
+    ${renderDeviationAvatar(name)}<span class="dev-option-name">${escHtml(name)}</span>
+  </button>`;
+}
+
 function renderDeviationSelect(rowId, curVal, dataField = 'name', extraClass = '') {
   const allDevs = getAllDeviations();
-  const opts = '<option value=""' + (!curVal ? ' selected' : '') + '>—</option>' +
-    allDevs.map(d => `<option value="${escHtml(d)}"${d===curVal?' selected':''}>${escHtml(d)}</option>`).join('');
-  return `<div class="dev-select-wrap">${renderDeviationAvatar(curVal)}<select data-field="${dataField}" class="row-name ${extraClass}" onchange="rowChange('${rowId}','name',this.value)">${opts}</select></div>`;
+  const label = curVal || '—';
+  const options = `<button type="button" class="dev-option${!curVal?' selected':''}" data-value="" onclick="selectDeviationOptionFromButton(event,this)">
+    ${renderDeviationAvatar('')}<span class="dev-option-name">—</span>
+  </button>` + allDevs.map(d => renderDeviationOption(d, curVal)).join('');
+  return `<div class="dev-select-wrap custom-dev-select ${extraClass}" data-row-id="${escHtml(rowId)}">
+    <input type="hidden" data-field="${dataField}" value="${escHtml(curVal || '')}">
+    <button type="button" class="dev-select-button" onclick="toggleDeviationDropdown(event,this)">${renderDeviationAvatar(curVal)}<span class="dev-select-label">${escHtml(label)}</span></button>
+    <div class="dev-option-list">${options}</div>
+  </div>`;
 }
+
+function closeAllDeviationDropdowns(except) {
+  document.querySelectorAll('.custom-dev-select.open').forEach(el => {
+    if (el !== except) el.classList.remove('open');
+  });
+}
+
+function toggleDeviationDropdown(event, btn) {
+  if (event) event.stopPropagation();
+  const wrap = btn?.closest?.('.custom-dev-select');
+  if (!wrap) return;
+  const willOpen = !wrap.classList.contains('open');
+  closeAllDeviationDropdowns(willOpen ? wrap : null);
+  wrap.classList.toggle('open', willOpen);
+}
+
+function selectDeviationOptionFromButton(event, btn) {
+  if (event) event.stopPropagation();
+  const wrap = btn?.closest?.('.custom-dev-select');
+  if (!wrap) return;
+  const rowId = wrap.dataset.rowId;
+  const value = btn.dataset.value || '';
+  const hidden = wrap.querySelector('input[data-field="name"]');
+  if (hidden) hidden.value = value;
+  const button = wrap.querySelector('.dev-select-button');
+  if (button) button.innerHTML = `${renderDeviationAvatar(value)}<span class="dev-select-label">${escHtml(value || '—')}</span>`;
+  wrap.querySelectorAll('.dev-option.selected').forEach(el => el.classList.remove('selected'));
+  btn.classList.add('selected');
+  wrap.classList.remove('open');
+  rowChange(rowId, 'name', value);
+}
+
+document.addEventListener('click', () => closeAllDeviationDropdowns());
 
 function defaultsAreLocked() {
   return IS_OFFICIAL_DEPLOYMENT;
@@ -2994,11 +3054,11 @@ function renderTraitRemoveList() {
       div.innerHTML = `<span class="mgr-item-name${t.neg?' neg-name':''}">${escHtml(t.name)}</span>` + (
         locked
           ? `<span class="lock-icon" title="Built-in trait — edit config.js to remove">🔒</span>`
-          : `<div style="display:flex;gap:6px"><button class="mgr-del-btn" onclick="startEditTrait(${JSON.stringify('custom:' + t.id)})">Edit</button><button class="mgr-del-btn" onclick="removeCustomTrait(${JSON.stringify(t.rawName||t.name)},${JSON.stringify(t.id)})">✕</button></div>`
+          : `<div style="display:flex;gap:6px"><button class="mgr-del-btn" onclick="removeCustomTrait(${JSON.stringify(t.rawName||t.name)},${JSON.stringify(t.id)})">Remove</button></div>`
       );
       if (!defaultsAreLocked() && isDefaultItem) {
         const controls = div.querySelector('div[style*="display:flex;gap:6px"]');
-        if (controls) controls.innerHTML = `<button class="mgr-del-btn" onclick="startEditTrait(${JSON.stringify('builtin:' + (t.sourceName || t.name))})">Edit</button><button class="mgr-del-btn" onclick="removeBuiltInTrait(${JSON.stringify(t.sourceName || t.name)})">Remove</button>`;
+        if (controls) controls.innerHTML = `<button class="mgr-del-btn" onclick="removeBuiltInTrait(${JSON.stringify(t.sourceName || t.name)})">Remove</button>`;
       }
       list.appendChild(div);
     });
@@ -3545,7 +3605,7 @@ function renderTable() {
     tr.innerHTML = `
       <td class="row-select-cell"><input class="row-select-input" type="checkbox" ${isSelected?'checked':''} onchange="toggleDeviationSelection('${row.id}', this.checked)" title="Select row"></td>
       <td><select data-field="character" class="row-char" onchange="rowChange('${row.id}','char',this.value)">${charOpts}</select></td>
-      <td>${renderDeviationSelect(row.id, row.name)}</td>
+      <td class="dev-name-cell">${renderDeviationSelect(row.id, row.name)}</td>
       <td>${renderVariantSelect(row.id, row.variant, 'variant')}</td>
       <td class="trait-cell" id="tc_${row.id}_0"></td>
       <td class="trait-cell" id="tc_${row.id}_1"></td>
@@ -3806,11 +3866,15 @@ function setSelectValue(row, fieldName, value) {
   if (!value) return;
   const sel = row.querySelector('[data-field="' + fieldName + '"]');
   if (!sel) return;
-  for (let i = 0; i < sel.options.length; i++) {
-    if (sel.options[i].value === value) {
-      sel.selectedIndex = i;
-      break;
+  if (sel.tagName === 'SELECT') {
+    for (let i = 0; i < sel.options.length; i++) {
+      if (sel.options[i].value === value) {
+        sel.selectedIndex = i;
+        break;
+      }
     }
+  } else {
+    sel.value = value;
   }
 }
 
