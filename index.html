@@ -25,29 +25,38 @@
 }
 
 body[data-theme="light"]{
-  --bg0:#e8e0cf;--bg1:#d8cfbd;--bg2:#c9bea9;--bg3:#b5a98f;
-  --accent:#006d8f;--accent2:#0088aa;--accent-dim:#0d6f8a;
-  --text:#17202a;--text-dim:#3d5061;--text-muted:#66717a;
-  --row-alt:rgba(0,109,143,0.08);
-  --border:#a3947b;--border-light:rgba(0,109,143,0.28);
-  --neg:#a13f12;
-  --green:#197a42;--lime:#527f12;--yellow:#9a7100;--orange:#a65312;--red:#a33434;
-  --gold:#9b7400;
-  --toggle-on:#007fa3;--toggle-off:#8f8573;
-  --shadow:0 4px 24px rgba(58,45,28,0.28);
+  --bg0:#b8aa91;--bg1:#a99a80;--bg2:#8f8069;--bg3:#746850;
+  --accent:#083f52;--accent2:#0b5f78;--accent-dim:#12495a;
+  --text:#161410;--text-dim:#2b261f;--text-muted:#463f33;
+  --row-alt:rgba(36,30,20,0.13);
+  --border:#675c48;--border-light:rgba(8,63,82,0.42);
+  --neg:#8b270f;
+  --green:#145b2f;--lime:#355f0f;--yellow:#6f5000;--orange:#833900;--red:#842727;
+  --gold:#735300;
+  --toggle-on:#0b5f78;--toggle-off:#5f5646;
+  --shadow:0 4px 24px rgba(29,23,15,0.36);
 }
-body[data-theme="light"]{background:linear-gradient(160deg,var(--bg0) 0%,var(--bg1) 55%,#d2c6ae 100%)}
-body[data-theme="light"] .app-header{background:linear-gradient(90deg,#d6c9b1,#c6b99f)}
-body[data-theme="light"] th:hover{color:var(--text);background:rgba(0,109,143,0.10)}
-body[data-theme="light"] .btn-primary{color:#f5f0e6}
-body[data-theme="light"] .tooltip-header.pos{background:#d7eadc;color:#176b3a;border-bottom:1px solid #98c5a8}
-body[data-theme="light"] .tooltip-header.neg{background:#f0d4c2;color:#8f3411;border-bottom:1px solid #d59b77}
+body[data-theme="light"]{background:linear-gradient(160deg,#b8aa91 0%,#a99a80 55%,#97876d 100%)}
+body[data-theme="light"] .app-header{background:linear-gradient(90deg,#93846c,#7e7058)}
+body[data-theme="light"] th:hover{color:var(--text);background:rgba(8,63,82,0.14)}
+body[data-theme="light"] .btn-primary{color:#f2eadc}
+body[data-theme="light"] .btn-secondary{color:#181510;background:#746850;border-color:#5f5441}
+body[data-theme="light"] td select,body[data-theme="light"] td input[type=text]{background:rgba(77,68,53,.16)}
+body[data-theme="light"] td select:focus,body[data-theme="light"] td input[type=text]:focus{background:#7e7058}
+body[data-theme="light"] .score-select.skill-1,body[data-theme="light"] .score-select.activity-1{color:#180d0b;background:#b36a65;border-color:#834742}
+body[data-theme="light"] .score-select.skill-2,body[data-theme="light"] .score-select.activity-2{color:#151515;background:#858076;border-color:#625b50}
+body[data-theme="light"] .score-select.skill-3,body[data-theme="light"] .score-select.activity-3{color:#14101b;background:#8670a3;border-color:#62507a}
+body[data-theme="light"] .score-select.skill-4,body[data-theme="light"] .score-select.activity-4{color:#180f08;background:#a47148;border-color:#7a5032}
+body[data-theme="light"] .score-select.skill-5,body[data-theme="light"] .score-select.activity-5{color:#171107;background:#a88a35;border-color:#786125}
+body[data-theme="light"] .tooltip-header.pos{background:#799a7c;color:#0f3d22;border-bottom:1px solid #557a5a}
+body[data-theme="light"] .tooltip-header.neg{background:#af8061;color:#5e1c08;border-bottom:1px solid #8a5b40}
 .theme-toggle-row{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px}
 .theme-toggle-row span{font-size:.85rem;color:var(--text)}
 .dev-select-wrap{position:relative;display:flex;align-items:center;width:100%}
 .dev-select-wrap select{padding-left:30px!important;min-height:28px}
-.dev-avatar{position:absolute;left:7px;z-index:1;width:18px;height:18px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-size:.68rem;font-weight:700;color:#071018;background:linear-gradient(135deg,var(--accent),var(--gold));box-shadow:0 0 0 1px var(--border-light);pointer-events:none;text-transform:uppercase}
-.dev-avatar.empty{opacity:.35;background:var(--bg3);color:var(--text-dim)}
+.dev-avatar{position:absolute;left:7px;z-index:1;width:20px;height:20px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:700;color:#071018;background:linear-gradient(135deg,var(--accent),var(--gold));box-shadow:0 0 0 1px var(--border-light);pointer-events:none;text-transform:uppercase;overflow:hidden}
+.dev-avatar img{width:100%;height:100%;object-fit:cover;display:block}
+.dev-avatar.empty{opacity:.42;background:var(--bg3);color:var(--text-dim)}
 td select,td input[type=text]{min-height:28px}
 td select option{background:var(--bg2);color:var(--text)}
 td select option.neg-option,.card-trait-cell select option.neg-option,.ss-trait-row select option.neg-option{color:var(--neg)}
@@ -755,6 +764,7 @@ input,select,button,textarea{touch-action:manipulation}
     </div>
     <div class="modal-tabs">
       <button class="modal-tab-btn active" onclick="switchModalTab('manageTraitModal','addTrait',this)">Add Trait</button>
+      <button class="modal-tab-btn" onclick="switchModalTab('manageTraitModal','editTrait',this);populateTraitEditSelect();">Edit Trait</button>
       <button class="modal-tab-btn" onclick="switchModalTab('manageTraitModal','removeTrait',this)">Remove Trait</button>
     </div>
     <div class="modal-body">
@@ -789,13 +799,13 @@ input,select,button,textarea{touch-action:manipulation}
         <button class="btn btn-primary" onclick="addCustomTrait()">Add Trait</button>
         <div class="flash-msg" id="traitAddFlash"></div>
       </div>
-      <!-- Remove Trait -->
-      <div class="modal-tab-pane" data-pane="removeTrait">
-        <div class="remove-search-wrap">
-          <input class="mgr-search" id="traitRemoveSearch" type="text" placeholder="🔍  Search traits…" oninput="filterTraitRemoveList()">
+
+      <!-- Edit Trait -->
+      <div class="modal-tab-pane" data-pane="editTrait">
+        <div class="form-group">
+          <label>Trait to Edit</label>
+          <select id="traitEditSelect" class="form-input" onchange="loadTraitForEdit()"></select>
         </div>
-        
-        <div class="mgr-list" id="traitRemoveList"></div>
         <div id="traitEditPanel" style="display:none;margin-top:10px;border:1px solid var(--border);border-radius:6px;padding:10px;background:var(--bg2)">
           <div class="form-group">
             <label>Edit Trait Name</label>
@@ -830,10 +840,17 @@ input,select,button,textarea{touch-action:manipulation}
           <div class="flash-msg" id="traitEditFlash"></div>
         </div>
       </div>
+
+      <!-- Remove Trait -->
+      <div class="modal-tab-pane" data-pane="removeTrait">
+        <div class="remove-search-wrap">
+          <input class="mgr-search" id="traitRemoveSearch" type="text" placeholder="🔍  Search traits…" oninput="filterTraitRemoveList()">
+        </div>
+        <div class="mgr-list" id="traitRemoveList"></div>
+      </div>
     </div>
   </div>
 </div>
-
 <!-- ======================================================= -->
 <!-- MANAGE VARIANTS MODAL                                    -->
 <!-- ======================================================= -->
@@ -1016,7 +1033,7 @@ const KEYS = {
 let state = {
   deviations:             [],
   materials:              [],
-  settings:               { characters: [] },
+  settings:               { characters: [], traitOverrides: {} },
   customDeviations:       [],
   customTraits:           [],
   customTraitAssignments: {},
@@ -1191,13 +1208,28 @@ function getDeviationAvatarText(name) {
   return clean.slice(0, 2).toUpperCase();
 }
 
+function getDeviationImageUrl(name) {
+  const map = (typeof DEVIATION_IMAGES === 'object' && DEVIATION_IMAGES) ? DEVIATION_IMAGES : {};
+  const exact = map[name];
+  if (exact) return exact;
+  const q = String(name || '').toLowerCase();
+  const key = Object.keys(map).find(k => k.toLowerCase() === q);
+  return key ? map[key] : '';
+}
+
+function renderDeviationAvatar(name) {
+  const img = getDeviationImageUrl(name);
+  if (img) return `<span class="dev-avatar"><img src="${escHtml(img)}" alt="" loading="lazy"></span>`;
+  const avatar = getDeviationAvatarText(name);
+  const emptyClass = name ? '' : ' empty';
+  return `<span class="dev-avatar${emptyClass}">${escHtml(avatar)}</span>`;
+}
+
 function renderDeviationSelect(rowId, curVal, dataField = 'name', extraClass = '') {
   const allDevs = getAllDeviations();
   const opts = '<option value=""' + (!curVal ? ' selected' : '') + '>—</option>' +
     allDevs.map(d => `<option value="${escHtml(d)}"${d===curVal?' selected':''}>${escHtml(d)}</option>`).join('');
-  const avatar = getDeviationAvatarText(curVal);
-  const emptyClass = curVal ? '' : ' empty';
-  return `<div class="dev-select-wrap"><span class="dev-avatar${emptyClass}">${escHtml(avatar)}</span><select data-field="${dataField}" class="row-name ${extraClass}" onchange="rowChange('${rowId}','name',this.value)">${opts}</select></div>`;
+  return `<div class="dev-select-wrap">${renderDeviationAvatar(curVal)}<select data-field="${dataField}" class="row-name ${extraClass}" onchange="rowChange('${rowId}','name',this.value)">${opts}</select></div>`;
 }
 
 function defaultsAreLocked() {
@@ -1220,7 +1252,7 @@ function isDefaultVariantName(name) {
 }
 
 function mergeSettingsWithDefaults(settings) {
-  const base = { characters: [], variants: getDefaultVariantEntries(), hiddenDefaultDeviations: [], hiddenDefaultTraits: [], theme: 'dark' };
+  const base = { characters: [], variants: getDefaultVariantEntries(), hiddenDefaultDeviations: [], hiddenDefaultTraits: [], theme: 'dark', traitOverrides: {} };
   if (!settings || typeof settings !== 'object') return base;
   const savedVariants = Array.isArray(settings.variants) ? settings.variants : [];
   const variants = mergeVariantEntries(base.variants, savedVariants);
@@ -1255,18 +1287,51 @@ function getAllDeviations() {
   return [...new Set([...defaults, ...state.customDeviations])].sort((a, b) => a.localeCompare(b));
 }
 
+function normalizeTraitDisplayName(rawName, isNeg) {
+  const clean = String(rawName || '').replace(/^⚠\s*/, '').trim();
+  return isNeg && clean ? '⚠ ' + clean : clean;
+}
+
+function getTraitKey(name) {
+  return String(name || '').trim().toLowerCase();
+}
+
 function getAllTraits() {
-  const hidden = new Set((state.settings.hiddenDefaultTraits || []).map(n => String(n).toLowerCase()));
-  const builtins = TRAIT_DATA.filter(t => !hidden.has(String(t.name || '').toLowerCase()));
-  const custom = (state.customTraits || []).map(t => ({
-    name: t.type === 'negative' ? '⚠ ' + t.name : t.name,
-    effect: t.effect,
-    deviants: t.deviations,
-    neg: t.type === 'negative',
-    custom: true,
-    rawName: t.name,
-    id: t.id,
-  }));
+  const hidden = new Set((state.settings.hiddenDefaultTraits || []).map(n => getTraitKey(n)));
+  const overrides = state.settings.traitOverrides || {};
+  const builtins = TRAIT_DATA
+    .filter(t => !hidden.has(getTraitKey(t.name)))
+    .map(t => {
+      const ov = overrides[t.name] || overrides[getTraitKey(t.name)] || null;
+      if (!ov) return { ...t, rawName: String(t.name || '').replace(/^⚠\s*/, ''), sourceName: t.name, builtin: true };
+      const neg = !!(ov.neg ?? ov.type === 'negative' ?? t.neg);
+      const rawName = String(ov.rawName || ov.name || t.name || '').replace(/^⚠\s*/, '').trim();
+      return {
+        ...t,
+        ...ov,
+        name: normalizeTraitDisplayName(rawName, neg),
+        rawName,
+        effect: ov.effect || t.effect,
+        deviants: ov.deviants ?? ov.deviations ?? t.deviants,
+        neg,
+        sourceName: t.name,
+        builtin: true,
+        overridden: true,
+      };
+    });
+  const custom = (state.customTraits || []).map(t => {
+    const rawName = String(t.rawName || t.name || '').replace(/^⚠\s*/, '').trim();
+    const isNeg = !!(t.neg || t.type === 'negative');
+    return {
+      name: normalizeTraitDisplayName(rawName, isNeg),
+      effect: t.effect,
+      deviants: t.deviants ?? t.deviations ?? 'ALL',
+      neg: isNeg,
+      custom: true,
+      rawName,
+      id: t.id,
+    };
+  });
   return [...builtins, ...custom];
 }
 
@@ -2436,6 +2501,7 @@ function openManageTraits() {
   modal.querySelectorAll('.modal-tab-pane').forEach((p,i) => p.classList.toggle('active', i===0));
   // Populate dev checklist
   renderTraitDevChecklist('');
+  populateTraitEditSelect();
   openModal('manageTraitModal');
 }
 
@@ -2512,18 +2578,18 @@ function renderTraitRemoveList() {
     head.textContent = label;
     list.appendChild(head);
     traits.forEach(t => {
-      const isDefaultItem = TRAIT_DATA.some(bt => bt.name === t.name);
+      const isDefaultItem = TRAIT_DATA.some(bt => bt.name === (t.sourceName || t.name));
       const locked = isOfficialDeployment() && isDefaultItem;
       const div = document.createElement('div');
       div.className = 'mgr-item';
       div.innerHTML = `<span class="mgr-item-name${t.neg?' neg-name':''}">${escHtml(t.name)}</span>` + (
         locked
           ? `<span class="lock-icon" title="Built-in trait — edit config.js to remove">🔒</span>`
-          : `<div style="display:flex;gap:6px"><button class="mgr-del-btn" onclick="startEditTrait(${JSON.stringify(t.id)})">✎</button><button class="mgr-del-btn" onclick="removeCustomTrait(${JSON.stringify(t.rawName||t.name)},${JSON.stringify(t.id)})">✕</button></div>`
+          : `<div style="display:flex;gap:6px"><button class="mgr-del-btn" onclick="startEditTrait(${JSON.stringify('custom:' + t.id)})">Edit</button><button class="mgr-del-btn" onclick="removeCustomTrait(${JSON.stringify(t.rawName||t.name)},${JSON.stringify(t.id)})">✕</button></div>`
       );
       if (!defaultsAreLocked() && isDefaultItem) {
         const controls = div.querySelector('div[style*="display:flex;gap:6px"]');
-        if (controls) controls.innerHTML = `<button class="mgr-del-btn" onclick="removeBuiltInTrait(${JSON.stringify(t.name)})">Remove</button>`;
+        if (controls) controls.innerHTML = `<button class="mgr-del-btn" onclick="startEditTrait(${JSON.stringify('builtin:' + (t.sourceName || t.name))})">Edit</button><button class="mgr-del-btn" onclick="removeBuiltInTrait(${JSON.stringify(t.sourceName || t.name)})">Remove</button>`;
       }
       list.appendChild(div);
     });
@@ -2565,21 +2631,63 @@ function removeBuiltInTrait(name) {
   );
 }
 
-function startEditTrait(id) {
-  const trait = (state.customTraits || []).find(t => String(t.id) === String(id));
-  if (!trait) return;
-  editingTraitId = trait.id;
+function getTraitEditEntries() {
+  return getAllTraits().map(t => ({
+    key: t.custom ? `custom:${t.id}` : `builtin:${t.sourceName || t.name}`,
+    label: t.name,
+    trait: t
+  })).sort((a, b) => a.label.localeCompare(b.label));
+}
+
+function populateTraitEditSelect() {
+  const sel = document.getElementById('traitEditSelect');
+  if (!sel) return;
+  const cur = sel.value;
+  const entries = getTraitEditEntries();
+  sel.innerHTML = '<option value="">— Select a trait —</option>' + entries.map(e => `<option value="${escHtml(e.key)}"${e.key===cur?' selected':''}>${escHtml(e.label)}</option>`).join('');
+  if (cur && entries.some(e => e.key === cur)) sel.value = cur;
+}
+
+function findEditableTrait(key) {
+  if (!key) return null;
+  if (key.startsWith('custom:')) {
+    const id = key.slice(7);
+    const trait = (state.customTraits || []).find(t => String(t.id) === id);
+    if (!trait) return null;
+    const neg = !!(trait.neg || trait.type === 'negative');
+    return { kind: 'custom', id: trait.id, sourceName: null, rawName: String(trait.rawName || trait.name || '').replace(/^⚠\s*/, ''), effect: trait.effect || '', neg, deviants: trait.deviants ?? trait.deviations ?? 'ALL' };
+  }
+  const sourceName = key.startsWith('builtin:') ? key.slice(8) : key;
+  const trait = getAllTraits().find(t => !t.custom && (t.sourceName || t.name) === sourceName);
+  if (!trait) return null;
+  return { kind: 'builtin', id: null, sourceName, rawName: String(trait.rawName || trait.name || '').replace(/^⚠\s*/, ''), effect: trait.effect || '', neg: !!trait.neg, deviants: trait.deviants ?? 'ALL' };
+}
+
+function loadTraitForEdit() {
+  const key = document.getElementById('traitEditSelect')?.value || '';
+  const editable = findEditableTrait(key);
+  editingTraitId = key || null;
   const panel = document.getElementById('traitEditPanel');
   if (!panel) return;
+  if (!editable) { panel.style.display = 'none'; return; }
   panel.style.display = 'block';
-  document.getElementById('editTraitName').value = trait.rawName || trait.name || '';
-  document.getElementById('editTraitEffect').value = trait.effect || '';
-  document.querySelector(`input[name="editTraitType"][value="${(trait.neg || trait.type === 'negative') ? 'negative' : 'positive'}"]`).checked = true;
-  const allDevs = (trait.deviants ?? trait.deviations) === 'ALL';
+  document.getElementById('editTraitName').value = editable.rawName;
+  document.getElementById('editTraitEffect').value = editable.effect;
+  document.querySelector(`input[name="editTraitType"][value="${editable.neg ? 'negative' : 'positive'}"]`).checked = true;
+  const allDevs = editable.deviants === 'ALL';
   document.getElementById('editTraitAllDevs').checked = allDevs;
   document.getElementById('editTraitDevSearch').value = '';
-  renderEditTraitDevChecklist(trait);
+  renderEditTraitDevChecklist(editable);
   toggleEditTraitAppliesTo();
+}
+
+function startEditTrait(keyOrId) {
+  const key = String(keyOrId).startsWith('custom:') || String(keyOrId).startsWith('builtin:') ? String(keyOrId) : `custom:${keyOrId}`;
+  switchModalTab('manageTraitModal','editTrait', document.querySelector('#manageTraitModal .modal-tab-btn:nth-child(2)'));
+  populateTraitEditSelect();
+  const sel = document.getElementById('traitEditSelect');
+  if (sel) sel.value = key;
+  loadTraitForEdit();
 }
 
 function toggleEditTraitAppliesTo() {
@@ -2609,60 +2717,59 @@ function cancelEditTrait() {
   editingTraitId = null;
   const panel = document.getElementById('traitEditPanel');
   if (panel) panel.style.display = 'none';
+  const sel = document.getElementById('traitEditSelect');
+  if (sel) sel.value = '';
 }
 
-function saveEditTrait() {
-  if (!editingTraitId) return;
-  const idx = (state.customTraits || []).findIndex(t => String(t.id) === String(editingTraitId));
-  if (idx < 0) return;
-  const oldTrait = state.customTraits[idx];
-  const newName = (document.getElementById('editTraitName').value || '').trim();
-  const newEffect = (document.getElementById('editTraitEffect').value || '').trim();
-  if (!newName || !newEffect) {
-    showFlash('traitEditFlash', '⚠ Name and description are required.', true);
-    return;
-  }
-  const oldNeg = !!(oldTrait.neg || oldTrait.type === 'negative');
-  const newNeg = document.querySelector('input[name="editTraitType"]:checked')?.value === 'negative';
-  const oldRaw = oldTrait.rawName || oldTrait.name || '';
-  const oldDisplay = oldNeg ? '⚠ ' + oldRaw : oldRaw;
-  const newDisplay = newNeg ? '⚠ ' + newName : newName;
-  const hasDup = getAllTraits().some(t => t.name.toLowerCase() === newDisplay.toLowerCase() && t.name !== oldDisplay);
-  if (hasDup) {
-    showFlash('traitEditFlash', '⚠ A trait with that name already exists.', true);
-    return;
-  }
-  const allDevs = document.getElementById('editTraitAllDevs')?.checked;
-  let deviations = 'ALL';
-  if (!allDevs) {
-    deviations = Array.from(document.querySelectorAll('input[name="editTraitDevPick"]:checked')).map(el => el.value);
-    if (!deviations.length) {
-      showFlash('traitEditFlash', '⚠ Select at least one deviation, or choose "All Deviations".', true);
-      return;
-    }
-  }
-  state.customTraits[idx].name = newName;
-  state.customTraits[idx].rawName = newName;
-  state.customTraits[idx].effect = newEffect;
-  state.customTraits[idx].neg = newNeg;
-  state.customTraits[idx].type = newNeg ? 'negative' : 'positive';
-  state.customTraits[idx].deviants = deviations;
-  state.customTraits[idx].deviations = deviations;
+function replaceTraitEverywhere(oldDisplay, newDisplay) {
+  if (oldDisplay === newDisplay) return;
   state.deviations.forEach(r => {
-    for (let i = 0; i < 5; i++) {
-      if (r.traits[i] === oldDisplay) r.traits[i] = newDisplay;
-    }
+    for (let i = 0; i < 5; i++) if (r.traits[i] === oldDisplay) r.traits[i] = newDisplay;
   });
   Object.values(state.customTraitAssignments || {}).forEach(assign => {
     if (!assign) return;
     if (Array.isArray(assign.add)) assign.add = [...new Set(assign.add.map(n => n === oldDisplay ? newDisplay : n))];
     if (Array.isArray(assign.remove)) assign.remove = [...new Set(assign.remove.map(n => n === oldDisplay ? newDisplay : n))];
   });
-  save('customTraits');
+}
+
+function saveEditTrait() {
+  const key = editingTraitId || document.getElementById('traitEditSelect')?.value;
+  const editable = findEditableTrait(key);
+  if (!editable) return;
+  const newName = (document.getElementById('editTraitName').value || '').trim();
+  const newEffect = (document.getElementById('editTraitEffect').value || '').trim();
+  if (!newName || !newEffect) { showFlash('traitEditFlash', '⚠ Name and description are required.', true); return; }
+  const newNeg = document.querySelector('input[name="editTraitType"]:checked')?.value === 'negative';
+  const oldDisplay = normalizeTraitDisplayName(editable.rawName, editable.neg);
+  const newDisplay = normalizeTraitDisplayName(newName, newNeg);
+  const hasDup = getAllTraits().some(t => t.name.toLowerCase() === newDisplay.toLowerCase() && t.name !== oldDisplay);
+  if (hasDup) { showFlash('traitEditFlash', '⚠ A trait with that name already exists.', true); return; }
+  const allDevs = document.getElementById('editTraitAllDevs')?.checked;
+  let deviations = 'ALL';
+  if (!allDevs) {
+    deviations = Array.from(document.querySelectorAll('input[name="editTraitDevPick"]:checked')).map(el => el.value);
+    if (!deviations.length) { showFlash('traitEditFlash', '⚠ Select at least one deviation, or choose "All Deviations".', true); return; }
+  }
+
+  if (editable.kind === 'custom') {
+    const idx = (state.customTraits || []).findIndex(t => String(t.id) === String(editable.id));
+    if (idx < 0) return;
+    state.customTraits[idx] = { ...state.customTraits[idx], name: newName, rawName: newName, effect: newEffect, neg: newNeg, type: newNeg ? 'negative' : 'positive', deviants: deviations, deviations };
+    save('customTraits');
+  } else {
+    if (!state.settings.traitOverrides || typeof state.settings.traitOverrides !== 'object') state.settings.traitOverrides = {};
+    state.settings.traitOverrides[editable.sourceName] = { name: newName, rawName: newName, effect: newEffect, neg: newNeg, type: newNeg ? 'negative' : 'positive', deviants: deviations, deviations };
+    save('settings');
+  }
+
+  replaceTraitEverywhere(oldDisplay, newDisplay);
   save('deviations');
   save('customTraitAssignments');
   showFlash('traitEditFlash', '✓ Trait updated.');
-  cancelEditTrait();
+  populateTraitEditSelect();
+  const sel = document.getElementById('traitEditSelect');
+  if (sel) sel.value = editable.kind === 'custom' ? `custom:${editable.id}` : `builtin:${editable.sourceName}`;
   renderTraitRemoveList();
   renderView();
 }
