@@ -90,6 +90,8 @@ ipcMain.handle('state:save', (_, snapshot) => {
     db.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)').run('variants', JSON.stringify(data.settings?.variants || []));
     db.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)').run('hiddenDefaultDeviations', JSON.stringify(data.settings?.hiddenDefaultDeviations || []));
     db.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)').run('hiddenDefaultTraits', JSON.stringify(data.settings?.hiddenDefaultTraits || []));
+    db.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)').run('theme', JSON.stringify(data.settings?.theme || 'dark'));
+    db.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)').run('customTraitAssignments', JSON.stringify(data.customTraitAssignments || {}));
 
     db.exec('DELETE FROM deviations');
     const insertDeviation = db.prepare('INSERT INTO deviations (char_name, name, variant, trait1, trait2, trait3, trait4, trait5, skill, activity, eland, fusion, locked) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');

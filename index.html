@@ -23,6 +23,41 @@
   --radius:6px;
   font-family:'Exo 2',sans-serif;
 }
+
+body[data-theme="light"]{
+  --bg0:#e8e0cf;--bg1:#d8cfbd;--bg2:#c9bea9;--bg3:#b5a98f;
+  --accent:#006d8f;--accent2:#0088aa;--accent-dim:#0d6f8a;
+  --text:#17202a;--text-dim:#3d5061;--text-muted:#66717a;
+  --row-alt:rgba(0,109,143,0.08);
+  --border:#a3947b;--border-light:rgba(0,109,143,0.28);
+  --neg:#a13f12;
+  --green:#197a42;--lime:#527f12;--yellow:#9a7100;--orange:#a65312;--red:#a33434;
+  --gold:#9b7400;
+  --toggle-on:#007fa3;--toggle-off:#8f8573;
+  --shadow:0 4px 24px rgba(58,45,28,0.28);
+}
+body[data-theme="light"]{background:linear-gradient(160deg,var(--bg0) 0%,var(--bg1) 55%,#d2c6ae 100%)}
+body[data-theme="light"] .app-header{background:linear-gradient(90deg,#d6c9b1,#c6b99f)}
+body[data-theme="light"] th:hover{color:var(--text);background:rgba(0,109,143,0.10)}
+body[data-theme="light"] .btn-primary{color:#f5f0e6}
+body[data-theme="light"] .tooltip-header.pos{background:#d7eadc;color:#176b3a;border-bottom:1px solid #98c5a8}
+body[data-theme="light"] .tooltip-header.neg{background:#f0d4c2;color:#8f3411;border-bottom:1px solid #d59b77}
+.theme-toggle-row{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px}
+.theme-toggle-row span{font-size:.85rem;color:var(--text)}
+.dev-select-wrap{position:relative;display:flex;align-items:center;width:100%}
+.dev-select-wrap select{padding-left:30px!important;min-height:28px}
+.dev-avatar{position:absolute;left:7px;z-index:1;width:18px;height:18px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-size:.68rem;font-weight:700;color:#071018;background:linear-gradient(135deg,var(--accent),var(--gold));box-shadow:0 0 0 1px var(--border-light);pointer-events:none;text-transform:uppercase}
+.dev-avatar.empty{opacity:.35;background:var(--bg3);color:var(--text-dim)}
+td select,td input[type=text]{min-height:28px}
+td select option{background:var(--bg2);color:var(--text)}
+td select option.neg-option,.card-trait-cell select option.neg-option,.ss-trait-row select option.neg-option{color:var(--neg)}
+td select option.pos-option,.card-trait-cell select option.pos-option,.ss-trait-row select option.pos-option{color:var(--text)}
+.trait-cell select.neg-trait option:not(.neg-option),.card-trait-cell select.neg-trait option:not(.neg-option),.ss-trait-row select.neg-trait option:not(.neg-option){color:var(--text)}
+.trait-cell select.neg-trait option.neg-option,.card-trait-cell select.neg-trait option.neg-option,.ss-trait-row select.neg-trait option.neg-option{color:var(--neg)}
+.edit-grid-two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.edit-trait-actions{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 8px}
+@media (max-width:700px){.edit-grid-two{grid-template-columns:1fr}}
+
 html{background:var(--bg0);color:var(--text);height:100%;overflow:hidden}
 body{display:flex;flex-direction:column;height:100vh;overflow:hidden;background:linear-gradient(160deg,var(--bg0) 0%,var(--bg1) 50%,var(--bg0) 100%)}
 #app{display:flex;flex-direction:column;flex:1;min-height:0}
@@ -505,13 +540,13 @@ input,select,button,textarea{touch-action:manipulation}
     <table id="deviationTable">
       <colgroup>
         <col style="width:120px"><!-- 1 Character -->
-        <col style="width:200px"><!-- 2 Deviation Name -->
-        <col style="width:170px"><!-- 3 Variant -->
-        <col style="width:155px"><!-- 4 Trait 1 -->
-        <col style="width:155px"><!-- 5 Trait 2 -->
-        <col style="width:155px"><!-- 6 Trait 3 -->
-        <col style="width:155px"><!-- 7 Trait 4 -->
-        <col style="width:155px"><!-- 8 Trait 5 -->
+        <col style="width:230px"><!-- 2 Deviation Name -->
+        <col style="width:175px"><!-- 3 Variant -->
+        <col style="width:165px"><!-- 4 Trait 1 -->
+        <col style="width:165px"><!-- 5 Trait 2 -->
+        <col style="width:165px"><!-- 6 Trait 3 -->
+        <col style="width:165px"><!-- 7 Trait 4 -->
+        <col style="width:165px"><!-- 8 Trait 5 -->
         <col style="width:55px"> <!-- 9 Skill -->
         <col style="width:55px"> <!-- 10 Activity -->
         <col style="width:70px"> <!-- 11 ELand -->
@@ -658,6 +693,7 @@ input,select,button,textarea{touch-action:manipulation}
     </div>
     <div class="modal-tabs">
       <button class="modal-tab-btn active" onclick="switchModalTab('manageDevModal','addDev',this)">Add Deviation</button>
+      <button class="modal-tab-btn" onclick="switchModalTab('manageDevModal','editDev',this)">Edit Deviation</button>
       <button class="modal-tab-btn" onclick="switchModalTab('manageDevModal','removeDev',this)">Remove Deviation</button>
     </div>
     <div class="modal-body">
@@ -671,6 +707,32 @@ input,select,button,textarea{touch-action:manipulation}
         <button class="btn btn-primary" onclick="addCustomDeviation()">Add to List</button>
         <div class="flash-msg" id="devAddFlash"></div>
       </div>
+      <!-- Edit Deviation -->
+      <div class="modal-tab-pane" data-pane="editDev">
+        <div class="form-group">
+          <label>Select Deviation</label>
+          <select id="editDevSelect" class="form-input" onchange="loadEditDeviation()"></select>
+        </div>
+        <div id="editDevPanel" style="display:none">
+          <p id="editDevBuiltinNote" class="settings-subtext" style="margin-bottom:8px"></p>
+          <input class="form-input" id="editDevTraitSearch" type="text" placeholder="Search traits…" oninput="filterEditDevTraits()" style="margin-bottom:8px">
+          <div class="edit-grid-two">
+            <div>
+              <div class="mgr-section-head">Positive Traits (<span id="editDevPosCount">0</span>)</div>
+              <div class="edit-trait-actions"><button class="btn btn-secondary btn-sm" onclick="selectAllEditDevTraits('pos')">Select Visible</button><button class="btn btn-secondary btn-sm" onclick="clearAllEditDevTraits('pos')">Clear Visible</button></div>
+              <div class="dev-checklist" id="editDevPosTraits"></div>
+            </div>
+            <div>
+              <div class="mgr-section-head">⚠ Negative Traits (<span id="editDevNegCount">0</span>)</div>
+              <div class="edit-trait-actions"><button class="btn btn-secondary btn-sm" onclick="selectAllEditDevTraits('neg')">Select Visible</button><button class="btn btn-secondary btn-sm" onclick="clearAllEditDevTraits('neg')">Clear Visible</button></div>
+              <div class="dev-checklist" id="editDevNegTraits"></div>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:flex-end;margin-top:10px"><button class="btn btn-primary" onclick="saveEditDeviation()">Save Trait Assignments</button></div>
+          <div class="flash-msg" id="editDevFlash"></div>
+        </div>
+      </div>
+
       <!-- Remove Deviation -->
       <div class="modal-tab-pane" data-pane="removeDev">
         <div class="remove-search-wrap">
@@ -742,6 +804,24 @@ input,select,button,textarea{touch-action:manipulation}
           <div class="form-group">
             <label>Edit Effect Description</label>
             <textarea id="editTraitEffect" class="form-textarea" placeholder="Describe the trait effect…"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Type</label>
+            <div class="radio-group">
+              <label><input type="radio" name="editTraitType" value="positive"> Positive</label>
+              <label><input type="radio" name="editTraitType" value="negative"> Negative ⚠</label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Applies To</label>
+            <div class="all-devs-wrap">
+              <input type="checkbox" id="editTraitAllDevs" onchange="toggleEditTraitAppliesTo()">
+              <span>All Deviations</span>
+            </div>
+            <div id="editTraitDevSelectWrap" style="display:none;margin-top:8px">
+              <input class="form-input" id="editTraitDevSearch" type="text" placeholder="Search deviations…" oninput="filterEditTraitDevChecklist()" style="margin-bottom:6px;border-radius:4px 4px 0 0">
+              <div class="dev-checklist" id="editTraitDevChecklist"></div>
+            </div>
           </div>
           <div style="display:flex;gap:8px;justify-content:flex-end">
             <button class="btn btn-secondary" onclick="cancelEditTrait()">Cancel</button>
@@ -1085,6 +1165,41 @@ function save(key) {
   localStorage.setItem(KEYS[key], JSON.stringify(state[key]));
 }
 
+function getThemeSetting() {
+  return state.settings?.theme === 'light' ? 'light' : 'dark';
+}
+
+function applyThemeSetting() {
+  const theme = getThemeSetting();
+  document.body.dataset.theme = theme;
+  const toggle = document.getElementById('themeModeToggle');
+  if (toggle) toggle.checked = theme === 'light';
+}
+
+function saveThemeSetting() {
+  const toggle = document.getElementById('themeModeToggle');
+  state.settings.theme = toggle && toggle.checked ? 'light' : 'dark';
+  applyThemeSetting();
+  save('settings');
+}
+
+function getDeviationAvatarText(name) {
+  const clean = String(name || '').replace(/^(the)\s+/i, '').trim();
+  if (!clean) return '—';
+  const words = clean.split(/\s+/).filter(Boolean);
+  if (words.length >= 2) return (words[0][0] + words[1][0]).toUpperCase();
+  return clean.slice(0, 2).toUpperCase();
+}
+
+function renderDeviationSelect(rowId, curVal, dataField = 'name', extraClass = '') {
+  const allDevs = getAllDeviations();
+  const opts = '<option value=""' + (!curVal ? ' selected' : '') + '>—</option>' +
+    allDevs.map(d => `<option value="${escHtml(d)}"${d===curVal?' selected':''}>${escHtml(d)}</option>`).join('');
+  const avatar = getDeviationAvatarText(curVal);
+  const emptyClass = curVal ? '' : ' empty';
+  return `<div class="dev-select-wrap"><span class="dev-avatar${emptyClass}">${escHtml(avatar)}</span><select data-field="${dataField}" class="row-name ${extraClass}" onchange="rowChange('${rowId}','name',this.value)">${opts}</select></div>`;
+}
+
 function defaultsAreLocked() {
   return IS_OFFICIAL_DEPLOYMENT;
 }
@@ -1105,7 +1220,7 @@ function isDefaultVariantName(name) {
 }
 
 function mergeSettingsWithDefaults(settings) {
-  const base = { characters: [], variants: getDefaultVariantEntries(), hiddenDefaultDeviations: [], hiddenDefaultTraits: [] };
+  const base = { characters: [], variants: getDefaultVariantEntries(), hiddenDefaultDeviations: [], hiddenDefaultTraits: [], theme: 'dark' };
   if (!settings || typeof settings !== 'object') return base;
   const savedVariants = Array.isArray(settings.variants) ? settings.variants : [];
   const variants = mergeVariantEntries(base.variants, savedVariants);
@@ -1290,7 +1405,7 @@ function showFlash(elId, msg, isErr = false) {
 /* ============================================================
    SETTINGS
    ============================================================ */
-function openSettings()  { loadVisionConfig(); loadAutoCreateSetting(); loadQuickAddSetting(); document.getElementById('settingsOverlay').classList.add('open'); }
+function openSettings()  { applyThemeSetting(); loadVisionConfig(); loadAutoCreateSetting(); loadQuickAddSetting(); document.getElementById('settingsOverlay').classList.add('open'); }
 function closeSettings() { document.getElementById('settingsOverlay').classList.remove('open'); }
 function closeSettingsIfBg(e) { if (e.target === document.getElementById('settingsOverlay')) closeSettings(); }
 
@@ -1765,7 +1880,7 @@ function populateExtractedForm(data) {
     select.innerHTML = '<option value="">—</option>' +
       allTraits.map(t => {
         const sel = detected && t.name === findBestTraitMatch(detected.name, allTraits) ? ' selected' : '';
-        return `<option value="${escHtml(t.name)}"${sel}${t.neg?' class="neg-trait"':''}>${escHtml(t.name)}</option>`;
+        return `<option value="${escHtml(t.name)}"${sel} class="${t.neg?'neg-option':'pos-option'}">${escHtml(t.name)}</option>`;
       }).join('');
     row.appendChild(select);
     container.appendChild(row);
@@ -2457,8 +2572,37 @@ function startEditTrait(id) {
   const panel = document.getElementById('traitEditPanel');
   if (!panel) return;
   panel.style.display = 'block';
-  document.getElementById('editTraitName').value = trait.name || '';
+  document.getElementById('editTraitName').value = trait.rawName || trait.name || '';
   document.getElementById('editTraitEffect').value = trait.effect || '';
+  document.querySelector(`input[name="editTraitType"][value="${(trait.neg || trait.type === 'negative') ? 'negative' : 'positive'}"]`).checked = true;
+  const allDevs = (trait.deviants ?? trait.deviations) === 'ALL';
+  document.getElementById('editTraitAllDevs').checked = allDevs;
+  document.getElementById('editTraitDevSearch').value = '';
+  renderEditTraitDevChecklist(trait);
+  toggleEditTraitAppliesTo();
+}
+
+function toggleEditTraitAppliesTo() {
+  const all = document.getElementById('editTraitAllDevs')?.checked;
+  const wrap = document.getElementById('editTraitDevSelectWrap');
+  if (wrap) wrap.style.display = all ? 'none' : 'block';
+}
+
+function renderEditTraitDevChecklist(trait) {
+  const cont = document.getElementById('editTraitDevChecklist');
+  if (!cont) return;
+  const selected = new Set((trait.deviants ?? trait.deviations) === 'ALL' ? [] : (trait.deviants ?? trait.deviations ?? []));
+  cont.innerHTML = getAllDeviations().map(d => `<label class="dev-check-item">
+    <input type="checkbox" name="editTraitDevPick" value="${escHtml(d)}" ${selected.has(d)?'checked':''}>
+    ${escHtml(d)}
+  </label>`).join('');
+}
+
+function filterEditTraitDevChecklist() {
+  const q = (document.getElementById('editTraitDevSearch')?.value || '').toLowerCase();
+  document.querySelectorAll('#editTraitDevChecklist .dev-check-item').forEach(el => {
+    el.classList.toggle('hidden', !!q && !el.textContent.trim().toLowerCase().includes(q));
+  });
 }
 
 function cancelEditTrait() {
@@ -2478,15 +2622,32 @@ function saveEditTrait() {
     showFlash('traitEditFlash', '⚠ Name and description are required.', true);
     return;
   }
-  const oldDisplay = oldTrait.type === 'negative' ? '⚠ ' + oldTrait.name : oldTrait.name;
-  const newDisplay = oldTrait.type === 'negative' ? '⚠ ' + newName : newName;
+  const oldNeg = !!(oldTrait.neg || oldTrait.type === 'negative');
+  const newNeg = document.querySelector('input[name="editTraitType"]:checked')?.value === 'negative';
+  const oldRaw = oldTrait.rawName || oldTrait.name || '';
+  const oldDisplay = oldNeg ? '⚠ ' + oldRaw : oldRaw;
+  const newDisplay = newNeg ? '⚠ ' + newName : newName;
   const hasDup = getAllTraits().some(t => t.name.toLowerCase() === newDisplay.toLowerCase() && t.name !== oldDisplay);
   if (hasDup) {
     showFlash('traitEditFlash', '⚠ A trait with that name already exists.', true);
     return;
   }
+  const allDevs = document.getElementById('editTraitAllDevs')?.checked;
+  let deviations = 'ALL';
+  if (!allDevs) {
+    deviations = Array.from(document.querySelectorAll('input[name="editTraitDevPick"]:checked')).map(el => el.value);
+    if (!deviations.length) {
+      showFlash('traitEditFlash', '⚠ Select at least one deviation, or choose "All Deviations".', true);
+      return;
+    }
+  }
   state.customTraits[idx].name = newName;
+  state.customTraits[idx].rawName = newName;
   state.customTraits[idx].effect = newEffect;
+  state.customTraits[idx].neg = newNeg;
+  state.customTraits[idx].type = newNeg ? 'negative' : 'positive';
+  state.customTraits[idx].deviants = deviations;
+  state.customTraits[idx].deviations = deviations;
   state.deviations.forEach(r => {
     for (let i = 0; i < 5; i++) {
       if (r.traits[i] === oldDisplay) r.traits[i] = newDisplay;
@@ -2547,8 +2708,6 @@ function renderCards() {
     card.dataset.id = row.id;
     const charOpts = '<option value="">—</option>' +
       state.settings.characters.map(c => `<option value="${escHtml(c)}"${c===row.char?' selected':''}>${escHtml(c)}</option>`).join('');
-    const devOpts = '<option value="">—</option>' +
-      allDevs.map(d => `<option value="${escHtml(d)}"${d===row.name?' selected':''}>${escHtml(d)}</option>`).join('');
     card.innerHTML = `
       <div class="card-top">
         <div class="card-top-left">
@@ -2558,7 +2717,7 @@ function renderCards() {
           </div>
           <div class="card-field-row">
             <span class="card-field-label">Deviation</span>
-            <select data-field="name" class="row-name card-select" onchange="rowChange('${row.id}','name',this.value)">${devOpts}</select>
+            ${renderDeviationSelect(row.id, row.name, 'name', 'card-select')}
           </div>
           <div class="card-field-row">
             <span class="card-field-label">Variant</span>
@@ -2612,7 +2771,7 @@ function renderCardTraitCell(rowId, slotIdx, devName, curTrait) {
     visibleTraits.sort((a, b) => a.neg !== b.neg ? (a.neg ? 1 : -1) : a.name.localeCompare(b.name));
   }
   let opts = '<option value="">—</option>';
-  visibleTraits.forEach(t => opts += `<option value="${escHtml(t.name)}"${t.name===curTrait?' selected':''}>${escHtml(t.name)}</option>`);
+  visibleTraits.forEach(t => opts += `<option value="${escHtml(t.name)}"${t.name===curTrait?' selected':''} class="${t.neg?'neg-option':'pos-option'}">${escHtml(t.name)}</option>`);
   cell.innerHTML = `<select class="${isNeg?'neg-trait':''}" onchange="traitChange('${rowId}',${slotIdx},this.value)">${opts}</select>`;
   if (curTrait && traitDef) {
     const sel = cell.querySelector('select');
@@ -2730,18 +2889,14 @@ function renderTable() {
     return;
   }
 
-  const allDevs = getAllDeviations();
-
   rows.forEach(row => {
     const tr = document.createElement('tr');
     tr.dataset.id = row.id;
 
     const charOpts = '<option value="">—</option>' + state.settings.characters.map(c => `<option value="${escHtml(c)}"${c===row.char?' selected':''}>${escHtml(c)}</option>`).join('');
-    const devOpts  = '<option value="">—</option>' + allDevs.map(d => `<option value="${escHtml(d)}"${d===row.name?' selected':''}>${escHtml(d)}</option>`).join('');
-
     tr.innerHTML = `
       <td><select data-field="character" class="row-char" onchange="rowChange('${row.id}','char',this.value)">${charOpts}</select></td>
-      <td><select data-field="name" class="row-name" onchange="rowChange('${row.id}','name',this.value)">${devOpts}</select></td>
+      <td>${renderDeviationSelect(row.id, row.name)}</td>
       <td>${renderVariantSelect(row.id, row.variant, 'variant')}</td>
       <td class="trait-cell" id="tc_${row.id}_0"></td>
       <td class="trait-cell" id="tc_${row.id}_1"></td>
@@ -2806,7 +2961,7 @@ function renderTraitCell(rowId, slotIdx, devName, curTrait) {
   }
 
   let opts = '<option value="">—</option>';
-  visibleTraits.forEach(t => opts += `<option value="${escHtml(t.name)}"${t.name===curTrait?' selected':''}>${escHtml(t.name)}</option>`);
+  visibleTraits.forEach(t => opts += `<option value="${escHtml(t.name)}"${t.name===curTrait?' selected':''} class="${t.neg?'neg-option':'pos-option'}">${escHtml(t.name)}</option>`);
 
   cell.innerHTML = `<select class="${isNeg?'neg-trait':''}" onchange="traitChange('${rowId}',${slotIdx},this.value)">${opts}</select>`;
 
