@@ -154,6 +154,8 @@ tbody tr:nth-child(even){background:var(--row-alt)}
 tbody tr:hover{background:rgba(0,212,255,0.07)}
 td{padding:8px 8px;vertical-align:middle;overflow:hidden}
 .empty-row td{text-align:center;color:var(--text-dim);padding:30px;font-style:italic;overflow:visible}
+#deviationTable th:nth-child(n+10),#deviationTable td:nth-child(n+10){text-align:center;padding-left:2px;padding-right:2px}
+#deviationTable th:nth-child(n+10) .sort-indicator{margin-left:2px}
 
 /* ===== TABLE INPUTS ===== */
 td select,td input[type=text]{background:transparent;border:1px solid transparent;border-radius:4px;color:var(--text);padding:3px 5px;width:100%;display:block;box-sizing:border-box}
@@ -570,12 +572,12 @@ input,select,button,textarea{touch-action:manipulation}
         <col style="width:185px"><!-- 6 Trait 3 -->
         <col style="width:185px"><!-- 7 Trait 4 -->
         <col style="width:185px"><!-- 8 Trait 5 -->
-        <col style="width:55px"> <!-- 9 Skill -->
-        <col style="width:45px"> <!-- 10 Activity -->
-        <col style="width:70px"> <!-- 11 ELand -->
-        <col style="width:48px"> <!-- 12 Fusion -->
-        <col style="width:52px"> <!-- 13 Locked -->
-        <col style="width:45px"> <!-- 14 Del -->
+        <col style="width:50px"> <!-- 9 Skill -->
+        <col style="width:42px"> <!-- 10 Activity -->
+        <col style="width:52px"> <!-- 11 ELand -->
+        <col style="width:42px"> <!-- 12 Fusion -->
+        <col style="width:44px"> <!-- 13 Locked -->
+        <col style="width:40px"> <!-- 14 Del -->
       </colgroup>
       <thead id="sticky-thead">
         <tr>
